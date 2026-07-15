@@ -26,7 +26,7 @@ const variantSchema = new Schema({
 
 variantSchema.plugin(basePlugin);
 variantSchema.index({ market: 1, sku: 1 }, { unique: true });
-variantSchema.index({ product: 1 });
+// `product` field already declares `index: true`; no separate index needed.
 
 export type VariantRaw = InferSchemaType<typeof variantSchema> & BaseFields;
 export type VariantDoc = HydratedDocument<VariantRaw>;

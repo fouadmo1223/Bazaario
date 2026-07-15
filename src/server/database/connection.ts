@@ -42,5 +42,7 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   }
 
   cache.conn = await cache.promise;
+  // Ensure all models are registered on this connection (side-effect import).
+  await import("./models");
   return cache.conn;
 }
