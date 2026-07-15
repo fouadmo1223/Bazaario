@@ -1,0 +1,52 @@
+import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { basePlugin } from "../plugins/base.plugin";
+import { ROLES } from "@/shared/constants/rbac";
+
+const oauthProviderSchema = new Schema(
+  {
+    provider: { type: String, enum: ["google"], required: true },
+    sub: { type: String, required: true },
+  },
+  { _id: false },
+);
+
+const userSchema = new Schema({
+  email: { type: String, required: true, lowercase: true, trim: true, unique: true, index: true },
+  passwordHash: { type: String, default: null, select: false },
+  name: { type: String, required: true, trim: true },
+  avatar: { type: String, default: null },
+  phone: { type: String, default: null, trim: true },
+
+  // Global roles (platform-level, e.g. super_admin/customer). Market-scoped
+  // roles live in the Membership collection.
+  roles: {
+    type: [String],
+    enum: Object.values(ROLES),
+    default: [ROLES.CUSTOMER],
+    index: true,
+  },
+
+  status: {
+    type: String,
+    enum: ["active", "suspended", "pending"],
+    default: "pending",
+    index: true,
+  },
+
+  emailVerifiedAt: { type: Date, default: null },
+  lastLoginAt: { type: Date, default: null },
+
+  providers: { type: [oauthProviderSchema], default: [] },
+
+  // Convenience pointer to the market a staff user is currently operating in.
+  defaultMarket: { type: Schema.Types.ObjectId, ref: "Market", default: null },
+});
+
+userSchema.plugin(basePlugin);
+
+userSchema.index({ "providers.provider": 1, "providers.sub": 1 });
+
+export type UserDoc = InferSchemaType<typeof userSchema> & { _id: Schema.Types.ObjectId };
+
+export const User: Model<UserDoc> =
+  (models.User as Model<UserDoc>) ?? model<UserDoc>("User", userSchema);

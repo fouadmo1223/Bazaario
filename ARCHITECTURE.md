@@ -153,6 +153,8 @@ Model = **role → permission set**, evaluated **within a market scope** (except
 
 Isolation guarantee: a `market_admin` token is bound to their `market` via `Membership`; every service call re-checks `membership.market === resource.market`. No cross-market read path exists.
 
+> **Maps decision:** Standardized on **Leaflet + OpenStreetMap** (free, no API key) for delivery zones and live tracking. Mapbox dropped to avoid a token dependency.
+
 ---
 
 ## 6. Build Order (implementation roadmap)

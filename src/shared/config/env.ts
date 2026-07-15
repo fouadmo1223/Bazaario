@@ -27,6 +27,10 @@ const serverSchema = z.object({
   // OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z
+    .string()
+    .url()
+    .default("http://localhost:3001/auth/google/callback"),
 
   // Payments
   STRIPE_SECRET_KEY: z.string().optional(),
