@@ -41,9 +41,10 @@ export function basePlugin(schema: Schema): void {
     if (q.deletedAt === undefined) this.where({ deletedAt: null });
   };
 
-  for (const hook of ["find", "findOne", "findOneAndUpdate", "countDocuments", "count"] as const) {
-    schema.pre(hook, excludeDeleted);
-  }
+  schema.pre("find", excludeDeleted);
+  schema.pre("findOne", excludeDeleted);
+  schema.pre("findOneAndUpdate", excludeDeleted);
+  schema.pre("countDocuments", excludeDeleted);
 
   schema.set("toJSON", {
     virtuals: true,
