@@ -1,35 +1,37 @@
-import type { Model, RootFilterQuery, UpdateQuery, PipelineStage } from "mongoose";
+import type { Model, QueryFilter, UpdateQuery, PipelineStage, HydratedDocument } from "mongoose";
 import { buildPaginated, toSortObject, type PaginationInput, type Paginated } from "@/shared/lib/pagination";
 
 /**
  * Generic data-access base. Concrete repositories extend this to inherit
  * pagination, soft-delete-aware reads, and CRUD, while adding domain queries.
  * Services depend on repositories — never on Mongoose models directly.
+ *
+ * `TRaw` is the plain document shape; reads return `HydratedDocument<TRaw>`.
  */
-export abstract class BaseRepository<TDoc> {
-  protected constructor(protected readonly model: Model<TDoc>) {}
+export abstract class BaseRepository<TRaw> {
+  protected constructor(protected readonly model: Model<TRaw>) {}
 
-  async findById(id: string): Promise<TDoc | null> {
+  async findById(id: string): Promise<HydratedDocument<TRaw> | null> {
     return this.model.findById(id).exec();
   }
 
-  async findOne(filter: RootFilterQuery<TDoc>): Promise<TDoc | null> {
+  async findOne(filter: QueryFilter<TRaw>): Promise<HydratedDocument<TRaw> | null> {
     return this.model.findOne(filter).exec();
   }
 
-  async exists(filter: RootFilterQuery<TDoc>): Promise<boolean> {
+  async exists(filter: QueryFilter<TRaw>): Promise<boolean> {
     return (await this.model.exists(filter).exec()) != null;
   }
 
-  async create(data: Partial<TDoc>): Promise<TDoc> {
+  async create(data: Partial<TRaw>): Promise<HydratedDocument<TRaw>> {
     return this.model.create(data);
   }
 
-  async updateById(id: string, update: UpdateQuery<TDoc>): Promise<TDoc | null> {
+  async updateById(id: string, update: UpdateQuery<TRaw>): Promise<HydratedDocument<TRaw> | null> {
     return this.model.findByIdAndUpdate(id, update, { new: true }).exec();
   }
 
-  async softDeleteById(id: string, actor?: string): Promise<TDoc | null> {
+  async softDeleteById(id: string, actor?: string): Promise<HydratedDocument<TRaw> | null> {
     return this.model
       .findByIdAndUpdate(
         id,
@@ -41,10 +43,10 @@ export abstract class BaseRepository<TDoc> {
 
   /** Offset pagination with an arbitrary filter. */
   async paginate(
-    filter: RootFilterQuery<TDoc>,
+    filter: QueryFilter<TRaw>,
     pagination: PaginationInput,
     options: { populate?: string | string[] } = {},
-  ): Promise<Paginated<TDoc>> {
+  ): Promise<Paginated<HydratedDocument<TRaw>>> {
     const { page, limit } = pagination;
     const skip = (page - 1) * limit;
     const sort = toSortObject(pagination);

@@ -1,5 +1,6 @@
-import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Schema, model, models, type Model, type InferSchemaType, type HydratedDocument } from "mongoose";
 import { basePlugin } from "../plugins/base.plugin";
+import type { BaseFields } from "../types";
 import { ROLES, PERMISSIONS } from "@/shared/constants/rbac";
 
 /**
@@ -31,10 +32,9 @@ membershipSchema.plugin(basePlugin);
 // One membership record per user per market.
 membershipSchema.index({ user: 1, market: 1 }, { unique: true });
 
-export type MembershipDoc = InferSchemaType<typeof membershipSchema> & {
-  _id: Schema.Types.ObjectId;
-};
+export type MembershipRaw = InferSchemaType<typeof membershipSchema> & BaseFields;
+export type MembershipDoc = HydratedDocument<MembershipRaw>;
 
-export const Membership: Model<MembershipDoc> =
-  (models.Membership as Model<MembershipDoc>) ??
-  model<MembershipDoc>("Membership", membershipSchema);
+export const Membership: Model<MembershipRaw> =
+  (models.Membership as Model<MembershipRaw>) ??
+  model<MembershipRaw>("Membership", membershipSchema);

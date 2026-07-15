@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Schema, model, models, type Model, type InferSchemaType, type HydratedDocument, type Types } from "mongoose";
 
 /**
  * Append-only audit trail. Not soft-deletable (no basePlugin) — audit records
@@ -21,7 +21,11 @@ const auditLogSchema = new Schema(
 auditLogSchema.index({ market: 1, createdAt: -1 });
 auditLogSchema.index({ entity: 1, entityId: 1 });
 
-export type AuditLogDoc = InferSchemaType<typeof auditLogSchema> & { _id: Schema.Types.ObjectId };
+export type AuditLogRaw = InferSchemaType<typeof auditLogSchema> & {
+  _id: Types.ObjectId;
+  createdAt: Date;
+};
+export type AuditLogDoc = HydratedDocument<AuditLogRaw>;
 
-export const AuditLog: Model<AuditLogDoc> =
-  (models.AuditLog as Model<AuditLogDoc>) ?? model<AuditLogDoc>("AuditLog", auditLogSchema);
+export const AuditLog: Model<AuditLogRaw> =
+  (models.AuditLog as Model<AuditLogRaw>) ?? model<AuditLogRaw>("AuditLog", auditLogSchema);

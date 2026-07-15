@@ -1,5 +1,6 @@
-import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Schema, model, models, type Model, type InferSchemaType, type HydratedDocument } from "mongoose";
 import { basePlugin } from "../plugins/base.plugin";
+import type { BaseFields } from "../types";
 
 /**
  * A Market is one independent store. Exactly ONE Market Admin (`owner`).
@@ -54,7 +55,8 @@ const marketSchema = new Schema({
 
 marketSchema.plugin(basePlugin);
 
-export type MarketDoc = InferSchemaType<typeof marketSchema> & { _id: Schema.Types.ObjectId };
+export type MarketRaw = InferSchemaType<typeof marketSchema> & BaseFields;
+export type MarketDoc = HydratedDocument<MarketRaw>;
 
-export const Market: Model<MarketDoc> =
-  (models.Market as Model<MarketDoc>) ?? model<MarketDoc>("Market", marketSchema);
+export const Market: Model<MarketRaw> =
+  (models.Market as Model<MarketRaw>) ?? model<MarketRaw>("Market", marketSchema);

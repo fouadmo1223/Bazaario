@@ -1,5 +1,6 @@
-import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Schema, model, models, type Model, type InferSchemaType, type HydratedDocument } from "mongoose";
 import { basePlugin } from "../plugins/base.plugin";
+import type { BaseFields } from "../types";
 import { ROLES } from "@/shared/constants/rbac";
 
 const oauthProviderSchema = new Schema(
@@ -46,7 +47,8 @@ userSchema.plugin(basePlugin);
 
 userSchema.index({ "providers.provider": 1, "providers.sub": 1 });
 
-export type UserDoc = InferSchemaType<typeof userSchema> & { _id: Schema.Types.ObjectId };
+export type UserRaw = InferSchemaType<typeof userSchema> & BaseFields;
+export type UserDoc = HydratedDocument<UserRaw>;
 
-export const User: Model<UserDoc> =
-  (models.User as Model<UserDoc>) ?? model<UserDoc>("User", userSchema);
+export const User: Model<UserRaw> =
+  (models.User as Model<UserRaw>) ?? model<UserRaw>("User", userSchema);

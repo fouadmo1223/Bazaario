@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model, type InferSchemaType } from "mongoose";
+import { Schema, model, models, type Model, type InferSchemaType, type HydratedDocument, type Types } from "mongoose";
 
 /**
  * One-time tokens for email verification, password reset, and OTP login.
@@ -25,10 +25,13 @@ const verificationTokenSchema = new Schema(
 // TTL: Mongo removes the doc once expiresAt passes.
 verificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export type VerificationTokenDoc = InferSchemaType<typeof verificationTokenSchema> & {
-  _id: Schema.Types.ObjectId;
+export type VerificationTokenRaw = InferSchemaType<typeof verificationTokenSchema> & {
+  _id: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 };
+export type VerificationTokenDoc = HydratedDocument<VerificationTokenRaw>;
 
-export const VerificationToken: Model<VerificationTokenDoc> =
-  (models.VerificationToken as Model<VerificationTokenDoc>) ??
-  model<VerificationTokenDoc>("VerificationToken", verificationTokenSchema);
+export const VerificationToken: Model<VerificationTokenRaw> =
+  (models.VerificationToken as Model<VerificationTokenRaw>) ??
+  model<VerificationTokenRaw>("VerificationToken", verificationTokenSchema);
