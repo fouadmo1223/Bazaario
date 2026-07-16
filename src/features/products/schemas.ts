@@ -59,20 +59,39 @@ export const variantInputSchema = z.object({
   image: z.string().url().nullable().optional(),
 });
 
-export const productQuerySchema = z.object({
-  status: z.enum(["draft", "active", "archived"]).optional(),
+/**
+ * A query-string flag. `z.coerce.boolean()` is wrong here: it applies
+ * `Boolean(value)`, and `Boolean("false")` is `true` — so `?inStock=false`
+ * would filter *to* in-stock items. Only the literal "true"/"1" mean true.
+ */
+const queryFlag = z
+  .union([z.boolean(), z.string()])
+  .transform((v) => (typeof v === "boolean" ? v : v === "true" || v === "1"))
+  .optional();
+
+/** Filters usable by any caller, including anonymous storefront visitors. */
+export const storefrontFilterSchema = z.object({
   category: z.string().optional(),
   brand: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  minPrice: z.coerce.number().optional(),
-  maxPrice: z.coerce.number().optional(),
-  minRating: z.coerce.number().optional(),
-  inStock: z.coerce.boolean().optional(),
-  featured: z.coerce.boolean().optional(),
-  search: z.string().optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  minRating: z.coerce.number().min(0).max(5).optional(),
+  inStock: queryFlag,
+  featured: queryFlag,
+  search: z.string().max(200).optional(),
+});
+
+/**
+ * Admin/dashboard query. Adds `status`, which must never be caller-controlled on
+ * the storefront — that would expose draft and archived products.
+ */
+export const productQuerySchema = storefrontFilterSchema.extend({
+  status: z.enum(["draft", "active", "archived"]).optional(),
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type VariantInput = z.infer<typeof variantInputSchema>;
 export type ProductQueryInput = z.infer<typeof productQuerySchema>;
+export type StorefrontFilterInput = z.infer<typeof storefrontFilterSchema>;

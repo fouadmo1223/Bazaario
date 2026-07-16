@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { googleOAuth } from "@/server/services/google-oauth.service";
-import { absorbGuestCart } from "@/features/auth/guest-cart-merge";
+import { absorbGuestData } from "@/features/auth/guest-merge";
 import { clientEnv } from "@/shared/config/env";
 import { logger } from "@/shared/lib/logger";
 
@@ -26,8 +26,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const user = await googleOAuth.handleCallback(code);
-    // Same as password sign-in: don't lose a cart built up while signed out.
-    await absorbGuestCart(user.id);
+    // Same as password sign-in: don't lose a cart or wishlist built up while
+    // signed out.
+    await absorbGuestData(user.id);
     return NextResponse.redirect(`${base}/`);
   } catch (err) {
     logger.error({ err }, "Google callback failed");

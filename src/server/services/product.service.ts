@@ -7,6 +7,7 @@ import { Errors } from "@/shared/lib/errors";
 import { writeAudit } from "./audit.service";
 import { paginationSchema, type PaginationInput, type Paginated } from "@/shared/lib/pagination";
 import { cached, getRedis } from "@/server/cache/redis";
+import { storefrontFilterSchema } from "@/features/products/schemas";
 import type {
   CreateProductInput,
   UpdateProductInput,
@@ -137,11 +138,20 @@ export const productService = {
   },
 
   /** Storefront read — active products only, cached in Redis. */
+  /**
+   * Public storefront listing.
+   *
+   * `vendor` and `status` are pinned *after* the caller's filters are spread in.
+   * Spreading last would let a caller pass `status: "draft"` and read unpublished
+   * products, or a different `vendor` and cross the tenant boundary — the
+   * storefront only ever shows this vendor's active catalogue.
+   */
   async listStorefront(vendorId: string, query: unknown): Promise<Paginated<ProductDoc>> {
     await connectToDatabase();
     const pagination = paginationSchema.parse(query);
-    return cached(listCacheKey(vendorId, query, pagination), 60, () =>
-      productRepository.search({ vendor: vendorId, status: "active", ...(query as object) }, pagination),
+    const filters = storefrontFilterSchema.parse(query ?? {});
+    return cached(listCacheKey(vendorId, filters, pagination), 60, () =>
+      productRepository.search({ ...filters, vendor: vendorId, status: "active" }, pagination),
     );
   },
 

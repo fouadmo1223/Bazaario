@@ -13,7 +13,7 @@ import {
 import { toFailure, ok, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
 import { rateLimit } from "@/server/security/rate-limit";
-import { absorbGuestCart } from "./guest-cart-merge";
+import { absorbGuestData } from "./guest-merge";
 import { headers } from "next/headers";
 import type { PublicUser } from "@/server/services/auth.service";
 
@@ -58,7 +58,7 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<A
     await rateLimit(await clientKey("login"), { max: 10, windowSec: 300 });
     const input = parse(loginSchema, formToObject(formData));
     const user = await authService.login(input);
-    await absorbGuestCart(user.id);
+    await absorbGuestData(user.id);
     return ok(user);
   } catch (err) {
     return toFailure(err);
@@ -121,7 +121,7 @@ export async function verifyOtpAction(_prev: unknown, formData: FormData): Promi
   try {
     const input = parse(otpSchema, formToObject(formData));
     const user = await authService.verifyOtp(input);
-    await absorbGuestCart(user.id);
+    await absorbGuestData(user.id);
     return ok(user);
   } catch (err) {
     return toFailure(err);
