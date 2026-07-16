@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useStorefront } from "../storefront-provider";
 
@@ -43,7 +42,7 @@ export function StorefrontHeader() {
             </svg>
           </IconLink>
 
-          <IconLink href="/cart" label="Cart" count={counts?.cart ?? 0}>
+          <IconLink href="/cart" label="Cart" count={counts.cart}>
             {/* Bag */}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
               <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6ZM3 6h18M16 10a4 4 0 0 1-8 0" strokeLinecap="round" strokeLinejoin="round" />
@@ -80,20 +79,22 @@ function HeaderLink({ href, children }: { href: string; children: React.ReactNod
   );
 }
 
-/** Search that seeds itself from the URL so a reload keeps the visible term. */
+/**
+ * Search that seeds itself from the URL so a reload keeps the visible term.
+ *
+ * Uncontrolled, with `key` tied to the URL's term: when navigation changes
+ * `?search=`, React remounts the input and it picks up the new `defaultValue`.
+ * Mirroring the URL into state via an effect would render the stale value first
+ * and then overwrite it — a wasted pass, and the reason the lint rule exists.
+ */
 function SearchBox() {
   const router = useRouter();
   const params = useSearchParams();
-  const [value, setValue] = useState("");
+  const urlSearch = params.get("search") ?? "";
 
-  // Keep the box in step with `?search=` when navigating between listings.
-  useEffect(() => {
-    setValue(params.get("search") ?? "");
-  }, [params]);
-
-  function submit(e: React.FormEvent) {
+  function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const q = value.trim();
+    const q = String(new FormData(e.currentTarget).get("search") ?? "").trim();
     router.push(q ? `/products?search=${encodeURIComponent(q)}` : "/products");
   }
 
@@ -103,10 +104,11 @@ function SearchBox() {
         Search products
       </label>
       <input
+        key={urlSearch}
         id="storefront-search"
+        name="search"
         type="search"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+        defaultValue={urlSearch}
         placeholder="Search products…"
         className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:bg-zinc-950"
       />

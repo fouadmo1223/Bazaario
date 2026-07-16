@@ -109,6 +109,11 @@ export const catalogService = {
   /**
    * Browse the whole marketplace.
    *
+   * `category` and `brand` arrive as *slugs* (they come from a shareable URL),
+   * and one slug maps to many ids because each vendor has its own Category and
+   * Brand rows. Both are resolved to id sets here and matched with `$in`, so
+   * "footwear" means every vendor's footwear rather than one store's.
+   *
    * `vendor` and `status` are pinned after the caller's filters, so a crafted
    * query can neither surface drafts nor pin the listing to a suspended vendor.
    */
@@ -133,13 +138,35 @@ export const catalogService = {
       return buildPaginated<CatalogProduct>([], 0, pagination);
     }
 
+    // Resolve slug facets before building the filter; an unknown slug matches
+    // nothing rather than being ignored (which would silently show everything).
+    let categoryIds: string[] | null = null;
+    if (filters.category) {
+      const category = await this.categoryBySlug(filters.category);
+      categoryIds = category?.ids ?? [];
+    }
+    let brandIds: string[] | null = null;
+    if (filters.brand) {
+      const brands = await this.brands();
+      brandIds = brands.find((b) => b.slug === filters.brand)?.ids ?? [];
+    }
+    if (categoryIds?.length === 0 || brandIds?.length === 0) {
+      return buildPaginated<CatalogProduct>([], 0, pagination);
+    }
+
     const filter = productRepository.buildFilter({
       ...filters,
+      // Slugs are resolved below; drop them so buildFilter can't match a slug
+      // against an ObjectId field and quietly return nothing.
+      category: undefined,
+      brand: undefined,
       // buildFilter needs a vendor; the $in below replaces it.
       vendor: allowed[0],
       status: "active",
     }) as QueryFilter<ProductRaw>;
     filter.vendor = { $in: allowed };
+    if (categoryIds) filter.categories = { $in: categoryIds };
+    if (brandIds) filter.brand = { $in: brandIds };
 
     const skip = (pagination.page - 1) * pagination.limit;
     const sort = filters.search

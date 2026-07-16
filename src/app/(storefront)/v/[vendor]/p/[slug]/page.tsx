@@ -5,7 +5,7 @@ import Link from "next/link";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
-import { CartBadge } from "@/features/cart/components/cart-badge";
+import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
 
@@ -100,17 +100,13 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 flex items-center justify-between gap-6">
-          <nav className="min-w-0 text-sm text-zinc-500">
-            <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
-              {vendor.name}
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
-          </nav>
-
-          <CartBadge vendorId={String(vendor._id)} vendorSlug={vendorSlug} />
-        </div>
+        <nav className="mb-6 text-sm text-zinc-500">
+          <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
+            {vendor.name}
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
+        </nav>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
@@ -162,13 +158,17 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </p>
             )}
 
-            <AddToCartButton
-              className="mt-8"
-              vendorId={String(vendor._id)}
-              vendorSlug={vendorSlug}
-              productId={String(product._id)}
-              disabled={!inStock}
-            />
+            <div className="mt-8 flex items-center gap-3">
+              <AddToCartButton
+                className="flex-1"
+                vendorId={String(vendor._id)}
+                vendorSlug={vendorSlug}
+                productId={String(product._id)}
+                disabled={!inStock}
+              />
+              {/* Saved state hydrates from StorefrontProvider, so this page stays cacheable. */}
+              <WishlistButton productId={String(product._id)} />
+            </div>
 
             {product.description && (
               <div className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">

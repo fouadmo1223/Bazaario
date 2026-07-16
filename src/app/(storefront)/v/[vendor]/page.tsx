@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
-import { CartBadge } from "@/features/cart/components/cart-badge";
 import { isAppError } from "@/shared/lib/errors";
 
 type Params = { vendor: string };
@@ -86,17 +85,13 @@ export default async function VendorPage({
       />
 
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-6xl items-start justify-between gap-6 px-6 py-8">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {vendor.name}
-            </h1>
-            {vendor.description && (
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendor.description}</p>
-            )}
-          </div>
-
-          <CartBadge vendorId={String(vendor._id)} vendorSlug={slug} />
+        <div className="mx-auto max-w-6xl px-6 py-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            {vendor.name}
+          </h1>
+          {vendor.description && (
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendor.description}</p>
+          )}
         </div>
       </header>
 

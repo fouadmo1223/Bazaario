@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toggleWishlistAction } from "../actions";
+import { useStorefront } from "@/features/storefront/storefront-provider";
 
 /**
  * Heart toggle.
@@ -11,6 +11,10 @@ import { toggleWishlistAction } from "../actions";
  * consequence, so showing the new state immediately is worth it. On failure the
  * heart snaps back and the error surfaces via `title` rather than shifting the
  * layout of whatever card it sits on.
+ *
+ * Saved state comes from `StorefrontProvider` when present, so the same product
+ * shown twice (grid + quick view) can't disagree, and the header count moves with
+ * the click. `initialSaved` is the fallback for standalone use.
  */
 export function WishlistButton({
   productId,
@@ -23,29 +27,35 @@ export function WishlistButton({
   size?: "sm" | "md";
   className?: string;
 }) {
-  const router = useRouter();
+  const storefront = useStorefront();
   const [pending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(initialSaved);
+  const [localSaved, setLocalSaved] = useState(initialSaved);
   const [error, setError] = useState<string | null>(null);
 
+  const saved = storefront ? storefront.isSaved(productId) : localSaved;
+
+  function apply(next: boolean) {
+    if (storefront) storefront.setSaved(productId, next);
+    else setLocalSaved(next);
+  }
+
   function toggle(e: React.MouseEvent) {
-    // Cards wrap these in a link — don't navigate when the heart is clicked.
+    // Cards place these beside a stretched link — don't follow it on click.
     e.preventDefault();
     e.stopPropagation();
 
     const next = !saved;
-    setSaved(next);
+    apply(next);
     setError(null);
 
     startTransition(async () => {
       const result = await toggleWishlistAction({ productId });
       if (!result.ok) {
-        setSaved(!next); // revert
+        apply(!next); // revert
         setError(result.error.message);
         return;
       }
-      setSaved(result.data.saved);
-      router.refresh();
+      apply(result.data.saved);
     });
   }
 

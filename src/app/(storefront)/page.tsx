@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
-import { getSavedProductIds } from "@/features/wishlist/queries";
 
 export const metadata: Metadata = {
   title: "Commerce · Shop every store in one place",
@@ -29,8 +28,9 @@ export default async function HomePage() {
     catalogService.vendors(6),
   ]);
 
-  // One lookup for the whole page so every heart renders in its true state.
-  const saved = await getSavedProductIds();
+  // Note: no wishlist lookup here. That would read cookies, forcing this page
+  // dynamic and rebuilding the catalogue per visitor to colour some hearts.
+  // `StorefrontProvider` hydrates them on the client instead.
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -102,12 +102,11 @@ export default async function HomePage() {
         id="home-featured"
         title="Featured"
         products={featured}
-        saved={saved}
         emptyNote="No featured products yet."
       />
 
       {bestSellers.length > 0 && (
-        <ProductRail id="home-best" title="Best sellers" products={bestSellers} saved={saved} />
+        <ProductRail id="home-best" title="Best sellers" products={bestSellers} />
       )}
 
       {vendors.length > 0 && (
@@ -153,13 +152,11 @@ function ProductRail({
   id,
   title,
   products,
-  saved,
   emptyNote,
 }: {
   id: string;
   title: string;
   products: CatalogProduct[];
-  saved: Set<string>;
   emptyNote?: string;
 }) {
   return (
@@ -180,7 +177,7 @@ function ProductRail({
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {products.map((p) => (
-            <CatalogProductCard key={p.id} product={p} saved={saved.has(p.id)} />
+            <CatalogProductCard key={p.id} product={p} />
           ))}
         </div>
       )}

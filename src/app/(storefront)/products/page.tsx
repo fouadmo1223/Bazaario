@@ -1,0 +1,132 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { catalogService, type CatalogSort } from "@/server/services/catalog.service";
+import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
+import { ProductFilters } from "@/features/storefront/components/product-filters";
+
+type Search = Record<string, string | undefined>;
+
+export const metadata: Metadata = {
+  title: "Products · Commerce",
+  description: "Browse every product across the marketplace.",
+  alternates: { canonical: "/products" },
+};
+
+// Shared catalogue: cacheable per filter combination.
+export const revalidate = 60;
+
+const SORTS = new Set<CatalogSort>(["newest", "price_asc", "price_desc", "rating", "popular"]);
+const parseSort = (v: string | undefined): CatalogSort =>
+  v && SORTS.has(v as CatalogSort) ? (v as CatalogSort) : "newest";
+
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const params = await searchParams;
+
+  const [result, categories, brands, priceBounds] = await Promise.all([
+    // `params` is passed wholesale on purpose: the service validates it against
+    // storefrontFilterSchema and pins vendor/status, so nothing here can widen
+    // the query beyond active products from active vendors.
+    catalogService.listProducts({ ...params, limit: "24" }, { sort: parseSort(params.sort) }),
+    catalogService.categories(),
+    catalogService.brands(),
+    catalogService.priceBounds(),
+  ]);
+
+  const search = params.search?.trim();
+
+  return (
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          {search ? `Results for “${search}”` : "All products"}
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          {result.total} {result.total === 1 ? "product" : "products"}
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+        <div className="lg:col-span-1">
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />}>
+            <ProductFilters
+              facets={{
+                categories: categories.map((c) => ({ slug: c.slug, name: c.name })),
+                brands: brands.map((b) => ({ slug: b.slug, name: b.name })),
+                priceBounds,
+              }}
+            />
+          </Suspense>
+        </div>
+
+        <div className="lg:col-span-3">
+          {result.items.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
+              <p className="text-sm text-zinc-500">No products match these filters.</p>
+              <Link
+                href="/products"
+                className="mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+              >
+                Clear filters
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                {result.items.map((p) => (
+                  <CatalogProductCard key={p.id} product={p} />
+                ))}
+              </div>
+
+              {result.totalPages > 1 && (
+                <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">
+                  <PageLink params={params} page={result.page - 1} disabled={!result.hasPrev}>
+                    ← Previous
+                  </PageLink>
+                  <span className="text-sm text-zinc-500">
+                    Page {result.page} of {result.totalPages}
+                  </span>
+                  <PageLink params={params} page={result.page + 1} disabled={!result.hasNext}>
+                    Next →
+                  </PageLink>
+                </nav>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Paging that preserves whatever filters are already in the URL. */
+function PageLink({
+  params,
+  page,
+  disabled,
+  children,
+}: {
+  params: Search;
+  page: number;
+  disabled: boolean;
+  children: React.ReactNode;
+}) {
+  if (disabled) {
+    return <span className="text-sm text-zinc-300 dark:text-zinc-700">{children}</span>;
+  }
+
+  const query = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v && k !== "page") query.set(k, v);
+  }
+  query.set("page", String(page));
+
+  return (
+    <Link
+      href={`/products?${query.toString()}`}
+      className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+    >
+      {children}
+    </Link>
+  );
+}

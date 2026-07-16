@@ -64,6 +64,9 @@ Variant         product, vendor, sku(uniq per vendor), barcode, options{},
                 price, compareAt, stock, weight, dimensions, media[]
 Inventory       vendor, variant, onHand, reserved, backorder policy, lowStockAt
 Cart            vendor, user?|guestToken, items[{variant,qty,priceSnapshot}], coupon?
+Wishlist        user?|guestToken, items[{product,vendor,addedAt}]
+                (NOT vendor-scoped — a shopper's saved items span the marketplace;
+                 no price snapshot — prices read live when the list is viewed)
 Order           vendor, number, customer, items[snapshot], totals{sub,tax,ship,disc,grand},
                 status, timeline[], payment{provider,status,ref}, shipping{addr,method,slot},
                 fulfillment, refunds[]
@@ -135,6 +138,14 @@ Health    GET  /api/health  (db+redis probes)
 
 ### 4.1 Routes
 ```
+Marketplace  — route group (storefront), shared header/footer, no URL segment
+/                           home: featured, best sellers, categories, stores (ISR 60)
+/products                   full catalogue + filters (URL-driven)
+/categories                 category index (ISR 300)
+/categories/{slug}          category browse, marketplace-wide
+/wishlist                   saved items    (dynamic — per-visitor)
+/cart                       open carts per store (dynamic — per-visitor)
+
 Storefront
 /v/{vendor}                 vendor storefront (ISR, revalidate 60)
 /v/{vendor}/p/{slug}        product detail (ISR + JSON-LD)
@@ -167,7 +178,37 @@ stability and are never used to charge.
 Tax rate lives in `pricing.service.vendorTaxRate()` — one source, so the cart
 preview and the charged total cannot drift apart.
 
-### 4.3 Order status machine
+### 4.3 Public catalogue (the one cross-vendor read path)
+`catalog.service` serves the marketplace-wide catalogue and is the **deliberate
+exception** to the vendor-scoping rule in §5. That rule governs *staff* access —
+a vendor admin must never read another vendor's data. This path is different: it
+is public, read-only, and spans vendors by definition. Two invariants hold on
+every query:
+
+1. products must be `status: "active"`
+2. their vendor must be `status: "active"` — suspending a vendor removes its
+   products from the marketplace rather than letting it keep selling
+
+Callers never supply a vendor scope or a status; both are pinned *after* the
+caller's filters are spread in. `category` and `brand` arrive as slugs (URLs
+must be shareable) and resolve to id sets — each vendor has its own Category and
+Brand rows, so one slug means every vendor's. An unknown slug matches nothing
+rather than being dropped, which would silently show the whole catalogue.
+
+### 4.4 Per-visitor state vs the shared cache
+The storefront is ISR-cached and shared between visitors, so **cart badges,
+wishlist hearts, and counts are never rendered on the server**. Reading those
+cookies during a page's render would force it dynamic and rebuild the whole
+catalogue per visitor just to colour a heart. `StorefrontProvider` fetches them
+once from `/api/storefront/counts` and shares the snapshot with the header and
+every product card. `/` staying `○ Static` in the build output is the check that
+this still holds.
+
+Genuinely personal pages (`/wishlist`, `/cart`, `/account/*`, checkout) are
+`force-dynamic` and read cookies directly — correct, because nothing about them
+is shareable.
+
+### 4.5 Order status machine
 `order.service` owns the legal transitions. `canTransition(from, to)` is the
 guard; `allowedTransitions(from)` is what the dashboard renders — the UI offers
 exactly the set the service will accept, and the service re-checks on submit, so
@@ -202,7 +243,7 @@ Guests have no session to authorize against, so two capability cookies carry the
 
 | Cookie | Purpose | Notes |
 |---|---|---|
-| `guest_token` | names the visitor's Cart | opaque random, httpOnly; merged into the user's carts on login (`absorbGuestCart`) and then cleared |
+| `guest_token` | names the visitor's Carts **and** Wishlist | opaque random, httpOnly; both merged into the account on login (`absorbGuestData`) and only then cleared |
 | `order_access` | ids of orders this visitor placed | httpOnly, capped at 10 |
 
 **Why `order_access` exists:** order numbers are sequential (`1000 + seq`), so a
@@ -228,7 +269,7 @@ create path (`getOrCreateGuestToken`, actions only).
 6. ✅ **Payments** — Stripe + Paymob + COD strategy adapters + webhooks + idempotency. *(Provider credentials still unset in `.env.local`; only COD is selectable until they are.)*
 7. ⏳ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`), vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions and refunds. *(Driver flows, returns, and tracking UI still outstanding.)*
 8. ⏳ **Realtime & Notifications** — Socket.IO server exists; no UI surface yet.
-9. ⬜ **CMS / Marketing / Reviews / Support**.
+9. ⏳ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal. *(CMS / marketing / reviews / support still outstanding.)*
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; SEO done for storefront; i18n/RTL and PWA outstanding.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; **no test suite, no CI/CD** yet.
 
@@ -236,7 +277,10 @@ create path (`getOrCreateGuestToken`, actions only).
 - **No automated tests.** Verification to date is typecheck + lint + build + throwaway service-level runtime scripts. Those scripts proved the money, transition, and isolation paths but were deleted after each run — they should become a real suite.
 - Customers cannot yet reorder, return, or download an invoice; drivers have no UI at all.
 - Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, GSAP, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4.
-- Variable products: schema and cart support variants, but no variant picker UI (`AddToCartButton` accepts `variantId`; the PDP does not yet offer one).
+- Variable products: schema and cart support variants, but no variant picker UI (`AddToCartButton` and quick view accept `variantId`; neither the PDP nor the modal offers a selector, so variable products cannot actually be bought yet).
+- Product media is single-image everywhere (`media[0]`); no gallery, no video.
+- Vendor product add/edit has server actions but still no UI — the dashboard cannot create a product.
+- `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
 - `checkout.service` reserves stock by decrementing without a transaction — concurrent checkouts on the last unit can oversell. Needs a conditional update or a Mongo session.
 - Wallet payment provider is declared in the registry but unimplemented (`null`).
 
