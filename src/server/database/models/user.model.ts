@@ -18,7 +18,7 @@ const userSchema = new Schema({
   avatar: { type: String, default: null },
   phone: { type: String, default: null, trim: true },
 
-  // Global roles (platform-level, e.g. super_admin/customer). Market-scoped
+  // Global roles (platform-level, e.g. super_admin/customer). Vendor-scoped
   // roles live in the Membership collection.
   roles: {
     type: [String],
@@ -39,8 +39,8 @@ const userSchema = new Schema({
 
   providers: { type: [oauthProviderSchema], default: [] },
 
-  // Convenience pointer to the market a staff user is currently operating in.
-  defaultMarket: { type: Schema.Types.ObjectId, ref: "Market", default: null },
+  // Convenience pointer to the vendor a staff user is currently operating in.
+  defaultVendor: { type: Schema.Types.ObjectId, ref: "Vendor", default: null },
 });
 
 userSchema.plugin(basePlugin);

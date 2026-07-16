@@ -14,17 +14,28 @@ export type Totals = {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** TODO: replace with per-vendor tax rules (jurisdiction + product class). */
+const DEFAULT_TAX_RATE = 0.14;
+
+/**
+ * The tax rate to apply for a vendor. Kept here as the single source so the cart
+ * preview and the checkout that charges the customer can never disagree.
+ */
+export function vendorTaxRate(settings: { taxInclusive: boolean }): number {
+  return settings.taxInclusive ? 0 : DEFAULT_TAX_RATE;
+}
+
 /**
  * Validate a coupon against the current cart. Throws with a user-safe message
  * when invalid. Does NOT increment usage — that happens on successful order.
  */
 export async function validateCoupon(
-  marketId: string,
+  vendorId: string,
   code: string,
   subtotal: number,
 ): Promise<CouponDoc> {
   await connectToDatabase();
-  const coupon = await Coupon.findOne({ market: marketId, code: code.toUpperCase(), isActive: true });
+  const coupon = await Coupon.findOne({ vendor: vendorId, code: code.toUpperCase(), isActive: true });
   if (!coupon) throw Errors.badRequest("Invalid coupon code");
 
   const now = Date.now();
@@ -39,8 +50,9 @@ export async function validateCoupon(
   return coupon;
 }
 
-/** Discount amount a coupon yields against a subtotal (shipping handled separately). */
-export function couponDiscount(coupon: CouponDoc, subtotal: number, shipping: number): { discount: number; freeShipping: boolean } {
+/** Discount amount a coupon yields against a subtotal. Shipping is not an input:
+ *  a free-shipping coupon reports the fact and the caller zeroes the fee. */
+export function couponDiscount(coupon: CouponDoc, subtotal: number): { discount: number; freeShipping: boolean } {
   if (coupon.type === "free_shipping") return { discount: 0, freeShipping: true };
   if (coupon.type === "fixed") return { discount: Math.min(coupon.value, subtotal), freeShipping: false };
   // percentage
@@ -62,7 +74,7 @@ export function computeTotals(
   let shipping = opts.shippingBase ?? 0;
   let discount = 0;
   if (opts.coupon) {
-    const res = couponDiscount(opts.coupon, subtotal, shipping);
+    const res = couponDiscount(opts.coupon, subtotal);
     discount = round2(res.discount);
     if (res.freeShipping) shipping = 0;
   }

@@ -34,8 +34,9 @@ export class PaymobProvider implements PaymentProvider {
     return token;
   }
 
-  async initiate(order: OrderDoc, opts: { returnUrl: string }): Promise<PaymentInitResult> {
-    const env = getServerEnv();
+  // `returnUrl` is unused by design: Paymob takes the post-payment redirect from
+  // the integration's dashboard settings, not from the payment-key request.
+  async initiate(order: OrderDoc, _opts: { returnUrl: string }): Promise<PaymentInitResult> {
     const token = await this.authToken();
     const amountCents = Math.round(order.totals.grandTotal * 100);
 

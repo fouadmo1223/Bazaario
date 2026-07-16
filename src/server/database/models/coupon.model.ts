@@ -2,9 +2,9 @@ import { Schema, model, models, type Model, type InferSchemaType, type HydratedD
 import { basePlugin } from "../plugins/base.plugin";
 import type { BaseFields } from "../types";
 
-/** Market-scoped discount code. Constraints validated by the checkout service. */
+/** Vendor-scoped discount code. Constraints validated by the checkout service. */
 const couponSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   code: { type: String, required: true, uppercase: true, trim: true },
   description: { type: String, default: null },
   type: { type: String, enum: ["percentage", "fixed", "free_shipping"], required: true },
@@ -25,7 +25,7 @@ const couponSchema = new Schema({
 });
 
 couponSchema.plugin(basePlugin);
-couponSchema.index({ market: 1, code: 1 }, { unique: true });
+couponSchema.index({ vendor: 1, code: 1 }, { unique: true });
 
 export type CouponRaw = InferSchemaType<typeof couponSchema> & BaseFields;
 export type CouponDoc = HydratedDocument<CouponRaw>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { clientEnv } from "@/shared/config/env";
 
@@ -8,9 +8,12 @@ import { clientEnv } from "@/shared/config/env";
  * Connects to the standalone realtime server. The access token is httpOnly, so
  * the page passes a short-lived socket token fetched from an endpoint rather
  * than reading the cookie directly.
+ *
+ * The socket lives in state, not a ref: subscribers need a re-render when it is
+ * created, otherwise their `socket`-dependent effects never re-run.
  */
 export function useSocket(token: string | null): { socket: Socket | null; connected: boolean } {
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
@@ -18,25 +21,28 @@ export function useSocket(token: string | null): { socket: Socket | null; connec
     const url = clientEnv.NEXT_PUBLIC_SOCKET_URL;
     if (!url) return;
 
-    const socket = io(url, {
+    const next = io(url, {
       auth: { token },
       transports: ["websocket"],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
-    socketRef.current = socket;
+    // The socket is created by connecting to an external system, so publishing
+    // the instance from the effect is the only place it can come from.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSocket(next);
 
-    socket.on("connect", () => setConnected(true));
-    socket.on("disconnect", () => setConnected(false));
+    next.on("connect", () => setConnected(true));
+    next.on("disconnect", () => setConnected(false));
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      next.disconnect();
+      setSocket(null);
       setConnected(false);
     };
   }, [token]);
 
-  return { socket: socketRef.current, connected };
+  return { socket, connected };
 }
 
 export type NotificationPayload = {

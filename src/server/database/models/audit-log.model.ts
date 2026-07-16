@@ -7,9 +7,9 @@ import { Schema, model, models, type Model, type InferSchemaType, type HydratedD
 const auditLogSchema = new Schema(
   {
     actor: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
-    market: { type: Schema.Types.ObjectId, ref: "Market", default: null, index: true },
-    action: { type: String, required: true, index: true }, // e.g. "market.create"
-    entity: { type: String, required: true }, // e.g. "Market"
+    vendor: { type: Schema.Types.ObjectId, ref: "Vendor", default: null, index: true },
+    action: { type: String, required: true, index: true }, // e.g. "vendor.create"
+    entity: { type: String, required: true }, // e.g. "Vendor"
     entityId: { type: String, default: null },
     diff: { type: Schema.Types.Mixed, default: null },
     ip: { type: String, default: null },
@@ -18,7 +18,7 @@ const auditLogSchema = new Schema(
   { timestamps: { createdAt: true, updatedAt: false } },
 );
 
-auditLogSchema.index({ market: 1, createdAt: -1 });
+auditLogSchema.index({ vendor: 1, createdAt: -1 });
 auditLogSchema.index({ entity: 1, entityId: 1 });
 
 export type AuditLogRaw = InferSchemaType<typeof auditLogSchema> & {

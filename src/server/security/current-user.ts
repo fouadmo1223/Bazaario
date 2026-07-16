@@ -56,13 +56,13 @@ export async function requireSuperAdmin(): Promise<CurrentUser> {
 }
 
 /**
- * Assert the user may act on a specific market with the given permission.
+ * Assert the user may act on a specific vendor with the given permission.
  * Super admin bypasses the membership check. Everyone else must have an active
- * membership on that market whose role (or explicit grant) covers the permission.
+ * membership on that vendor whose role (or explicit grant) covers the permission.
  * This is the core tenant-isolation guard.
  */
-export async function requireMarketPermission(
-  marketId: string,
+export async function requireVendorPermission(
+  vendorId: string,
   permission: Permission,
 ): Promise<{ user: CurrentUser; role: Role }> {
   const user = await requireUser();
@@ -74,10 +74,10 @@ export async function requireMarketPermission(
   await connectToDatabase();
   const membership = await Membership.findOne({
     user: user.id,
-    market: marketId,
+    vendor: vendorId,
     status: "active",
   });
-  if (!membership) throw Errors.forbidden("You do not have access to this market");
+  if (!membership) throw Errors.forbidden("You do not have access to this vendor");
 
   const role = membership.role as Role;
   const granted =

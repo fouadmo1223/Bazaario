@@ -7,7 +7,7 @@
 export const ROLES = {
   GUEST: "guest",
   CUSTOMER: "customer",
-  MARKET_ADMIN: "market_admin",
+  VENDOR: "vendor",
   MARKETING: "marketing",
   SUPPORT: "support",
   DELIVERY_DRIVER: "delivery_driver",
@@ -22,7 +22,7 @@ export const PERMISSIONS = {
   CART_WRITE: "cart:write",
   ORDER_CREATE: "order:create",
   ORDER_READ_OWN: "order:read:own",
-  ORDER_READ_MARKET: "order:read:market",
+  ORDER_READ_VENDOR: "order:read:vendor",
   ORDER_FULFILL: "order:fulfill",
   DELIVERY_UPDATE: "delivery:update",
   PRODUCT_WRITE: "product:write",
@@ -32,7 +32,7 @@ export const PERMISSIONS = {
   TICKET_RESPOND: "ticket:respond",
   CMS_WRITE: "cms:write",
   ANALYTICS_READ: "analytics:read",
-  MARKET_MANAGE: "market:manage",
+  VENDOR_MANAGE: "vendor:manage",
   USERS_MANAGE: "users:manage",
   PLATFORM_SETTINGS: "platform:settings",
   AUDIT_READ: "audit:read",
@@ -42,15 +42,15 @@ export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 const P = PERMISSIONS;
 
-/** Base permissions granted purely by role (market scope applied at query time). */
+/** Base permissions granted purely by role (vendor scope applied at query time). */
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [ROLES.GUEST]: [P.CATALOG_READ],
   [ROLES.CUSTOMER]: [P.CATALOG_READ, P.CART_WRITE, P.ORDER_CREATE, P.ORDER_READ_OWN],
-  [ROLES.DELIVERY_DRIVER]: [P.CATALOG_READ, P.ORDER_READ_MARKET, P.ORDER_FULFILL, P.DELIVERY_UPDATE],
-  [ROLES.SUPPORT]: [P.CATALOG_READ, P.ORDER_READ_MARKET, P.TICKET_RESPOND],
-  [ROLES.MARKETING]: [P.CATALOG_READ, P.ORDER_READ_MARKET, P.COUPON_WRITE, P.CAMPAIGN_WRITE, P.CMS_WRITE, P.ANALYTICS_READ],
-  [ROLES.MARKET_ADMIN]: [
-    P.CATALOG_READ, P.ORDER_READ_MARKET, P.ORDER_FULFILL, P.DELIVERY_UPDATE,
+  [ROLES.DELIVERY_DRIVER]: [P.CATALOG_READ, P.ORDER_READ_VENDOR, P.ORDER_FULFILL, P.DELIVERY_UPDATE],
+  [ROLES.SUPPORT]: [P.CATALOG_READ, P.ORDER_READ_VENDOR, P.TICKET_RESPOND],
+  [ROLES.MARKETING]: [P.CATALOG_READ, P.ORDER_READ_VENDOR, P.COUPON_WRITE, P.CAMPAIGN_WRITE, P.CMS_WRITE, P.ANALYTICS_READ],
+  [ROLES.VENDOR]: [
+    P.CATALOG_READ, P.ORDER_READ_VENDOR, P.ORDER_FULFILL, P.DELIVERY_UPDATE,
     P.PRODUCT_WRITE, P.INVENTORY_WRITE, P.COUPON_WRITE, P.CAMPAIGN_WRITE,
     P.TICKET_RESPOND, P.CMS_WRITE, P.ANALYTICS_READ,
   ],

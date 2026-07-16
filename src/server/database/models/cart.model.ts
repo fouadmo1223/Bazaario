@@ -3,7 +3,7 @@ import { basePlugin } from "../plugins/base.plugin";
 import type { BaseFields } from "../types";
 
 /**
- * A cart is scoped to one market. Either `user` (logged-in) or `guestToken`
+ * A cart is scoped to one vendor. Either `user` (logged-in) or `guestToken`
  * (anonymous) identifies the owner. Prices are snapshotted at add-time and
  * re-validated at checkout. Guest carts merge into the user cart on login.
  */
@@ -21,7 +21,7 @@ const cartItemSchema = new Schema(
 );
 
 const cartSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   user: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
   guestToken: { type: String, default: null, index: true },
   items: { type: [cartItemSchema], default: [] },
@@ -31,8 +31,8 @@ const cartSchema = new Schema({
 });
 
 cartSchema.plugin(basePlugin);
-cartSchema.index({ market: 1, user: 1 });
-cartSchema.index({ market: 1, guestToken: 1 });
+cartSchema.index({ vendor: 1, user: 1 });
+cartSchema.index({ vendor: 1, guestToken: 1 });
 
 cartSchema.virtual("subtotal").get(function (this: { items: { unitPrice: number; quantity: number }[] }) {
   return this.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);

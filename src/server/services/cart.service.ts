@@ -3,12 +3,13 @@ import { Cart, type CartDoc } from "@/server/database/models/cart.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { Errors } from "@/shared/lib/errors";
+import { validateCoupon } from "./pricing.service";
 
 type CartOwner = { userId?: string; guestToken?: string };
 
-function ownerFilter(marketId: string, owner: CartOwner) {
-  if (owner.userId) return { market: marketId, user: owner.userId };
-  if (owner.guestToken) return { market: marketId, guestToken: owner.guestToken };
+function ownerFilter(vendorId: string, owner: CartOwner) {
+  if (owner.userId) return { vendor: vendorId, user: owner.userId };
+  if (owner.guestToken) return { vendor: vendorId, guestToken: owner.guestToken };
   throw Errors.badRequest("Cart owner required");
 }
 
@@ -18,9 +19,9 @@ function ownerFilter(marketId: string, owner: CartOwner) {
  * add and re-validated at checkout (never trust the client's price).
  */
 export const cartService = {
-  async getOrCreate(marketId: string, owner: CartOwner): Promise<CartDoc> {
+  async getOrCreate(vendorId: string, owner: CartOwner): Promise<CartDoc> {
     await connectToDatabase();
-    const filter = ownerFilter(marketId, owner);
+    const filter = ownerFilter(vendorId, owner);
     let cart = await Cart.findOne(filter);
     if (!cart) {
       cart = await Cart.create({
@@ -34,14 +35,14 @@ export const cartService = {
   },
 
   async addItem(
-    marketId: string,
+    vendorId: string,
     owner: CartOwner,
     input: { productId: string; variantId?: string; quantity: number },
   ): Promise<CartDoc> {
     await connectToDatabase();
     if (input.quantity < 1) throw Errors.badRequest("Quantity must be at least 1");
 
-    const product = await Product.findOne({ _id: input.productId, market: marketId, status: "active" });
+    const product = await Product.findOne({ _id: input.productId, vendor: vendorId, status: "active" });
     if (!product) throw Errors.notFound("Product not available");
 
     let unitPrice = product.price;
@@ -59,7 +60,7 @@ export const cartService = {
       stock = variant.stock;
     }
 
-    const cart = await this.getOrCreate(marketId, owner);
+    const cart = await this.getOrCreate(vendorId, owner);
     const existing = cart.items.find(
       (i) =>
         String(i.product) === input.productId &&
@@ -91,12 +92,12 @@ export const cartService = {
   },
 
   async updateItem(
-    marketId: string,
+    vendorId: string,
     owner: CartOwner,
     input: { productId: string; variantId?: string; quantity: number },
   ): Promise<CartDoc> {
     await connectToDatabase();
-    const cart = await this.getOrCreate(marketId, owner);
+    const cart = await this.getOrCreate(vendorId, owner);
     const item = cart.items.find(
       (i) => String(i.product) === input.productId && String(i.variant ?? "") === String(input.variantId ?? ""),
     );
@@ -111,20 +112,65 @@ export const cartService = {
     return cart;
   },
 
-  async removeItem(marketId: string, owner: CartOwner, productId: string, variantId?: string): Promise<CartDoc> {
-    return this.updateItem(marketId, owner, { productId, variantId, quantity: 0 });
+  async removeItem(vendorId: string, owner: CartOwner, productId: string, variantId?: string): Promise<CartDoc> {
+    return this.updateItem(vendorId, owner, { productId, variantId, quantity: 0 });
   },
 
-  async clear(marketId: string, owner: CartOwner): Promise<void> {
+  /**
+   * Attach a coupon after checking it against the current subtotal. Stored as a
+   * code, not a discount: the amount is recomputed at checkout so a cart that
+   * sits around cannot lock in a stale or since-expired offer.
+   */
+  async applyCoupon(vendorId: string, owner: CartOwner, code: string): Promise<CartDoc> {
     await connectToDatabase();
-    await Cart.findOneAndUpdate(ownerFilter(marketId, owner), { $set: { items: [], coupon: null } });
+    const cart = await this.getOrCreate(vendorId, owner);
+    if (cart.items.length === 0) throw Errors.badRequest("Add an item before applying a coupon");
+
+    const subtotal = cart.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+    const coupon = await validateCoupon(vendorId, code, subtotal);
+
+    cart.coupon = coupon.code;
+    await cart.save();
+    return cart;
+  },
+
+  async removeCoupon(vendorId: string, owner: CartOwner): Promise<CartDoc> {
+    await connectToDatabase();
+    const cart = await this.getOrCreate(vendorId, owner);
+    cart.coupon = null;
+    await cart.save();
+    return cart;
+  },
+
+  async clear(vendorId: string, owner: CartOwner): Promise<void> {
+    await connectToDatabase();
+    await Cart.findOneAndUpdate(ownerFilter(vendorId, owner), { $set: { items: [], coupon: null } });
+  },
+
+  /**
+   * Merge every cart held by a guest token into that user's carts.
+   *
+   * The guest token is one cookie but carts are per-vendor, so a visitor may
+   * arrive at login holding carts at several stores. Returns the vendors merged.
+   */
+  async mergeAllGuestCarts(guestToken: string, userId: string): Promise<string[]> {
+    await connectToDatabase();
+    const carts = await Cart.find({ guestToken });
+
+    const merged: string[] = [];
+    for (const cart of carts) {
+      const vendorId = String(cart.vendor);
+      await this.mergeGuestIntoUser(vendorId, guestToken, userId);
+      merged.push(vendorId);
+    }
+    return merged;
   },
 
   /** Merge a guest cart into the user's cart on login, summing quantities. */
-  async mergeGuestIntoUser(marketId: string, guestToken: string, userId: string): Promise<CartDoc> {
+  async mergeGuestIntoUser(vendorId: string, guestToken: string, userId: string): Promise<CartDoc> {
     await connectToDatabase();
-    const guest = await Cart.findOne({ market: marketId, guestToken });
-    const user = await this.getOrCreate(marketId, { userId });
+    const guest = await Cart.findOne({ vendor: vendorId, guestToken });
+    const user = await this.getOrCreate(vendorId, { userId });
     if (!guest || guest.items.length === 0) return user;
 
     for (const gi of guest.items) {

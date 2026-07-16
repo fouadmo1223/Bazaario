@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { resolveActiveMarket } from "@/features/dashboard/resolve-market";
+import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { analyticsService } from "@/server/services/analytics.service";
 import { KpiCard } from "@/features/dashboard/components/kpi-card";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
@@ -15,19 +15,23 @@ function money(n: number, currency: string) {
 }
 
 async function DashboardContent() {
-  const { market, role } = await resolveActiveMarket();
-  const marketId = String(market._id);
-  const currency = market.settings.currency;
+  const { vendor, role } = await resolveActiveVendor();
+  const vendorId = String(vendor._id);
+  const currency = vendor.settings.currency;
 
-  const range = { from: new Date(Date.now() - 29 * 86400_000), to: new Date() };
+  // Reading the clock is intentional here: this is an async Server Component
+  // rendered per-request (`force-dynamic`), so the window must track real time.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const range = { from: new Date(now - 29 * 86400_000), to: new Date(now) };
 
   // Fetch the panels in parallel — they're independent aggregations.
   const [kpis, series, top, retention, lowStock] = await Promise.all([
-    analyticsService.kpis(marketId, range),
-    analyticsService.revenueSeries(marketId, range),
-    analyticsService.topProducts(marketId, range, 5),
-    analyticsService.retention(marketId, range),
-    analyticsService.lowStock(marketId, 5),
+    analyticsService.kpis(vendorId, range),
+    analyticsService.revenueSeries(vendorId, range),
+    analyticsService.topProducts(vendorId, range, 5),
+    analyticsService.retention(vendorId, range),
+    analyticsService.lowStock(vendorId, 5),
   ]);
 
   return (
@@ -35,7 +39,7 @@ async function DashboardContent() {
       <header className="mb-8">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{role.replace("_", " ")}</p>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {market.name}
+          {vendor.name}
         </h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Last 30 days</p>
       </header>
@@ -44,7 +48,7 @@ async function DashboardContent() {
         <KpiCard label="Revenue" value={money(kpis.revenue, currency)} hint={`${kpis.orders} orders`} />
         <KpiCard label="Average order" value={money(kpis.averageOrderValue, currency)} />
         <KpiCard label="Customers" value={kpis.customers} hint={`${retention.repeatRate}% repeat`} />
-        <KpiCard label="Products" value={market.stats.products} />
+        <KpiCard label="Products" value={vendor.stats.products} />
       </section>
 
       <section className="mt-8">

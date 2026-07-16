@@ -10,7 +10,7 @@ export default function RegisterPage() {
   return (
     <AuthShell
       title="Create your account"
-      subtitle="Start shopping across every market"
+      subtitle="Start shopping across every vendor"
       footer={
         <>
           Already have an account?{" "}

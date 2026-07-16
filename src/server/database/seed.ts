@@ -2,19 +2,19 @@
  * Development seed. Idempotent — safe to run repeatedly.
  * Usage: `npm run seed`
  *
- * Creates a super admin, a market with its single Market Admin, brands,
+ * Creates a super admin, a vendor with its single Vendor Admin, brands,
  * categories, and demo products so the storefront and dashboard have data.
  */
 import { connectToDatabase } from "./connection";
-import { User, Market, Membership, Brand, Category, Product } from "./models";
+import { User, Vendor, Membership, Brand, Category, Product } from "./models";
 import { hashPassword } from "@/server/security/password";
-import { ROLES } from "@/shared/constants/rbac";
+import { ROLES, type Role } from "@/shared/constants/rbac";
 import { getRedis } from "@/server/cache/redis";
 import mongoose from "mongoose";
 
 const SUPER_ADMIN = { email: "admin@commerce.local", password: "Admin123!", name: "Super Admin" };
-const MARKET_ADMIN = { email: "owner@commerce.local", password: "Owner123!", name: "Market Owner" };
-const MARKET_SLUG = "demo-store";
+const VENDOR = { email: "owner@commerce.local", password: "Owner123!", name: "Vendor Owner" };
+const VENDOR_SLUG = "demo-store";
 
 const DEMO_PRODUCTS = [
   { title: "Aurora Wireless Headphones", price: 129.99, compareAtPrice: 179.99, stock: 24, tags: ["audio", "wireless"], featured: true,
@@ -34,7 +34,7 @@ const DEMO_PRODUCTS = [
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-async function upsertUser(spec: { email: string; password: string; name: string }, roles: string[]) {
+async function upsertUser(spec: { email: string; password: string; name: string }, roles: Role[]) {
   const existing = await User.findOne({ email: spec.email });
   if (existing) return existing;
   return User.create({
@@ -52,44 +52,44 @@ async function main() {
   console.log("→ Seeding…");
 
   const admin = await upsertUser(SUPER_ADMIN, [ROLES.SUPER_ADMIN]);
-  const owner = await upsertUser(MARKET_ADMIN, [ROLES.CUSTOMER, ROLES.MARKET_ADMIN]);
+  const owner = await upsertUser(VENDOR, [ROLES.CUSTOMER, ROLES.VENDOR]);
 
-  let market = await Market.findOne({ slug: MARKET_SLUG });
-  if (!market) {
-    market = await Market.create({
+  let vendor = await Vendor.findOne({ slug: VENDOR_SLUG });
+  if (!vendor) {
+    vendor = await Vendor.create({
       name: "Demo Store",
-      slug: MARKET_SLUG,
-      description: "A demo market showcasing the platform.",
+      slug: VENDOR_SLUG,
+      description: "A demo vendor showcasing the platform.",
       owner: owner._id,
       status: "active",
       createdBy: admin._id,
       settings: { currency: "USD", locales: ["en", "ar"], defaultLocale: "en" },
     });
   }
-  const marketId = market._id;
+  const vendorId = vendor._id;
 
   await Membership.findOneAndUpdate(
-    { user: owner._id, market: marketId },
-    { $set: { role: ROLES.MARKET_ADMIN, status: "active", invitedBy: admin._id } },
+    { user: owner._id, vendor: vendorId },
+    { $set: { role: ROLES.VENDOR, status: "active", invitedBy: admin._id } },
     { upsert: true },
   );
 
   const brand =
-    (await Brand.findOne({ market: marketId, slug: "acme" })) ??
-    (await Brand.create({ market: marketId, name: "Acme", slug: "acme", createdBy: owner._id }));
+    (await Brand.findOne({ vendor: vendorId, slug: "acme" })) ??
+    (await Brand.create({ vendor: vendorId, name: "Acme", slug: "acme", createdBy: owner._id }));
 
   const category =
-    (await Category.findOne({ market: marketId, slug: "featured" })) ??
-    (await Category.create({ market: marketId, name: "Featured", slug: "featured", createdBy: owner._id }));
+    (await Category.findOne({ vendor: vendorId, slug: "featured" })) ??
+    (await Category.create({ vendor: vendorId, name: "Featured", slug: "featured", createdBy: owner._id }));
 
   let created = 0;
   for (const spec of DEMO_PRODUCTS) {
     const slug = slugify(spec.title);
-    const exists = await Product.findOne({ market: marketId, slug });
+    const exists = await Product.findOne({ vendor: vendorId, slug });
     if (exists) continue;
 
     await Product.create({
-      market: marketId,
+      vendor: vendorId,
       type: "simple",
       title: spec.title,
       slug,
@@ -121,12 +121,12 @@ async function main() {
     created++;
   }
 
-  await Market.updateOne({ _id: marketId }, { $set: { "stats.products": await Product.countDocuments({ market: marketId }) } });
+  await Vendor.updateOne({ _id: vendorId }, { $set: { "stats.products": await Product.countDocuments({ vendor: vendorId }) } });
 
   console.log(`✓ Super admin:  ${SUPER_ADMIN.email} / ${SUPER_ADMIN.password}`);
-  console.log(`✓ Market admin: ${MARKET_ADMIN.email} / ${MARKET_ADMIN.password}`);
-  console.log(`✓ Market:       ${market.name}  →  /m/${MARKET_SLUG}`);
-  console.log(`✓ Products:     ${created} created (${await Product.countDocuments({ market: marketId })} total)`);
+  console.log(`✓ Vendor admin: ${VENDOR.email} / ${VENDOR.password}`);
+  console.log(`✓ Vendor:       ${vendor.name}  →  /v/${VENDOR_SLUG}`);
+  console.log(`✓ Products:     ${created} created (${await Product.countDocuments({ vendor: vendorId })} total)`);
   console.log("✓ Seed complete");
 
   await mongoose.disconnect();

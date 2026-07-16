@@ -7,7 +7,7 @@ import { Errors } from "@/shared/lib/errors";
 
 export type CreateNotificationInput = {
   userId: string;
-  marketId?: string | null;
+  vendorId?: string | null;
   type: NotificationType;
   title: string;
   body?: string;
@@ -21,7 +21,7 @@ export const REALTIME_CHANNEL = "realtime:events";
 
 export type RealtimeEvent =
   | { kind: "notification"; userId: string; payload: Record<string, unknown> }
-  | { kind: "order:update"; market: string; orderId: string; status: string }
+  | { kind: "order:update"; vendor: string; orderId: string; status: string }
   | { kind: "chat:message"; ticketId: string; payload: Record<string, unknown> };
 
 /**
@@ -42,7 +42,7 @@ export const notificationService = {
     await connectToDatabase();
     const notification = await Notification.create({
       user: input.userId,
-      market: input.marketId ?? null,
+      vendor: input.vendorId ?? null,
       type: input.type,
       title: input.title,
       body: input.body ?? null,
@@ -75,7 +75,7 @@ export const notificationService = {
     const docs = await Notification.insertMany(
       inputs.map((i) => ({
         user: i.userId,
-        market: i.marketId ?? null,
+        vendor: i.vendorId ?? null,
         type: i.type,
         title: i.title,
         body: i.body ?? null,

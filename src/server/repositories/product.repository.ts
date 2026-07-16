@@ -4,7 +4,7 @@ import type { QueryFilter } from "mongoose";
 import { buildPaginated, toSortObject, type PaginationInput, type Paginated } from "@/shared/lib/pagination";
 
 export type ProductFilters = {
-  market: string;
+  vendor: string;
   status?: "draft" | "active" | "archived";
   category?: string;
   brand?: string;
@@ -22,9 +22,9 @@ class ProductRepository extends BaseRepository<ProductRaw> {
     super(Product);
   }
 
-  /** Build a market-scoped Mongo filter from storefront/admin filters. */
+  /** Build a vendor-scoped Mongo filter from storefront/admin filters. */
   buildFilter(f: ProductFilters): QueryFilter<ProductRaw> {
-    const query: QueryFilter<ProductRaw> = { market: f.market };
+    const query: QueryFilter<ProductRaw> = { vendor: f.vendor };
     if (f.status) query.status = f.status;
     if (f.category) query.categories = f.category;
     if (f.brand) query.brand = f.brand;
@@ -61,8 +61,8 @@ class ProductRepository extends BaseRepository<ProductRaw> {
     return buildPaginated(items, total, { page, limit });
   }
 
-  findBySlug(market: string, slug: string): Promise<ProductDoc | null> {
-    return this.findOne({ market, slug });
+  findBySlug(vendor: string, slug: string): Promise<ProductDoc | null> {
+    return this.findOne({ vendor, slug });
   }
 }
 

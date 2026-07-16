@@ -4,10 +4,10 @@ import { Order, type OrderDoc } from "@/server/database/models/order.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { Coupon } from "@/server/database/models/coupon.model";
-import { Market } from "@/server/database/models/market.model";
+import { Vendor } from "@/server/database/models/vendor.model";
 import { getRedis } from "@/server/cache/redis";
 import { Errors } from "@/shared/lib/errors";
-import { validateCoupon, computeTotals, type CartLine } from "./pricing.service";
+import { validateCoupon, computeTotals, vendorTaxRate, type CartLine } from "./pricing.service";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
 import type { Types } from "mongoose";
@@ -37,9 +37,9 @@ export type CheckoutInput = {
 
 type CheckoutOwner = { userId?: string; guestToken?: string };
 
-/** Generate a per-market sequential order number using an atomic Redis counter. */
-async function nextOrderNumber(marketId: string): Promise<string> {
-  const seq = await getRedis().incr(`market:${marketId}:order_seq`);
+/** Generate a per-vendor sequential order number using an atomic Redis counter. */
+async function nextOrderNumber(vendorId: string): Promise<string> {
+  const seq = await getRedis().incr(`vendor:${vendorId}:order_seq`);
   return `${1000 + seq}`;
 }
 
@@ -50,24 +50,24 @@ async function nextOrderNumber(marketId: string): Promise<string> {
  * webhook). Returns the created order in `pending` state.
  */
 export const checkoutService = {
-  async createOrder(marketId: string, owner: CheckoutOwner, input: CheckoutInput): Promise<OrderDoc> {
+  async createOrder(vendorId: string, owner: CheckoutOwner, input: CheckoutInput): Promise<OrderDoc> {
     await connectToDatabase();
 
     const cartFilter = owner.userId
-      ? { market: marketId, user: owner.userId }
-      : { market: marketId, guestToken: owner.guestToken };
+      ? { vendor: vendorId, user: owner.userId }
+      : { vendor: vendorId, guestToken: owner.guestToken };
     const cart = await Cart.findOne(cartFilter);
     if (!cart || cart.items.length === 0) throw Errors.badRequest("Your cart is empty");
     if (!owner.userId && !input.guestEmail) throw Errors.badRequest("Email is required for guest checkout");
 
-    const market = await Market.findById(marketId);
-    if (!market || market.status !== "active") throw Errors.notFound("Market unavailable");
+    const vendor = await Vendor.findById(vendorId);
+    if (!vendor || vendor.status !== "active") throw Errors.notFound("Vendor unavailable");
 
     // Re-price every line from the DB (never trust cart snapshots at money-time).
     const lines: CartLine[] = [];
     const orderItems: OrderItemInput[] = [];
     for (const item of cart.items) {
-      const product = await Product.findOne({ _id: item.product, market: marketId, status: "active" });
+      const product = await Product.findOne({ _id: item.product, vendor: vendorId, status: "active" });
       if (!product) throw Errors.conflict(`"${item.title}" is no longer available`);
 
       let price = product.price;
@@ -105,18 +105,18 @@ export const checkoutService = {
     let coupon = null;
     const subtotalPreview = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
     if (cart.coupon) {
-      coupon = await validateCoupon(marketId, cart.coupon, subtotalPreview);
+      coupon = await validateCoupon(vendorId, cart.coupon, subtotalPreview);
     }
 
-    const taxRate = market.settings.taxInclusive ? 0 : 0.14; // TODO: per-market tax rules
+    const taxRate = vendorTaxRate(vendor.settings);
     const totals = computeTotals(lines, {
       coupon,
       taxRate,
       shippingBase: input.shippingBase ?? 0,
-      taxInclusive: market.settings.taxInclusive,
+      taxInclusive: vendor.settings.taxInclusive,
     });
 
-    const number = await nextOrderNumber(marketId);
+    const number = await nextOrderNumber(vendorId);
 
     // Reserve inventory by decrementing stock on the source documents.
     for (const item of cart.items) {
@@ -128,13 +128,13 @@ export const checkoutService = {
     }
 
     const order = await Order.create({
-      market: marketId,
+      vendor: vendorId,
       number,
       customer: owner.userId ?? null,
       guestEmail: input.guestEmail ?? null,
       items: orderItems,
       totals,
-      currency: market.settings.currency,
+      currency: vendor.settings.currency,
       coupon: cart.coupon ?? null,
       status: "pending",
       timeline: [{ status: "pending", note: "Order placed", at: new Date() }],
@@ -151,14 +151,14 @@ export const checkoutService = {
     });
 
     if (coupon) await Coupon.updateOne({ _id: coupon._id }, { $inc: { usedCount: 1 } });
-    await Market.updateOne({ _id: marketId }, { $inc: { "stats.orders": 1 } });
+    await Vendor.updateOne({ _id: vendorId }, { $inc: { "stats.orders": 1 } });
 
     // Empty the cart (guest cart is deleted).
     if (owner.guestToken) await Cart.deleteOne({ _id: cart._id }).setOptions({ withDeleted: true });
     else { cart.set("items", []); cart.coupon = null; await cart.save(); }
 
     await writeAudit({
-      actor: owner.userId ?? null, market: marketId, action: "order.create",
+      actor: owner.userId ?? null, vendor: vendorId, action: "order.create",
       entity: "Order", entityId: String(order._id), diff: { number, total: totals.grandTotal },
     });
     logger.info({ orderId: String(order._id), number }, "Order created");

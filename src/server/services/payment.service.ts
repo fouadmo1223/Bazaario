@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { Order, type OrderDoc } from "@/server/database/models/order.model";
-import { Market } from "@/server/database/models/market.model";
+import { Vendor } from "@/server/database/models/vendor.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { getProvider } from "@/server/payments/registry";
@@ -64,8 +64,8 @@ export const paymentService = {
       order.payment.reference = outcome.providerReference;
       order.status = "paid";
       order.timeline.push({ status: "paid", note: "Payment captured", at: new Date() });
-      await Market.updateOne(
-        { _id: order.market },
+      await Vendor.updateOne(
+        { _id: order.vendor },
         { $inc: { "stats.revenue": order.totals.grandTotal } },
       );
     } else if (outcome.status === "failed") {
@@ -87,7 +87,7 @@ export const paymentService = {
 
     await order.save();
     await writeAudit({
-      market: String(order.market),
+      vendor: String(order.vendor),
       action: `payment.${outcome.status}`,
       entity: "Order",
       entityId: String(order._id),

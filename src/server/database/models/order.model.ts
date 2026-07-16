@@ -98,8 +98,8 @@ const shippingSchema = new Schema(
 );
 
 const orderSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
-  number: { type: String, required: true }, // human-friendly per-market order number
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
+  number: { type: String, required: true }, // human-friendly per-vendor order number
   customer: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
   guestEmail: { type: String, default: null }, // guest checkout
 
@@ -123,8 +123,8 @@ const orderSchema = new Schema({
 });
 
 orderSchema.plugin(basePlugin);
-orderSchema.index({ market: 1, number: 1 }, { unique: true });
-orderSchema.index({ market: 1, status: 1, createdAt: -1 });
+orderSchema.index({ vendor: 1, number: 1 }, { unique: true });
+orderSchema.index({ vendor: 1, status: 1, createdAt: -1 });
 orderSchema.index({ customer: 1, createdAt: -1 });
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];

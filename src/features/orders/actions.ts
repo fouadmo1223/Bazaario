@@ -1,7 +1,7 @@
 "use server";
 
 import { orderService } from "@/server/services/order.service";
-import { requireMarketPermission, requireUser } from "@/server/security/current-user";
+import { requireVendorPermission, requireUser } from "@/server/security/current-user";
 import { PERMISSIONS } from "@/shared/constants/rbac";
 import { toFailure, ok, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
@@ -15,20 +15,20 @@ function serialize(o: OrderDoc) {
 
 const statusSchema = z.enum(ORDER_STATUSES);
 
-/** Market staff updating an order's status (fulfilment permission). */
+/** Vendor staff updating an order's status (fulfilment permission). */
 export async function updateOrderStatusAction(
-  marketId: string,
+  vendorId: string,
   orderId: string,
   status: string,
   note?: string,
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    const { user } = await requireMarketPermission(marketId, PERMISSIONS.ORDER_FULFILL);
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_FULFILL);
     const parsed = statusSchema.safeParse(status);
     if (!parsed.success) throw Errors.badRequest("Unknown order status");
 
-    const order = await orderService.updateStatus(marketId, orderId, parsed.data, user.id, note);
-    revalidatePath(`/dashboard/${marketId}/orders/${orderId}`);
+    const order = await orderService.updateStatus(vendorId, orderId, parsed.data, user.id, note);
+    revalidatePath(`/dashboard/${vendorId}/orders/${orderId}`);
     return ok(serialize(order), { message: `Order marked ${parsed.data}.` });
   } catch (err) {
     return toFailure(err);
@@ -36,19 +36,19 @@ export async function updateOrderStatusAction(
 }
 
 export async function refundOrderAction(
-  marketId: string,
+  vendorId: string,
   orderId: string,
   input: { amount: number; reason?: string },
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    // Refunds require full market admin rights, not just fulfilment.
-    const { user } = await requireMarketPermission(marketId, PERMISSIONS.ORDER_READ_MARKET);
+    // Refunds require full vendor admin rights, not just fulfilment.
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_READ_VENDOR);
     const schema = z.object({ amount: z.number().positive(), reason: z.string().optional() });
     const parsed = schema.safeParse(input);
     if (!parsed.success) throw Errors.validation("Invalid refund", parsed.error.flatten());
 
-    const order = await orderService.refund(marketId, orderId, user.id, parsed.data);
-    revalidatePath(`/dashboard/${marketId}/orders/${orderId}`);
+    const order = await orderService.refund(vendorId, orderId, user.id, parsed.data);
+    revalidatePath(`/dashboard/${vendorId}/orders/${orderId}`);
     return ok(serialize(order), { message: "Refund recorded." });
   } catch (err) {
     return toFailure(err);
@@ -56,14 +56,14 @@ export async function refundOrderAction(
 }
 
 export async function assignDriverAction(
-  marketId: string,
+  vendorId: string,
   orderId: string,
   driverId: string,
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    const { user } = await requireMarketPermission(marketId, PERMISSIONS.ORDER_FULFILL);
-    const order = await orderService.assignDriver(marketId, orderId, driverId, user.id);
-    revalidatePath(`/dashboard/${marketId}/orders/${orderId}`);
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_FULFILL);
+    const order = await orderService.assignDriver(vendorId, orderId, driverId, user.id);
+    revalidatePath(`/dashboard/${vendorId}/orders/${orderId}`);
     return ok(serialize(order), { message: "Driver assigned." });
   } catch (err) {
     return toFailure(err);
@@ -71,15 +71,15 @@ export async function assignDriverAction(
 }
 
 export async function addOrderNoteAction(
-  marketId: string,
+  vendorId: string,
   orderId: string,
   text: string,
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    const { user } = await requireMarketPermission(marketId, PERMISSIONS.ORDER_READ_MARKET);
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_READ_VENDOR);
     if (!text.trim()) throw Errors.badRequest("Note cannot be empty");
-    const order = await orderService.addNote(marketId, orderId, user.id, text.trim());
-    revalidatePath(`/dashboard/${marketId}/orders/${orderId}`);
+    const order = await orderService.addNote(vendorId, orderId, user.id, text.trim());
+    revalidatePath(`/dashboard/${vendorId}/orders/${orderId}`);
     return ok(serialize(order));
   } catch (err) {
     return toFailure(err);
@@ -88,13 +88,13 @@ export async function addOrderNoteAction(
 
 /** Driver updating delivery progress on an order assigned to them. */
 export async function driverUpdateStatusAction(
-  marketId: string,
+  vendorId: string,
   orderId: string,
   status: OrderStatus,
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    const { user } = await requireMarketPermission(marketId, PERMISSIONS.DELIVERY_UPDATE);
-    const order = await orderService.getForMarket(marketId, orderId);
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.DELIVERY_UPDATE);
+    const order = await orderService.getForVendor(vendorId, orderId);
 
     // A driver may only touch orders assigned to them.
     if (String(order.shipping.driver ?? "") !== user.id) {
@@ -103,7 +103,7 @@ export async function driverUpdateStatusAction(
     const allowed: OrderStatus[] = ["out_for_delivery", "delivered"];
     if (!allowed.includes(status)) throw Errors.forbidden("Drivers cannot set this status");
 
-    const updated = await orderService.updateStatus(marketId, orderId, status, user.id);
+    const updated = await orderService.updateStatus(vendorId, orderId, status, user.id);
     return ok(serialize(updated), { message: `Marked ${status}.` });
   } catch (err) {
     return toFailure(err);
@@ -118,7 +118,7 @@ export async function customerCancelOrderAction(orderId: string): Promise<ApiRes
     if (order.status !== "pending") {
       throw Errors.badRequest("This order can no longer be cancelled");
     }
-    const updated = await orderService.cancel(String(order.market), orderId, user.id, "Cancelled by customer");
+    const updated = await orderService.cancel(String(order.vendor), orderId, user.id, "Cancelled by customer");
     revalidatePath("/account/orders");
     return ok(serialize(updated), { message: "Order cancelled." });
   } catch (err) {

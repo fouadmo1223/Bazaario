@@ -23,11 +23,11 @@ const REVENUE_MATCH = { "payment.status": { $in: ["paid", "partially_refunded"] 
 const oid = (id: string) => new Types.ObjectId(id);
 
 export const analyticsService = {
-  /** Headline KPIs for a market over a date range. */
-  async kpis(marketId: string, range: Range): Promise<KpiSummary> {
+  /** Headline KPIs for a vendor over a date range. */
+  async kpis(vendorId: string, range: Range): Promise<KpiSummary> {
     await connectToDatabase();
     const match = {
-      market: oid(marketId),
+      vendor: oid(vendorId),
       createdAt: { $gte: range.from, $lte: range.to },
       ...REVENUE_MATCH,
     };
@@ -58,12 +58,12 @@ export const analyticsService = {
   },
 
   /** Daily revenue/order series for charts (Recharts-ready). */
-  async revenueSeries(marketId: string, range: Range): Promise<RevenuePoint[]> {
+  async revenueSeries(vendorId: string, range: Range): Promise<RevenuePoint[]> {
     await connectToDatabase();
     const rows = await Order.aggregate<{ _id: string; revenue: number; orders: number }>([
       {
         $match: {
-          market: oid(marketId),
+          vendor: oid(vendorId),
           createdAt: { $gte: range.from, $lte: range.to },
           ...REVENUE_MATCH,
         },
@@ -86,12 +86,12 @@ export const analyticsService = {
   },
 
   /** Best sellers by units, unwinding order line items. */
-  async topProducts(marketId: string, range: Range, limit = 10): Promise<TopProduct[]> {
+  async topProducts(vendorId: string, range: Range, limit = 10): Promise<TopProduct[]> {
     await connectToDatabase();
     return Order.aggregate<TopProduct>([
       {
         $match: {
-          market: oid(marketId),
+          vendor: oid(vendorId),
           createdAt: { $gte: range.from, $lte: range.to },
           ...REVENUE_MATCH,
         },
@@ -112,10 +112,10 @@ export const analyticsService = {
   },
 
   /** Order status distribution — powers the dashboard funnel. */
-  async statusBreakdown(marketId: string, range: Range): Promise<{ status: string; count: number }[]> {
+  async statusBreakdown(vendorId: string, range: Range): Promise<{ status: string; count: number }[]> {
     await connectToDatabase();
     const rows = await Order.aggregate<{ _id: string; count: number }>([
-      { $match: { market: oid(marketId), createdAt: { $gte: range.from, $lte: range.to } } },
+      { $match: { vendor: oid(vendorId), createdAt: { $gte: range.from, $lte: range.to } } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]);
@@ -126,12 +126,12 @@ export const analyticsService = {
    * Retention proxy: share of customers in the range with more than one paid
    * order (repeat-purchase rate).
    */
-  async retention(marketId: string, range: Range): Promise<{ repeatRate: number; repeat: number; total: number }> {
+  async retention(vendorId: string, range: Range): Promise<{ repeatRate: number; repeat: number; total: number }> {
     await connectToDatabase();
     const rows = await Order.aggregate<{ _id: Types.ObjectId; orders: number }>([
       {
         $match: {
-          market: oid(marketId),
+          vendor: oid(vendorId),
           customer: { $ne: null },
           createdAt: { $gte: range.from, $lte: range.to },
           ...REVENUE_MATCH,
@@ -145,9 +145,9 @@ export const analyticsService = {
   },
 
   /** Inventory health — products at or below their low-stock threshold. */
-  async lowStock(marketId: string, limit = 20) {
+  async lowStock(vendorId: string, limit = 20) {
     await connectToDatabase();
-    return Product.find({ market: marketId, status: "active", trackInventory: true, stock: { $lte: 5 } })
+    return Product.find({ vendor: vendorId, status: "active", trackInventory: true, stock: { $lte: 5 } })
       .select("title stock sku")
       .sort({ stock: 1 })
       .limit(limit)

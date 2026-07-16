@@ -59,7 +59,7 @@ export class StripeProvider implements PaymentProvider {
       success_url: `${opts.returnUrl}?status=success&order=${order.number}`,
       cancel_url: `${opts.returnUrl}?status=cancelled&order=${order.number}`,
       client_reference_id: String(order._id),
-      metadata: { orderId: String(order._id), orderNumber: order.number, market: String(order.market) },
+      metadata: { orderId: String(order._id), orderNumber: order.number, vendor: String(order.vendor) },
     });
 
     return {

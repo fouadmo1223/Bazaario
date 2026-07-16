@@ -1,56 +1,57 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { marketService } from "@/server/services/market.service";
+import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
+import { CartBadge } from "@/features/cart/components/cart-badge";
 import { isAppError } from "@/shared/lib/errors";
 
-type Params = { market: string };
+type Params = { vendor: string };
 type Search = { page?: string; search?: string; sort?: string };
 
 // Storefront listings are ISR-cached; mutations revalidate via Redis + tags.
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { market: slug } = await params;
+  const { vendor: slug } = await params;
   try {
-    const market = await marketService.getBySlug(slug);
+    const vendor = await vendorService.getBySlug(slug);
     return {
-      title: `${market.name} · Commerce`,
-      description: market.description ?? `Shop ${market.name}`,
+      title: `${vendor.name} · Commerce`,
+      description: vendor.description ?? `Shop ${vendor.name}`,
       openGraph: {
-        title: market.name,
-        description: market.description ?? undefined,
-        images: market.banner ? [market.banner] : undefined,
+        title: vendor.name,
+        description: vendor.description ?? undefined,
+        images: vendor.banner ? [vendor.banner] : undefined,
         type: "website",
       },
-      twitter: { card: "summary_large_image", title: market.name },
-      alternates: { canonical: `/m/${slug}` },
+      twitter: { card: "summary_large_image", title: vendor.name },
+      alternates: { canonical: `/v/${slug}` },
     };
   } catch {
-    return { title: "Market not found" };
+    return { title: "Vendor not found" };
   }
 }
 
-export default async function MarketPage({
+export default async function VendorPage({
   params,
   searchParams,
 }: {
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  const { market: slug } = await params;
+  const { vendor: slug } = await params;
   const { page = "1", search } = await searchParams;
 
-  let market;
+  let vendor;
   try {
-    market = await marketService.getBySlug(slug);
+    vendor = await vendorService.getBySlug(slug);
   } catch (err) {
     if (isAppError(err) && err.code === "NOT_FOUND") notFound();
     throw err;
   }
 
-  const result = await productService.listStorefront(String(market._id), {
+  const result = await productService.listStorefront(String(vendor._id), {
     page,
     limit: 12,
     ...(search ? { search } : {}),
@@ -72,9 +73,9 @@ export default async function MarketPage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Store",
-    name: market.name,
-    description: market.description ?? undefined,
-    image: market.logo ?? undefined,
+    name: vendor.name,
+    description: vendor.description ?? undefined,
+    image: vendor.logo ?? undefined,
   };
 
   return (
@@ -85,13 +86,17 @@ export default async function MarketPage({
       />
 
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto max-w-6xl px-6 py-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {market.name}
-          </h1>
-          {market.description && (
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{market.description}</p>
-          )}
+        <div className="mx-auto flex max-w-6xl items-start justify-between gap-6 px-6 py-8">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              {vendor.name}
+            </h1>
+            {vendor.description && (
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendor.description}</p>
+            )}
+          </div>
+
+          <CartBadge vendorId={String(vendor._id)} vendorSlug={slug} />
         </div>
       </header>
 
@@ -111,8 +116,8 @@ export default async function MarketPage({
               <ProductCard
                 key={p.id}
                 product={p}
-                marketSlug={slug}
-                currency={market.settings.currency}
+                vendorSlug={slug}
+                currency={vendor.settings.currency}
               />
             ))}
           </div>

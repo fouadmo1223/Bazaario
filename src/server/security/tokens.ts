@@ -15,7 +15,7 @@ export type AccessClaims = {
   sub: string; // user id
   email: string;
   roles: Role[];
-  activeMarket?: string;
+  activeVendor?: string;
 };
 
 export type RefreshClaims = {

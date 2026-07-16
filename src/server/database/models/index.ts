@@ -5,7 +5,7 @@
  */
 export { User } from "./user.model";
 export { Membership } from "./membership.model";
-export { Market } from "./market.model";
+export { Vendor } from "./vendor.model";
 export { Category } from "./category.model";
 export { Brand } from "./brand.model";
 export { Product } from "./product.model";
@@ -20,7 +20,7 @@ export { AuditLog } from "./audit-log.model";
 
 export type { UserRaw, UserDoc } from "./user.model";
 export type { MembershipRaw, MembershipDoc } from "./membership.model";
-export type { MarketRaw, MarketDoc } from "./market.model";
+export type { VendorRaw, VendorDoc } from "./vendor.model";
 export type { CategoryRaw, CategoryDoc } from "./category.model";
 export type { BrandRaw, BrandDoc } from "./brand.model";
 export type { ProductRaw, ProductDoc } from "./product.model";

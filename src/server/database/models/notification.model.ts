@@ -10,7 +10,7 @@ export const NOTIFICATION_TYPES = [
 
 const notificationSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  market: { type: Schema.Types.ObjectId, ref: "Market", default: null, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", default: null, index: true },
   type: { type: String, enum: NOTIFICATION_TYPES, required: true },
   title: { type: String, required: true },
   body: { type: String, default: null },

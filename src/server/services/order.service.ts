@@ -28,9 +28,9 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
 }
 
 export const orderService = {
-  async getForMarket(marketId: string, orderId: string): Promise<OrderDoc> {
+  async getForVendor(vendorId: string, orderId: string): Promise<OrderDoc> {
     await connectToDatabase();
-    const order = await Order.findOne({ _id: orderId, market: marketId });
+    const order = await Order.findOne({ _id: orderId, vendor: vendorId });
     if (!order) throw Errors.notFound("Order not found");
     return order;
   },
@@ -44,14 +44,14 @@ export const orderService = {
   },
 
   async updateStatus(
-    marketId: string,
+    vendorId: string,
     orderId: string,
     next: OrderStatus,
     actorId: string,
     note?: string,
   ): Promise<OrderDoc> {
     await connectToDatabase();
-    const order = await this.getForMarket(marketId, orderId);
+    const order = await this.getForVendor(vendorId, orderId);
     const current = order.status as OrderStatus;
 
     if (current === next) return order;
@@ -74,26 +74,26 @@ export const orderService = {
 
     await order.save();
     await writeAudit({
-      actor: actorId, market: marketId, action: `order.status.${next}`,
+      actor: actorId, vendor: vendorId, action: `order.status.${next}`,
       entity: "Order", entityId: orderId, diff: { from: current, to: next },
     });
     logger.info({ orderId, from: current, to: next }, "Order status changed");
     return order;
   },
 
-  async cancel(marketId: string, orderId: string, actorId: string, reason?: string): Promise<OrderDoc> {
-    return this.updateStatus(marketId, orderId, "cancelled", actorId, reason ?? "Cancelled");
+  async cancel(vendorId: string, orderId: string, actorId: string, reason?: string): Promise<OrderDoc> {
+    return this.updateStatus(vendorId, orderId, "cancelled", actorId, reason ?? "Cancelled");
   },
 
   /** Record a full or partial refund. Amount is validated against what remains. */
   async refund(
-    marketId: string,
+    vendorId: string,
     orderId: string,
     actorId: string,
     input: { amount: number; reason?: string; reference?: string },
   ): Promise<OrderDoc> {
     await connectToDatabase();
-    const order = await this.getForMarket(marketId, orderId);
+    const order = await this.getForVendor(vendorId, orderId);
     if (order.payment.status !== "paid" && order.payment.status !== "partially_refunded") {
       throw Errors.badRequest("Only paid orders can be refunded");
     }
@@ -129,37 +129,37 @@ export const orderService = {
 
     await order.save();
     await writeAudit({
-      actor: actorId, market: marketId, action: "order.refund",
+      actor: actorId, vendor: vendorId, action: "order.refund",
       entity: "Order", entityId: orderId, diff: { amount: input.amount, full: isFull },
     });
     return order;
   },
 
-  async addNote(marketId: string, orderId: string, actorId: string, text: string): Promise<OrderDoc> {
+  async addNote(vendorId: string, orderId: string, actorId: string, text: string): Promise<OrderDoc> {
     await connectToDatabase();
-    const order = await this.getForMarket(marketId, orderId);
+    const order = await this.getForVendor(vendorId, orderId);
     order.notes.push({ text, at: new Date(), by: actorId as never });
     await order.save();
     return order;
   },
 
-  async assignDriver(marketId: string, orderId: string, driverId: string, actorId: string): Promise<OrderDoc> {
+  async assignDriver(vendorId: string, orderId: string, driverId: string, actorId: string): Promise<OrderDoc> {
     await connectToDatabase();
-    const order = await this.getForMarket(marketId, orderId);
+    const order = await this.getForVendor(vendorId, orderId);
     order.shipping.driver = driverId as never;
     order.timeline.push({ status: order.status, note: "Driver assigned", at: new Date(), by: actorId as never });
     await order.save();
     await writeAudit({
-      actor: actorId, market: marketId, action: "order.assign_driver",
+      actor: actorId, vendor: vendorId, action: "order.assign_driver",
       entity: "Order", entityId: orderId, diff: { driver: driverId },
     });
     return order;
   },
 
-  async listForMarket(marketId: string, query: unknown, filters: { status?: OrderStatus } = {}): Promise<Paginated<OrderDoc>> {
+  async listForVendor(vendorId: string, query: unknown, filters: { status?: OrderStatus } = {}): Promise<Paginated<OrderDoc>> {
     await connectToDatabase();
     const pagination = paginationSchema.parse(query);
-    const filter = { market: marketId, ...(filters.status ? { status: filters.status } : {}) };
+    const filter = { vendor: vendorId, ...(filters.status ? { status: filters.status } : {}) };
     const skip = (pagination.page - 1) * pagination.limit;
     const [items, total] = await Promise.all([
       Order.find(filter).sort(toSortObject(pagination)).skip(skip).limit(pagination.limit).exec(),
@@ -180,12 +180,12 @@ export const orderService = {
   },
 
   /** Orders assigned to a delivery driver. */
-  async listForDriver(marketId: string, driverId: string, query: unknown): Promise<Paginated<OrderDoc>> {
+  async listForDriver(vendorId: string, driverId: string, query: unknown): Promise<Paginated<OrderDoc>> {
     await connectToDatabase();
     const pagination = paginationSchema.parse(query);
     const activeDelivery: OrderStatus[] = ["shipped", "out_for_delivery"];
     const filter = {
-      market: marketId,
+      vendor: vendorId,
       "shipping.driver": driverId,
       status: { $in: activeDelivery },
     };

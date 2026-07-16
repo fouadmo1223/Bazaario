@@ -2,9 +2,9 @@ import { Schema, model, models, type Model, type InferSchemaType, type HydratedD
 import { basePlugin } from "../plugins/base.plugin";
 import type { BaseFields } from "../types";
 
-/** Market-scoped, self-referential category tree (materialized `path` for fast subtree queries). */
+/** Vendor-scoped, self-referential category tree (materialized `path` for fast subtree queries). */
 const categorySchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
   description: { type: String, default: null },
@@ -20,7 +20,7 @@ const categorySchema = new Schema({
 });
 
 categorySchema.plugin(basePlugin);
-categorySchema.index({ market: 1, slug: 1 }, { unique: true });
+categorySchema.index({ vendor: 1, slug: 1 }, { unique: true });
 
 export type CategoryRaw = InferSchemaType<typeof categorySchema> & BaseFields;
 export type CategoryDoc = HydratedDocument<CategoryRaw>;

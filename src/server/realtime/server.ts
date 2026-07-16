@@ -25,7 +25,7 @@ const ORIGIN = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
 /** Room naming — keep in one place so publishers and subscribers agree. */
 export const rooms = {
   user: (id: string) => `user:${id}`,
-  market: (id: string) => `market:${id}`,
+  vendor: (id: string) => `vendor:${id}`,
   order: (id: string) => `order:${id}`,
   ticket: (id: string) => `ticket:${id}`,
 };
@@ -69,9 +69,9 @@ function start() {
     // Presence: announce online status to interested rooms.
     socket.broadcast.emit("presence:online", { userId: user.id });
 
-    /** Staff subscribe to their market's stream (authorization is re-checked server-side). */
-    socket.on("market:subscribe", (marketId: string) => {
-      socket.join(rooms.market(marketId));
+    /** Staff subscribe to their vendor's stream (authorization is re-checked server-side). */
+    socket.on("vendor:subscribe", (vendorId: string) => {
+      socket.join(rooms.vendor(vendorId));
     });
     socket.on("order:subscribe", (orderId: string) => {
       socket.join(rooms.order(orderId));
@@ -115,7 +115,7 @@ function start() {
         break;
       case "order:update":
         io.to(rooms.order(event.orderId)).emit("order:update", event);
-        io.to(rooms.market(event.market)).emit("order:update", event);
+        io.to(rooms.vendor(event.vendor)).emit("order:update", event);
         break;
       case "chat:message":
         io.to(rooms.ticket(event.ticketId)).emit("chat:message", event.payload);

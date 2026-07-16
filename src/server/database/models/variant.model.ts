@@ -4,7 +4,7 @@ import type { BaseFields } from "../types";
 
 /** A concrete purchasable variation of a variable product (e.g. Red / Large). */
 const variantSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   product: { type: Schema.Types.ObjectId, ref: "Product", required: true, index: true },
 
   // Selected attribute values, e.g. { Color: "Red", Size: "L" }.
@@ -25,7 +25,7 @@ const variantSchema = new Schema({
 });
 
 variantSchema.plugin(basePlugin);
-variantSchema.index({ market: 1, sku: 1 }, { unique: true });
+variantSchema.index({ vendor: 1, sku: 1 }, { unique: true });
 // `product` field already declares `index: true`; no separate index needed.
 
 export type VariantRaw = InferSchemaType<typeof variantSchema> & BaseFields;

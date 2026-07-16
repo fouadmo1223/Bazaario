@@ -8,7 +8,7 @@ import type { BaseFields } from "../types";
  * `product` xor `variant` identifies the stock unit.
  */
 const inventorySchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   product: { type: Schema.Types.ObjectId, ref: "Product", default: null, index: true },
   variant: { type: Schema.Types.ObjectId, ref: "Variant", default: null, index: true },
 
@@ -20,8 +20,8 @@ const inventorySchema = new Schema({
 });
 
 inventorySchema.plugin(basePlugin);
-inventorySchema.index({ market: 1, variant: 1 });
-inventorySchema.index({ market: 1, product: 1 });
+inventorySchema.index({ vendor: 1, variant: 1 });
+inventorySchema.index({ vendor: 1, product: 1 });
 
 inventorySchema.virtual("available").get(function (this: { onHand: number; reserved: number }) {
   return Math.max(0, this.onHand - this.reserved);

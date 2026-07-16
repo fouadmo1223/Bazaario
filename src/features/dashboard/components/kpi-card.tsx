@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-/** Compact KPI tile used across the market dashboard and platform console. */
+/** Compact KPI tile used across the vendor dashboard and platform console. */
 export function KpiCard({
   label,
   value,

@@ -3,10 +3,10 @@ import { basePlugin } from "../plugins/base.plugin";
 import type { BaseFields } from "../types";
 
 /**
- * A Market is one independent store. Exactly ONE Market Admin (`owner`).
- * Every market-owned document references its market for tenant isolation.
+ * A Vendor is one independent store. Exactly ONE Vendor Admin (`owner`).
+ * Every vendor-owned document references its vendor for tenant isolation.
  */
-const marketSettingsSchema = new Schema(
+const vendorSettingsSchema = new Schema(
   {
     currency: { type: String, default: "USD", uppercase: true },
     locales: { type: [String], default: ["en"] },
@@ -21,8 +21,8 @@ const marketSettingsSchema = new Schema(
   { _id: false },
 );
 
-/** Declared as a required sub-schema so `market.stats.x` types as present. */
-const marketStatsSchema = new Schema(
+/** Declared as a required sub-schema so `vendor.stats.x` types as present. */
+const vendorStatsSchema = new Schema(
   {
     products: { type: Number, default: 0 },
     orders: { type: Number, default: 0 },
@@ -31,14 +31,14 @@ const marketStatsSchema = new Schema(
   { _id: false },
 );
 
-const marketSchema = new Schema({
+const vendorSchema = new Schema({
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true, unique: true, index: true },
   description: { type: String, default: null },
   logo: { type: String, default: null },
   banner: { type: String, default: null },
 
-  // The single Market Admin who owns this store.
+  // The single Vendor Admin who owns this store.
   owner: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
   status: {
@@ -48,7 +48,7 @@ const marketSchema = new Schema({
     index: true,
   },
 
-  settings: { type: marketSettingsSchema, default: () => ({}) },
+  settings: { type: vendorSettingsSchema, default: () => ({}) },
   theme: {
     primaryColor: { type: String, default: "#4f46e5" },
     mode: { type: String, enum: ["light", "dark", "system"], default: "system" },
@@ -56,13 +56,13 @@ const marketSchema = new Schema({
   domains: { type: [String], default: [] },
 
   // Denormalized counters kept fresh by services for cheap dashboard reads.
-  stats: { type: marketStatsSchema, required: true, default: () => ({}) },
+  stats: { type: vendorStatsSchema, required: true, default: () => ({}) },
 });
 
-marketSchema.plugin(basePlugin);
+vendorSchema.plugin(basePlugin);
 
-export type MarketRaw = InferSchemaType<typeof marketSchema> & BaseFields;
-export type MarketDoc = HydratedDocument<MarketRaw>;
+export type VendorRaw = InferSchemaType<typeof vendorSchema> & BaseFields;
+export type VendorDoc = HydratedDocument<VendorRaw>;
 
-export const Market: Model<MarketRaw> =
-  (models.Market as Model<MarketRaw>) ?? model<MarketRaw>("Market", marketSchema);
+export const Vendor: Model<VendorRaw> =
+  (models.Vendor as Model<VendorRaw>) ?? model<VendorRaw>("Vendor", vendorSchema);

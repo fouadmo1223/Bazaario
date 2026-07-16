@@ -31,7 +31,7 @@ const faqSchema = new Schema(
 );
 
 const productSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   type: { type: String, enum: ["simple", "variable"], default: "simple", index: true },
 
   title: { type: String, required: true, trim: true },
@@ -95,9 +95,9 @@ const productSchema = new Schema({
 });
 
 productSchema.plugin(basePlugin);
-productSchema.index({ market: 1, slug: 1 }, { unique: true });
-productSchema.index({ market: 1, status: 1, createdAt: -1 });
-productSchema.index({ market: 1, featured: 1 });
+productSchema.index({ vendor: 1, slug: 1 }, { unique: true });
+productSchema.index({ vendor: 1, status: 1, createdAt: -1 });
+productSchema.index({ vendor: 1, featured: 1 });
 // Full-text search across the storefront-relevant fields.
 productSchema.index({ title: "text", description: "text", tags: "text" });
 

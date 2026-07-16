@@ -3,7 +3,7 @@ import { basePlugin } from "../plugins/base.plugin";
 import type { BaseFields } from "../types";
 
 const brandSchema = new Schema({
-  market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
+  vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
   logo: { type: String, default: null },
@@ -12,7 +12,7 @@ const brandSchema = new Schema({
 });
 
 brandSchema.plugin(basePlugin);
-brandSchema.index({ market: 1, slug: 1 }, { unique: true });
+brandSchema.index({ vendor: 1, slug: 1 }, { unique: true });
 
 export type BrandRaw = InferSchemaType<typeof brandSchema> & BaseFields;
 export type BrandDoc = HydratedDocument<BrandRaw>;

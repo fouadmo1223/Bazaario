@@ -2,24 +2,27 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { marketService } from "@/server/services/market.service";
+import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
+import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
+import { CartBadge } from "@/features/cart/components/cart-badge";
+import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
 
-type Params = { market: string; slug: string };
+type Params = { vendor: string; slug: string };
 
 export const revalidate = 60;
 
 async function load(slug: string, productSlug: string) {
-  const market = await marketService.getBySlug(slug);
-  const product = await productService.getBySlug(String(market._id), productSlug);
-  return { market, product };
+  const vendor = await vendorService.getBySlug(slug);
+  const product = await productService.getBySlug(String(vendor._id), productSlug);
+  return { vendor, product };
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { market: marketSlug, slug } = await params;
+  const { vendor: vendorSlug, slug } = await params;
   try {
-    const { product } = await load(marketSlug, slug);
+    const { product } = await load(vendorSlug, slug);
     const description = product.seo?.description ?? product.shortDescription ?? product.description.slice(0, 155);
     return {
       title: product.seo?.title ?? `${product.title} · Commerce`,
@@ -31,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
         type: "website",
       },
       twitter: { card: "summary_large_image", title: product.title, description },
-      alternates: { canonical: `/m/${marketSlug}/p/${slug}` },
+      alternates: { canonical: `/v/${vendorSlug}/p/${slug}` },
     };
   } catch {
     return { title: "Product not found" };
@@ -39,20 +42,20 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ProductPage({ params }: { params: Promise<Params> }) {
-  const { market: marketSlug, slug } = await params;
+  const { vendor: vendorSlug, slug } = await params;
 
   let data;
   try {
-    data = await load(marketSlug, slug);
+    data = await load(vendorSlug, slug);
   } catch (err) {
     if (isAppError(err) && err.code === "NOT_FOUND") notFound();
     throw err;
   }
-  const { market, product } = data;
+  const { vendor, product } = data;
   if (product.status !== "active") notFound();
 
-  const currency = market.settings.currency;
-  const money = (n: number) => new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
+  const currency = vendor.settings.currency;
+  const money = (n: number) => formatMoney(n, currency);
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const inStock = !product.trackInventory || product.stock > 0 || product.allowBackorder;
 
@@ -69,7 +72,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       price: product.price,
       priceCurrency: currency,
       availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      url: `/m/${marketSlug}/p/${slug}`,
+      url: `/v/${vendorSlug}/p/${slug}`,
     },
     ...(product.ratingCount > 0
       ? {
@@ -86,8 +89,8 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: market.name, item: `/m/${marketSlug}` },
-      { "@type": "ListItem", position: 2, name: product.title, item: `/m/${marketSlug}/p/${slug}` },
+      { "@type": "ListItem", position: 1, name: vendor.name, item: `/v/${vendorSlug}` },
+      { "@type": "ListItem", position: 2, name: product.title, item: `/v/${vendorSlug}/p/${slug}` },
     ],
   };
 
@@ -97,13 +100,17 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <nav className="mb-6 text-sm text-zinc-500">
-          <Link href={`/m/${marketSlug}`} className="hover:text-indigo-600">
-            {market.name}
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
-        </nav>
+        <div className="mb-6 flex items-center justify-between gap-6">
+          <nav className="min-w-0 text-sm text-zinc-500">
+            <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
+              {vendor.name}
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
+          </nav>
+
+          <CartBadge vendorId={String(vendor._id)} vendorSlug={vendorSlug} />
+        </div>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
@@ -155,12 +162,13 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
               </p>
             )}
 
-            <button
+            <AddToCartButton
+              className="mt-8"
+              vendorId={String(vendor._id)}
+              vendorSlug={vendorSlug}
+              productId={String(product._id)}
               disabled={!inStock}
-              className="mt-8 w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {inStock ? "Add to cart" : "Sold out"}
-            </button>
+            />
 
             {product.description && (
               <div className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">

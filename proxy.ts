@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Next.js 16 Proxy (formerly Middleware). Optimistic edge checks ONLY — the
  * authoritative authorization happens in the service layer (`requireUser`,
- * `requireMarketPermission`). Here we just do cheap cookie-presence redirects to
+ * `requireVendorPermission`). Here we just do cheap cookie-presence redirects to
  * keep unauthenticated users out of protected shells and authenticated users
  * off the auth pages. We deliberately do NOT verify the JWT here (no secrets at
  * the edge, no DB) — a forged cookie only reaches a server component that then

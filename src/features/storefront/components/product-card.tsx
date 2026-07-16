@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { formatMoney, discountPercent } from "@/shared/lib/format";
 
 export type ProductCardData = {
   id: string;
@@ -13,28 +14,22 @@ export type ProductCardData = {
   stock?: number;
 };
 
-function money(n: number, currency: string) {
-  return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
-}
-
 export function ProductCard({
   product,
-  marketSlug,
+  vendorSlug,
   currency = "USD",
 }: {
   product: ProductCardData;
-  marketSlug: string;
+  vendorSlug: string;
   currency?: string;
 }) {
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
-  const discount = onSale
-    ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
-    : 0;
+  const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
   const soldOut = product.stock != null && product.stock <= 0;
 
   return (
     <Link
-      href={`/m/${marketSlug}/p/${product.slug}`}
+      href={`/v/${vendorSlug}/p/${product.slug}`}
       className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950"
     >
       <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900">
@@ -73,11 +68,11 @@ export function ProductCard({
         ) : null}
         <div className="mt-2 flex items-baseline gap-2">
           <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-            {money(product.price, currency)}
+            {formatMoney(product.price, currency)}
           </span>
           {onSale && (
             <span className="text-xs text-zinc-400 line-through">
-              {money(product.compareAtPrice!, currency)}
+              {formatMoney(product.compareAtPrice!, currency)}
             </span>
           )}
         </div>

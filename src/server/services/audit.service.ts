@@ -4,7 +4,7 @@ import { logger } from "@/shared/lib/logger";
 
 export type AuditEntry = {
   actor?: string | null;
-  market?: string | null;
+  vendor?: string | null;
   action: string;
   entity: string;
   entityId?: string | null;
@@ -22,7 +22,7 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
     await connectToDatabase();
     await AuditLog.create({
       actor: entry.actor ?? null,
-      market: entry.market ?? null,
+      vendor: entry.vendor ?? null,
       action: entry.action,
       entity: entry.entity,
       entityId: entry.entityId ?? null,
