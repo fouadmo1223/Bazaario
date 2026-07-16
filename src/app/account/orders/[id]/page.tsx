@@ -1,0 +1,129 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
+import { Types } from "mongoose";
+import { getCurrentUser } from "@/server/security/current-user";
+import { getCustomerOrder } from "@/features/orders/queries";
+import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
+import { OrderTimeline } from "@/features/orders/components/order-timeline";
+import { ShippingAddress } from "@/features/orders/components/shipping-address";
+import { CancelOrderButton } from "@/features/orders/components/cancel-order-button";
+import { OrderSummary } from "@/features/cart/components/order-summary";
+import { formatMoney } from "@/shared/lib/format";
+import { isAppError } from "@/shared/lib/errors";
+
+type Params = { id: string };
+
+export const metadata: Metadata = {
+  title: "Order · Commerce",
+  robots: { index: false, follow: false },
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function CustomerOrderPage({ params }: { params: Promise<Params> }) {
+  const { id } = await params;
+  if (!Types.ObjectId.isValid(id)) notFound();
+
+  const user = await getCurrentUser();
+  if (!user) redirect(`/login?next=${encodeURIComponent(`/account/orders/${id}`)}`);
+
+  // getCustomerOrder filters on `customer`, so another user's order is a 404
+  // rather than a 403 — existence isn't disclosed.
+  let order;
+  try {
+    order = await getCustomerOrder(user.id, id);
+  } catch (err) {
+    if (isAppError(err) && err.code === "NOT_FOUND") notFound();
+    throw err;
+  }
+
+  const placedAt = new Date(order.createdAt).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <div className="min-h-dvh bg-white dark:bg-black">
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <nav className="mb-6 text-sm text-zinc-500">
+          <Link href="/account/orders" className="hover:text-indigo-600">
+            Your orders
+          </Link>
+          <span className="mx-2">/</span>
+          <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
+        </nav>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              Order #{order.number}
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500">
+              {order.vendorName} · {placedAt}
+            </p>
+          </div>
+          <OrderStatusBadge status={order.status} />
+        </div>
+
+        {order.refundedTotal > 0 && (
+          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+            {formatMoney(order.refundedTotal, order.currency)} refunded
+          </p>
+        )}
+
+        <section className="mt-8" aria-label="Items">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Items</h2>
+          <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            {order.items.map((item, i) => (
+              <li key={i} className="flex items-center gap-4 py-3">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                  {item.image ? (
+                    <Image src={item.image} alt="" fill sizes="56px" className="object-cover" />
+                  ) : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">{item.title}</p>
+                  <p className="text-xs text-zinc-500">
+                    {item.quantity} × {formatMoney(item.unitPrice, order.currency)}
+                  </p>
+                </div>
+                <span className="shrink-0 text-sm font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                  {formatMoney(item.total, order.currency)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
+          <section aria-label="Delivery">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Delivery</h2>
+            <div className="mt-2">
+              <ShippingAddress address={order.shipping.address} />
+            </div>
+            <p className="mt-2 text-xs text-zinc-500">Method: {order.shipping.method}</p>
+          </section>
+
+          <section aria-label="History">
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">History</h2>
+            <OrderTimeline entries={order.timeline} />
+          </section>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <OrderSummary totals={order.totals} currency={order.currency} shippingKnown />
+        </div>
+
+        {/* Only pending orders may be cancelled; the action re-checks server-side. */}
+        {order.status === "pending" && (
+          <div className="mt-8">
+            <CancelOrderButton orderId={order.id} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

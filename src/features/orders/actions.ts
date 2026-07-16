@@ -41,8 +41,10 @@ export async function refundOrderAction(
   input: { amount: number; reason?: string },
 ): Promise<ApiResult<Record<string, unknown>>> {
   try {
-    // Refunds require full vendor admin rights, not just fulfilment.
-    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_READ_VENDOR);
+    // Refunds move money, so they need `order:refund` — which only the vendor
+    // admin and super admin hold. Guarding on `order:read:vendor` here would let
+    // support, marketing, and delivery drivers issue refunds too.
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_REFUND);
     const schema = z.object({ amount: z.number().positive(), reason: z.string().optional() });
     const parsed = schema.safeParse(input);
     if (!parsed.success) throw Errors.validation("Invalid refund", parsed.error.flatten());

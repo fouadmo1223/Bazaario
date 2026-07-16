@@ -8,6 +8,7 @@ import { vendorService } from "@/server/services/vendor.service";
 import { getCurrentUser } from "@/server/security/current-user";
 import { canViewOrder } from "@/server/security/order-access";
 import { OrderSummary } from "@/features/cart/components/order-summary";
+import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
 
@@ -90,22 +91,24 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <section aria-label="Delivery">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Delivery</h2>
-            <address className="mt-2 text-sm not-italic leading-relaxed text-zinc-600 dark:text-zinc-400">
-              {order.shipping?.address?.recipient}
-              <br />
-              {order.shipping?.address?.line1}
-              {order.shipping?.address?.line2 ? (
-                <>
-                  <br />
-                  {order.shipping.address.line2}
-                </>
-              ) : null}
-              <br />
-              {order.shipping?.address?.city}
-              {order.shipping?.address?.region ? `, ${order.shipping.address.region}` : ""}
-              <br />
-              {order.shipping?.address?.country}
-            </address>
+            <div className="mt-2">
+              <ShippingAddress
+                address={
+                  order.shipping?.address
+                    ? {
+                        recipient: order.shipping.address.recipient ?? null,
+                        phone: order.shipping.address.phone ?? null,
+                        line1: order.shipping.address.line1 ?? null,
+                        line2: order.shipping.address.line2 ?? null,
+                        city: order.shipping.address.city ?? null,
+                        region: order.shipping.address.region ?? null,
+                        postalCode: order.shipping.address.postalCode ?? null,
+                        country: order.shipping.address.country ?? null,
+                      }
+                    : null
+                }
+              />
+            </div>
             <p className="mt-2 text-xs text-zinc-500">
               Method: {order.shipping?.method ?? "standard"}
             </p>

@@ -4,13 +4,15 @@ import { useActionState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginAction } from "../actions";
 import { Field, SubmitButton, ResultBanner, fieldError } from "./form-controls";
+import { safeRedirectPath } from "@/shared/lib/safe-redirect";
 import type { ApiResult } from "@/shared/lib/api-response";
 import type { PublicUser } from "@/server/services/auth.service";
 
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/";
+  // `next` comes from the URL, so it cannot be trusted as a redirect target.
+  const next = safeRedirectPath(params.get("next"));
 
   const [state, action] = useActionState<ApiResult<PublicUser> | null, FormData>(
     loginAction,

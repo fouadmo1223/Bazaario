@@ -165,6 +165,7 @@ Model = **role → permission set**, evaluated **within a vendor scope** (except
 | order:read (own) | – | ✅ | – | – | – | – | ✅ |
 | order:read (vendor) | – | – | assigned | ✅ | ✅ | ✅ | ✅ |
 | order:fulfill / delivery:update | – | – | ✅ | – | – | ✅ | ✅ |
+| order:refund | – | – | – | – | – | ✅ | ✅ |
 | product:write / inventory:write | – | – | – | – | – | ✅ | ✅ |
 | coupon:write / campaign:write | – | – | – | – | ✅ | ✅ | ✅ |
 | ticket:respond | – | own | – | ✅ | – | ✅ | ✅ |

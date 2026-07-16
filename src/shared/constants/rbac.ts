@@ -24,6 +24,8 @@ export const PERMISSIONS = {
   ORDER_READ_OWN: "order:read:own",
   ORDER_READ_VENDOR: "order:read:vendor",
   ORDER_FULFILL: "order:fulfill",
+  /** Moving money back to a customer — strictly narrower than reading orders. */
+  ORDER_REFUND: "order:refund",
   DELIVERY_UPDATE: "delivery:update",
   PRODUCT_WRITE: "product:write",
   INVENTORY_WRITE: "inventory:write",
@@ -50,7 +52,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   [ROLES.SUPPORT]: [P.CATALOG_READ, P.ORDER_READ_VENDOR, P.TICKET_RESPOND],
   [ROLES.MARKETING]: [P.CATALOG_READ, P.ORDER_READ_VENDOR, P.COUPON_WRITE, P.CAMPAIGN_WRITE, P.CMS_WRITE, P.ANALYTICS_READ],
   [ROLES.VENDOR]: [
-    P.CATALOG_READ, P.ORDER_READ_VENDOR, P.ORDER_FULFILL, P.DELIVERY_UPDATE,
+    P.CATALOG_READ, P.ORDER_READ_VENDOR, P.ORDER_FULFILL, P.ORDER_REFUND, P.DELIVERY_UPDATE,
     P.PRODUCT_WRITE, P.INVENTORY_WRITE, P.COUPON_WRITE, P.CAMPAIGN_WRITE,
     P.TICKET_RESPOND, P.CMS_WRITE, P.ANALYTICS_READ,
   ],

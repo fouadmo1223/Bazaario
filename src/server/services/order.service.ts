@@ -27,6 +27,14 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
   return TRANSITIONS[from].includes(to);
 }
 
+/**
+ * The statuses an order may legally move to next. The dashboard offers exactly
+ * these, so the UI can't present a transition the service would then reject.
+ */
+export function allowedTransitions(from: OrderStatus): readonly OrderStatus[] {
+  return TRANSITIONS[from];
+}
+
 export const orderService = {
   async getForVendor(vendorId: string, orderId: string): Promise<OrderDoc> {
     await connectToDatabase();
