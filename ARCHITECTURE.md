@@ -133,14 +133,29 @@ Realtime  socket events: notification, order:update, chat:message, presence
 Health    GET  /api/health  (db+redis probes)
 ```
 
-### 4.1 Storefront routes
+### 4.1 Routes
 ```
+Storefront
 /v/{vendor}                 vendor storefront (ISR, revalidate 60)
 /v/{vendor}/p/{slug}        product detail (ISR + JSON-LD)
 /v/{vendor}/cart            cart            (dynamic — per-visitor)
 /v/{vendor}/checkout        checkout        (dynamic — per-visitor)
 /v/{vendor}/order/{id}      confirmation    (dynamic — access-gated, see §5.1)
+
+Account (signed-in customer; own orders only)
+/account/orders             order history
+/account/orders/{id}        order detail + cancel (pending only)
+
+Dashboard (vendor staff; requires order:read:vendor)
+/dashboard                  analytics overview
+/dashboard/orders           order list + status filter
+/dashboard/orders/{id}      detail; transitions gated on order:fulfill,
+                            refunds gated on order:refund
 ```
+
+Unauthenticated hits on `/account/*` and `/dashboard/*` redirect to
+`/login?next=<path>`. That value is attacker-controlled, so it is passed through
+`safeRedirectPath()` before any navigation — see `shared/lib/safe-redirect.ts`.
 
 ### 4.2 Money & trust boundary
 Nothing that determines a price is accepted from the client. Checkout receives a
@@ -151,6 +166,13 @@ stability and are never used to charge.
 
 Tax rate lives in `pricing.service.vendorTaxRate()` — one source, so the cart
 preview and the charged total cannot drift apart.
+
+### 4.3 Order status machine
+`order.service` owns the legal transitions. `canTransition(from, to)` is the
+guard; `allowedTransitions(from)` is what the dashboard renders — the UI offers
+exactly the set the service will accept, and the service re-checks on submit, so
+a stale page cannot force an illegal jump (e.g. `delivered → pending`).
+`cancelled` and `refunded` are terminal. COD captures payment on `delivered`.
 
 ---
 
@@ -204,14 +226,15 @@ create path (`getOrCreateGuestToken`, actions only).
 4. ✅ **Catalog** — Category/Brand/Product/Variant/Inventory + repositories + storefront reads.
 5. ✅ **Cart & Checkout** — cart service + actions + UI, guest/user/merge, coupons, taxes, server-resolved shipping, order creation, confirmation.
 6. ✅ **Payments** — Stripe + Paymob + COD strategy adapters + webhooks + idempotency. *(Provider credentials still unset in `.env.local`; only COD is selectable until they are.)*
-7. ⏳ **Orders & Delivery** — lifecycle, refunds/returns, driver flows, tracking. *(Services exist; no dashboard UI yet.)*
+7. ⏳ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`), vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions and refunds. *(Driver flows, returns, and tracking UI still outstanding.)*
 8. ⏳ **Realtime & Notifications** — Socket.IO server exists; no UI surface yet.
 9. ⬜ **CMS / Marketing / Reviews / Support**.
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; SEO done for storefront; i18n/RTL and PWA outstanding.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; **no test suite, no CI/CD** yet.
 
 ### 6.1 Known gaps
-- **No automated tests.** Verification to date is typecheck + lint + build + manual/service-level runtime checks.
+- **No automated tests.** Verification to date is typecheck + lint + build + throwaway service-level runtime scripts. Those scripts proved the money, transition, and isolation paths but were deleted after each run — they should become a real suite.
+- Customers cannot yet reorder, return, or download an invoice; drivers have no UI at all.
 - Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, GSAP, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4.
 - Variable products: schema and cart support variants, but no variant picker UI (`AddToCartButton` accepts `variantId`; the PDP does not yet offer one).
 - `checkout.service` reserves stock by decrementing without a transaction — concurrent checkouts on the last unit can oversell. Needs a conditional update or a Mongo session.
