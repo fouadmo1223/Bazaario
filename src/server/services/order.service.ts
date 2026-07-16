@@ -11,7 +11,9 @@ import { paginationSchema, buildPaginated, toSortObject, type Paginated } from "
  * jumps (e.g. delivered → pending) that would corrupt reporting and inventory.
  */
 const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
-  pending: ["paid", "cancelled"],
+  // COD orders go straight to `processing` — they are not paid until delivery,
+  // so forcing them through `paid` first would misreport revenue.
+  pending: ["paid", "processing", "cancelled"],
   paid: ["processing", "cancelled", "refunded"],
   processing: ["shipped", "cancelled", "refunded"],
   shipped: ["out_for_delivery", "delivered", "refunded"],
