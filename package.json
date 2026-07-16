@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start -p 3001",
     "realtime": "tsx --env-file=.env.local src/server/realtime/server.ts",
+    "seed": "tsx --tsconfig ./tsconfig.json --env-file=.env.local src/server/database/seed.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint"
   },

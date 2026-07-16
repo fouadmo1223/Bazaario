@@ -21,6 +21,16 @@ const marketSettingsSchema = new Schema(
   { _id: false },
 );
 
+/** Declared as a required sub-schema so `market.stats.x` types as present. */
+const marketStatsSchema = new Schema(
+  {
+    products: { type: Number, default: 0 },
+    orders: { type: Number, default: 0 },
+    revenue: { type: Number, default: 0 },
+  },
+  { _id: false },
+);
+
 const marketSchema = new Schema({
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true, unique: true, index: true },
@@ -46,11 +56,7 @@ const marketSchema = new Schema({
   domains: { type: [String], default: [] },
 
   // Denormalized counters kept fresh by services for cheap dashboard reads.
-  stats: {
-    products: { type: Number, default: 0 },
-    orders: { type: Number, default: 0 },
-    revenue: { type: Number, default: 0 },
-  },
+  stats: { type: marketStatsSchema, required: true, default: () => ({}) },
 });
 
 marketSchema.plugin(basePlugin);
