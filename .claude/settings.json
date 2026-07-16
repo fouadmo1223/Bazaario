@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -vE \"MONGOOSE|trace-warnings|^\\\\[|marketId|orderId\" /tmp/checkout_smoke.out 2>/dev/null | head -20; echo \"--- exit marker check ---\"; ls -la /tmp/checkout_smoke.out 2>/dev/null)",
+      "Read(//tmp/**)"
+    ]
+  }
+}
