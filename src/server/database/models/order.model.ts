@@ -59,6 +59,44 @@ const refundSchema = new Schema(
   { _id: false },
 );
 
+/**
+ * Nested groups are declared as explicit sub-schemas with `required: true` so
+ * `InferSchemaType` types them as present rather than optional — otherwise every
+ * `order.totals.x` access needs a null check despite always being written.
+ */
+const totalsSchema = new Schema(
+  {
+    subtotal: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
+    tax: { type: Number, default: 0 },
+    shipping: { type: Number, default: 0 },
+    grandTotal: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
+const paymentSchema = new Schema(
+  {
+    provider: { type: String, enum: ["stripe", "paymob", "cod", "wallet"], default: "cod" },
+    status: { type: String, enum: PAYMENT_STATUSES, default: "pending", index: true },
+    reference: { type: String, default: null }, // provider intent/txn id
+    paidAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
+
+const shippingSchema = new Schema(
+  {
+    address: { type: addressSnapshotSchema, default: null },
+    method: { type: String, default: "standard" },
+    slot: { type: String, default: null },
+    trackingNumber: { type: String, default: null },
+    driver: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    estimatedAt: { type: Date, default: null },
+  },
+  { _id: false },
+);
+
 const orderSchema = new Schema({
   market: { type: Schema.Types.ObjectId, ref: "Market", required: true, index: true },
   number: { type: String, required: true }, // human-friendly per-market order number
@@ -67,34 +105,15 @@ const orderSchema = new Schema({
 
   items: { type: [orderItemSchema], required: true },
 
-  totals: {
-    subtotal: { type: Number, required: true },
-    discount: { type: Number, default: 0 },
-    tax: { type: Number, default: 0 },
-    shipping: { type: Number, default: 0 },
-    grandTotal: { type: Number, required: true },
-  },
+  totals: { type: totalsSchema, required: true },
   currency: { type: String, default: "USD" },
   coupon: { type: String, default: null },
 
   status: { type: String, enum: ORDER_STATUSES, default: "pending", index: true },
   timeline: { type: [timelineEntrySchema], default: [] },
 
-  payment: {
-    provider: { type: String, enum: ["stripe", "paymob", "cod", "wallet"], default: "cod" },
-    status: { type: String, enum: PAYMENT_STATUSES, default: "pending", index: true },
-    reference: { type: String, default: null }, // provider intent/txn id
-    paidAt: { type: Date, default: null },
-  },
-
-  shipping: {
-    address: { type: addressSnapshotSchema, default: null },
-    method: { type: String, default: "standard" },
-    slot: { type: String, default: null },
-    trackingNumber: { type: String, default: null },
-    driver: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
-    estimatedAt: { type: Date, default: null },
-  },
+  payment: { type: paymentSchema, required: true, default: () => ({}) },
+  shipping: { type: shippingSchema, required: true, default: () => ({}) },
   billingAddress: { type: addressSnapshotSchema, default: null },
 
   refunds: { type: [refundSchema], default: [] },
