@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { catalogService } from "@/server/services/catalog.service";
+import { Reveal } from "@/shared/components/reveal";
 
 export const metadata: Metadata = {
   title: "Categories · Commerce",
@@ -31,7 +32,7 @@ export default async function CategoriesPage() {
           <p className="text-sm text-zinc-500">No categories yet.</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <Reveal as="ul" stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {categories.map((c) => (
             <li key={c.slug}>
               <Link
@@ -62,7 +63,7 @@ export default async function CategoriesPage() {
               </Link>
             </li>
           ))}
-        </ul>
+        </Reveal>
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { catalogService, type CatalogSort } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
+import { Reveal } from "@/shared/components/reveal";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
 
 type Search = Record<string, string | undefined>;
@@ -72,11 +73,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {/* `key` on the filter state so a new result set replays the
+                  reveal — otherwise filtered-in products appear with no motion
+                  while the rest stay put, which reads as a rendering glitch. */}
+              <Reveal
+                key={`${result.page}:${JSON.stringify(params)}`}
+                stagger
+                className="grid grid-cols-2 gap-4 md:grid-cols-3"
+              >
                 {result.items.map((p) => (
                   <CatalogProductCard key={p.id} product={p} />
                 ))}
-              </div>
+              </Reveal>
 
               {result.totalPages > 1 && (
                 <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
+import { Reveal } from "@/shared/components/reveal";
 
 export const metadata: Metadata = {
   title: "Commerce · Shop every store in one place",
@@ -49,14 +50,21 @@ export default async function HomePage() {
 
       <section className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
         <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-          <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-            Every store, one place.
-          </h1>
-          <p className="mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Browse independent vendors, save what you love, and check out securely — card, wallet,
-            or cash on delivery.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Slide only, no fade: this heading is the LCP candidate. */}
+          <Reveal immediate fade={false}>
+            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+              Every store, one place.
+            </h1>
+          </Reveal>
+
+          <Reveal immediate delay={0.1}>
+            <p className="mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+              Browse independent vendors, save what you love, and check out securely — card, wallet,
+              or cash on delivery.
+            </p>
+          </Reveal>
+
+          <Reveal immediate delay={0.2} className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/products"
               className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
@@ -69,7 +77,7 @@ export default async function HomePage() {
             >
               Shop by category
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -83,7 +91,7 @@ export default async function HomePage() {
               All categories
             </Link>
           </div>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <Reveal as="ul" stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {categories.slice(0, 6).map((c) => (
               <li key={c.slug}>
                 <Link
@@ -94,7 +102,7 @@ export default async function HomePage() {
                 </Link>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </section>
       )}
 
@@ -114,7 +122,7 @@ export default async function HomePage() {
           <h2 id="home-vendors" className="mb-5 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             Stores
           </h2>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal as="ul" stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {vendors.map((v) => (
               <li key={v.id}>
                 <Link
@@ -141,7 +149,7 @@ export default async function HomePage() {
                 </Link>
               </li>
             ))}
-          </ul>
+          </Reveal>
         </section>
       )}
     </>
@@ -175,11 +183,11 @@ function ProductRail({
           <p className="text-sm text-zinc-500">{emptyNote ?? "Nothing here yet."}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <Reveal stagger className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {products.map((p) => (
             <CatalogProductCard key={p.id} product={p} />
           ))}
-        </div>
+        </Reveal>
       )}
     </section>
   );
