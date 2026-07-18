@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { productRepository, type ProductFilters } from "@/server/repositories/product.repository";
 import { Product, type ProductDoc } from "@/server/database/models/product.model";
-import { Variant } from "@/server/database/models/variant.model";
+import { Variant, type VariantDoc } from "@/server/database/models/variant.model";
 import { Vendor } from "@/server/database/models/vendor.model";
 import { Errors } from "@/shared/lib/errors";
 import { writeAudit } from "./audit.service";
@@ -135,6 +135,18 @@ export const productService = {
     await connectToDatabase();
     const filters: ProductFilters = { vendor: vendorId, ...query };
     return productRepository.search(filters, pagination);
+  },
+
+  /**
+   * A variable product's purchasable variants, for the storefront picker.
+   * Inactive variants are excluded — the shopper should not be offered a
+   * combination the cart would then reject.
+   */
+  async listVariants(vendorId: string, productId: string): Promise<VariantDoc[]> {
+    await connectToDatabase();
+    return Variant.find({ vendor: vendorId, product: productId, isActive: true })
+      .sort({ createdAt: 1 })
+      .exec();
   },
 
   /** Storefront read — active products only, cached in Redis. */

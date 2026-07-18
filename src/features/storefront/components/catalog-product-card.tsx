@@ -29,8 +29,14 @@ export function CatalogProductCard({
 
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
-  const soldOut = product.stock <= 0;
+  // A variable product's `stock` is the parent's and means nothing — its real
+  // availability lives on the variants, so don't stamp it "sold out" from here.
+  const soldOut = !product.isVariable && product.stock <= 0;
   const href = `/v/${product.vendorSlug}/p/${product.slug}`;
+
+  // "From X" when variants span a range; a single figure would misprice the rest.
+  const spansRange =
+    product.priceRange != null && product.priceRange.max > product.priceRange.min;
 
   return (
     <>
@@ -94,10 +100,13 @@ export function CatalogProductCard({
           )}
 
           <div className="mt-2 flex items-baseline gap-2">
+            {spansRange && (
+              <span className="text-xs text-zinc-500">from</span>
+            )}
             <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-              {formatMoney(product.price, currency)}
+              {formatMoney(spansRange ? product.priceRange!.min : product.price, currency)}
             </span>
-            {onSale && (
+            {onSale && !spansRange && (
               <span className="text-xs text-zinc-400 line-through">
                 {formatMoney(product.compareAtPrice!, currency)}
               </span>

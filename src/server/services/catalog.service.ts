@@ -54,12 +54,17 @@ export type CatalogProduct = {
   id: string;
   slug: string;
   title: string;
+  /** For a variable product this is the lowest variant price ("from"). */
   price: number;
   compareAtPrice: number | null;
   image: string | null;
   ratingAvg: number;
   ratingCount: number;
   stock: number;
+  /** Variable products can't be added from a card — they need an option chosen. */
+  isVariable: boolean;
+  /** Populated for variable products so listings can show a "from X" range. */
+  priceRange: { min: number; max: number } | null;
   vendorId: string;
   vendorName: string;
   vendorSlug: string;
@@ -71,6 +76,9 @@ function toCatalogProduct(
   vendors: Map<string, { name: string; slug: string }>,
 ): CatalogProduct {
   const vendor = vendors.get(String(p.vendor));
+  const isVariable = p.type === "variable";
+  const range = p.priceRange;
+
   return {
     id: String(p._id),
     slug: p.slug,
@@ -81,6 +89,11 @@ function toCatalogProduct(
     ratingAvg: p.ratingAvg,
     ratingCount: p.ratingCount,
     stock: p.stock,
+    isVariable,
+    priceRange:
+      isVariable && range?.min != null && range?.max != null
+        ? { min: range.min, max: range.max }
+        : null,
     vendorId: String(p.vendor),
     vendorName: vendor?.name ?? "",
     vendorSlug: vendor?.slug ?? "",

@@ -30,8 +30,11 @@ export function QuickViewModal({
 }) {
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
-  const inStock = product.stock > 0;
+  // Variable products carry their availability on the variants, not the parent.
+  const inStock = product.isVariable || product.stock > 0;
   const href = `/v/${product.vendorSlug}/p/${product.slug}`;
+  const spansRange =
+    product.priceRange != null && product.priceRange.max > product.priceRange.min;
 
   return (
     <Modal open={open} onClose={onClose} title={product.title} description={product.vendorName} size="lg">
@@ -59,8 +62,15 @@ export function QuickViewModal({
 
         <div className="flex flex-col">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold">{formatMoney(product.price, currency)}</span>
-            {onSale && (
+            {spansRange ? (
+              <span className="text-2xl font-semibold">
+                {formatMoney(product.priceRange!.min, currency)} –{" "}
+                {formatMoney(product.priceRange!.max, currency)}
+              </span>
+            ) : (
+              <span className="text-2xl font-semibold">{formatMoney(product.price, currency)}</span>
+            )}
+            {onSale && !spansRange && (
               <span className="text-sm text-zinc-400 line-through">
                 {formatMoney(product.compareAtPrice!, currency)}
               </span>
@@ -85,13 +95,27 @@ export function QuickViewModal({
 
           <div className="mt-auto space-y-3 pt-6">
             <div className="flex items-center gap-2">
-              <AddToCartButton
-                className="flex-1"
-                vendorId={product.vendorId}
-                vendorSlug={product.vendorSlug}
-                productId={product.id}
-                disabled={!inStock}
-              />
+              {product.isVariable ? (
+                // Variable products need a chosen variant, and the picker needs
+                // the product's attributes — more than this summary carries. Send
+                // the shopper to the page that can actually complete the sale
+                // rather than an "Add" the server would reject.
+                <Link
+                  href={href}
+                  onClick={onClose}
+                  className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
+                >
+                  Choose options
+                </Link>
+              ) : (
+                <AddToCartButton
+                  className="flex-1"
+                  vendorId={product.vendorId}
+                  vendorSlug={product.vendorSlug}
+                  productId={product.id}
+                  disabled={!inStock}
+                />
+              )}
               <WishlistButton productId={product.id} initialSaved={saved} />
             </div>
 

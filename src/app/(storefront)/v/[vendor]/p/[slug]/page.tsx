@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
-import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
-import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
-import { formatMoney } from "@/shared/lib/format";
+import {
+  ProductDetailView,
+  type ProductDetailData,
+} from "@/features/products/components/product-detail-view";
+import type { VariantView } from "@/features/products/components/variant-picker";
 import { isAppError } from "@/shared/lib/errors";
 
 type Params = { vendor: string; slug: string };
 
 export const revalidate = 60;
 
-async function load(slug: string, productSlug: string) {
-  const vendor = await vendorService.getBySlug(slug);
+async function load(vendorSlug: string, productSlug: string) {
+  const vendor = await vendorService.getBySlug(vendorSlug);
   const product = await productService.getBySlug(String(vendor._id), productSlug);
   return { vendor, product };
 }
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { vendor: vendorSlug, slug } = await params;
   try {
     const { product } = await load(vendorSlug, slug);
-    const description = product.seo?.description ?? product.shortDescription ?? product.description.slice(0, 155);
+    const description =
+      product.seo?.description ?? product.shortDescription ?? product.description.slice(0, 155);
     return {
       title: product.seo?.title ?? `${product.title} · Commerce`,
       description,
@@ -54,12 +56,78 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   const { vendor, product } = data;
   if (product.status !== "active") notFound();
 
+  const vendorId = String(vendor._id);
   const currency = vendor.settings.currency;
-  const money = (n: number) => formatMoney(n, currency);
-  const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
-  const inStock = !product.trackInventory || product.stock > 0 || product.allowBackorder;
 
-  // Product structured data → rich results (price, availability, rating).
+  // Only variable products have variants; don't pay for the query otherwise.
+  const variantDocs =
+    product.type === "variable" ? await productService.listVariants(vendorId, String(product._id)) : [];
+
+  const variants: VariantView[] = variantDocs.map((v) => ({
+    id: String(v._id),
+    // `options` is a Mongoose Map — a plain object is what crosses to the client.
+    options: Object.fromEntries(v.options as unknown as Map<string, string>),
+    sku: v.sku,
+    price: v.price,
+    compareAtPrice: v.compareAtPrice ?? null,
+    stock: v.stock,
+    image: v.image ?? null,
+  }));
+
+  // Only attributes that actually define variants belong in the picker.
+  const attributes = product.attributes
+    .filter((a) => a.variantDefining && a.values.length > 0)
+    .map((a) => ({ name: a.name, values: a.values }));
+
+  const inStock =
+    product.type === "variable"
+      ? variants.some((v) => v.stock > 0)
+      : !product.trackInventory || product.stock > 0 || product.allowBackorder;
+
+  const detail: ProductDetailData = {
+    id: String(product._id),
+    title: product.title,
+    description: product.description,
+    shortDescription: product.shortDescription ?? null,
+    type: product.type as "simple" | "variable",
+    price: product.price,
+    compareAtPrice: product.compareAtPrice ?? null,
+    stock: product.stock,
+    sku: product.sku ?? null,
+    inStock,
+    ratingAvg: product.ratingAvg,
+    ratingCount: product.ratingCount,
+    media: product.media.map((m) => ({
+      url: m.url,
+      alt: m.alt ?? null,
+      type: (m.type ?? "image") as "image" | "video" | "image360",
+    })),
+    attributes,
+    variants,
+    faqs: product.faqs.map((f) => ({ question: f.question, answer: f.answer })),
+  };
+
+  // A variable product's offers are its variants, so expose the real range
+  // rather than a single price a shopper may never actually be charged.
+  const prices = variants.length ? variants.map((v) => v.price) : [product.price];
+  const offers =
+    product.type === "variable" && variants.length > 1
+      ? {
+          "@type": "AggregateOffer",
+          lowPrice: Math.min(...prices),
+          highPrice: Math.max(...prices),
+          offerCount: variants.length,
+          priceCurrency: currency,
+          availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        }
+      : {
+          "@type": "Offer",
+          price: product.price,
+          priceCurrency: currency,
+          availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          url: `/v/${vendorSlug}/p/${slug}`,
+        };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -67,13 +135,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     description: product.description,
     image: product.media.map((m) => m.url),
     sku: product.sku ?? undefined,
-    offers: {
-      "@type": "Offer",
-      price: product.price,
-      priceCurrency: currency,
-      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      url: `/v/${vendorSlug}/p/${slug}`,
-    },
+    offers,
     ...(product.ratingCount > 0
       ? {
           aggregateRating: {
@@ -95,106 +157,24 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   };
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="mx-auto max-w-6xl px-6 py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <nav className="mb-6 text-sm text-zinc-500">
-          <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
-            {vendor.name}
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
-        </nav>
+      <nav className="mb-6 text-sm text-zinc-500">
+        <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
+          {vendor.name}
+        </Link>
+        <span className="mx-2">/</span>
+        <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
+      </nav>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
-            {product.media[0]?.url ? (
-              <Image
-                src={product.media[0].url}
-                alt={product.media[0].alt ?? product.title}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-zinc-400">No image</div>
-            )}
-          </div>
-
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {product.title}
-            </h1>
-
-            {product.ratingCount > 0 && (
-              <p className="mt-2 text-sm text-zinc-500">
-                ★ {product.ratingAvg.toFixed(1)} · {product.ratingCount} reviews
-              </p>
-            )}
-
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
-                {money(product.price)}
-              </span>
-              {onSale && (
-                <span className="text-lg text-zinc-400 line-through">{money(product.compareAtPrice!)}</span>
-              )}
-            </div>
-
-            <p className="mt-2 text-sm">
-              {inStock ? (
-                <span className="text-emerald-600 dark:text-emerald-400">In stock</span>
-              ) : (
-                <span className="text-red-600 dark:text-red-400">Out of stock</span>
-              )}
-            </p>
-
-            {product.shortDescription && (
-              <p className="mt-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {product.shortDescription}
-              </p>
-            )}
-
-            <div className="mt-8 flex items-center gap-3">
-              <AddToCartButton
-                className="flex-1"
-                vendorId={String(vendor._id)}
-                vendorSlug={vendorSlug}
-                productId={String(product._id)}
-                disabled={!inStock}
-              />
-              {/* Saved state hydrates from StorefrontProvider, so this page stays cacheable. */}
-              <WishlistButton productId={String(product._id)} />
-            </div>
-
-            {product.description && (
-              <div className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Description</h2>
-                <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                  {product.description}
-                </p>
-              </div>
-            )}
-
-            {product.faqs.length > 0 && (
-              <div className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">FAQs</h2>
-                <dl className="mt-3 space-y-3">
-                  {product.faqs.map((f, i) => (
-                    <div key={i}>
-                      <dt className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{f.question}</dt>
-                      <dd className="text-sm text-zinc-600 dark:text-zinc-400">{f.answer}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <ProductDetailView
+        product={detail}
+        vendorId={vendorId}
+        vendorSlug={vendorSlug}
+        currency={currency}
+      />
     </div>
   );
 }
