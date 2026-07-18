@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { Order } from "@/server/database/models/order.model";
 import { Product } from "@/server/database/models/product.model";
+import { Variant } from "@/server/database/models/variant.model";
 import { User } from "@/server/database/models/user.model";
 import { Types } from "mongoose";
 import { cached } from "@/server/cache/redis";
@@ -144,14 +145,58 @@ export const analyticsService = {
     return { repeatRate: total ? Math.round((repeat / total) * 1000) / 10 : 0, repeat, total };
   },
 
-  /** Inventory health — products at or below their low-stock threshold. */
+  /**
+   * Inventory health — products at or below their low-stock threshold.
+   *
+   * Variable products are counted across their variants, not by the parent's
+   * `stock`. A variable parent carries `stock: 0` by design (availability lives
+   * on the variants), so reading the parent would report every variable product
+   * as "0 left" no matter how much stock it actually has.
+   */
   async lowStock(vendorId: string, limit = 20) {
     await connectToDatabase();
-    return Product.find({ vendor: vendorId, status: "active", trackInventory: true, stock: { $lte: 5 } })
-      .select("title stock sku")
-      .sort({ stock: 1 })
-      .limit(limit)
-      .lean();
+    const THRESHOLD = 5;
+
+    const [simple, variable] = await Promise.all([
+      Product.find({
+        vendor: vendorId,
+        status: "active",
+        trackInventory: true,
+        type: { $ne: "variable" },
+        stock: { $lte: THRESHOLD },
+      })
+        .select("title stock sku")
+        .sort({ stock: 1 })
+        .limit(limit)
+        .lean(),
+
+      // Sum each variable product's active variants, then keep the low ones.
+      Variant.aggregate<{ _id: Types.ObjectId; stock: number }>([
+        { $match: { vendor: new Types.ObjectId(vendorId), isActive: true } },
+        { $group: { _id: "$product", stock: { $sum: "$stock" } } },
+        { $match: { stock: { $lte: THRESHOLD } } },
+        { $sort: { stock: 1 } },
+        { $limit: limit },
+      ]),
+    ]);
+
+    // Resolve titles for the variable hits, dropping any no longer active.
+    const variableIds = variable.map((v) => v._id);
+    const parents = variableIds.length
+      ? await Product.find({ _id: { $in: variableIds }, status: "active", trackInventory: true })
+          .select("title sku")
+          .lean()
+      : [];
+    const titles = new Map(parents.map((p) => [String(p._id), p]));
+
+    const variableRows = variable
+      .filter((v) => titles.has(String(v._id)))
+      .map((v) => {
+        const parent = titles.get(String(v._id))!;
+        return { _id: v._id, title: parent.title, sku: parent.sku ?? null, stock: v.stock };
+      });
+
+    return [...simple, ...variableRows].sort((a, b) => a.stock - b.stock).slice(0, limit);
   },
 
   /** Platform-wide totals for the Super Admin console (cached — expensive). */

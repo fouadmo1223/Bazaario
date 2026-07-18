@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
+import { isAppError } from "@/shared/lib/errors";
 import { analyticsService } from "@/server/services/analytics.service";
 import { KpiCard } from "@/features/dashboard/components/kpi-card";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
@@ -14,11 +16,19 @@ function money(n: number, currency: string) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
 }
 
-async function DashboardContent() {
-  const { vendor, role } = await resolveActiveVendor();
-  const vendorId = String(vendor._id);
-  const currency = vendor.settings.currency;
-
+/**
+ * The analytics panels only. Auth is resolved by the page before this streams —
+ * see the note on `DashboardPage`.
+ */
+async function DashboardPanels({
+  vendorId,
+  currency,
+  productCount,
+}: {
+  vendorId: string;
+  currency: string;
+  productCount: number;
+}) {
   // Reading the clock is intentional here: this is an async Server Component
   // rendered per-request (`force-dynamic`), so the window must track real time.
   // eslint-disable-next-line react-hooks/purity
@@ -35,20 +45,12 @@ async function DashboardContent() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <header className="mb-8">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{role.replace("_", " ")}</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {vendor.name}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Last 30 days</p>
-      </header>
-
+    <>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Revenue" value={money(kpis.revenue, currency)} hint={`${kpis.orders} orders`} />
         <KpiCard label="Average order" value={money(kpis.averageOrderValue, currency)} />
         <KpiCard label="Customers" value={kpis.customers} hint={`${retention.repeatRate}% repeat`} />
-        <KpiCard label="Products" value={vendor.stats.products} />
+        <KpiCard label="Products" value={productCount} />
       </section>
 
       <section className="mt-8">
@@ -104,14 +106,51 @@ async function DashboardContent() {
           </div>
         </section>
       </div>
-    </div>
+    </>
   );
 }
 
-export default function DashboardPage() {
+/**
+ * Auth is resolved here, in the page body, *before* anything streams.
+ *
+ * It cannot move inside the Suspense boundary below. Next flushes the shell —
+ * including the fallback — as soon as it hits `<Suspense>`, and the response is
+ * committed with a 200 at that moment. A `redirect()` thrown after that has no
+ * status line or `Location` header left to set, so the visitor is stranded on
+ * "Loading dashboard…" forever instead of being sent to sign in.
+ *
+ * Membership lookup is two indexed queries; the slow part is the aggregations,
+ * and those are what the boundary is actually for.
+ */
+export default async function DashboardPage() {
+  let vendor;
+  let role;
+  try {
+    ({ vendor, role } = await resolveActiveVendor());
+  } catch (err) {
+    if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
+      redirect(`/login?next=${encodeURIComponent("/dashboard")}`);
+    }
+    throw err;
+  }
+
   return (
-    <Suspense fallback={<div className="p-10 text-sm text-zinc-500">Loading dashboard…</div>}>
-      <DashboardContent />
-    </Suspense>
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <header className="mb-8">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{role.replace(/_/g, " ")}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          {vendor.name}
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Last 30 days</p>
+      </header>
+
+      <Suspense fallback={<div className="py-10 text-sm text-zinc-500">Loading analytics…</div>}>
+        <DashboardPanels
+          vendorId={String(vendor._id)}
+          currency={vendor.settings.currency}
+          productCount={vendor.stats.products}
+        />
+      </Suspense>
+    </div>
   );
 }
