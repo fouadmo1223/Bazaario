@@ -168,6 +168,13 @@ Unauthenticated hits on `/account/*` and `/dashboard/*` redirect to
 `/login?next=<path>`. That value is attacker-controlled, so it is passed through
 `safeRedirectPath()` before any navigation — see `shared/lib/safe-redirect.ts`.
 
+**Auth must resolve before anything streams.** Next commits the response with a
+200 the moment it flushes the shell at a `<Suspense>` boundary; a `redirect()`
+thrown after that has no status line left to set, and the visitor sits on the
+fallback forever. `/dashboard` did exactly this — it answered 200 and rendered
+"Loading dashboard…" indefinitely for signed-out visitors. Resolve the session in
+the page body and wrap only the slow work (there, the analytics aggregations).
+
 ### 4.2 Money & trust boundary
 Nothing that determines a price is accepted from the client. Checkout receives a
 shipping **method id** and a payment **provider id** only; the server resolves the
@@ -277,11 +284,33 @@ create path (`getOrCreateGuestToken`, actions only).
 - **No automated tests.** Verification to date is typecheck + lint + build + throwaway service-level runtime scripts. Those scripts proved the money, transition, and isolation paths but were deleted after each run — they should become a real suite.
 - Customers cannot yet reorder, return, or download an invoice; drivers have no UI at all.
 - Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, GSAP, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4.
-- Variable products: schema and cart support variants, but no variant picker UI (`AddToCartButton` and quick view accept `variantId`; neither the PDP nor the modal offers a selector, so variable products cannot actually be bought yet).
-- Product media is single-image everywhere (`media[0]`); no gallery, no video.
 - Vendor product add/edit has server actions but still no UI — the dashboard cannot create a product.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
-- `checkout.service` reserves stock by decrementing without a transaction — concurrent checkouts on the last unit can oversell. Needs a conditional update or a Mongo session.
 - Wallet payment provider is declared in the registry but unimplemented (`null`).
+
+### 6.2 Inventory reservation
+`checkout.service` claims stock with a **conditional** update — `{_id, stock: {$gte: qty}}` — so the read and the write are one atomic operation and two concurrent checkouts cannot both take the last unit. A multi-line order rolls back everything it already reserved if any line is refused, and again if the Order insert itself fails. Verified under 10 simultaneous checkouts for 1 unit: exactly one succeeds, stock lands at 0, never negative.
+
+Products with `allowBackorder` (or `trackInventory: false`) are deliberately **not** guarded — those are meant to go negative.
+
+A transaction would also cover the Order insert, but needs a replica set; this keeps the guarantee without that dependency.
+
+### 6.3 Variable products
+The parent Product holds the option definitions (`attributes[].variantDefining`) and a denormalized `priceRange`; the Variants hold the real prices and stock. Consequences worth knowing:
+
+- A variable parent's `stock` is **meaningless** (seeded as 0). Availability is the sum of its variants. Anything reading parent stock for a variable product is a bug — this is what made `analytics.lowStock` report every variable product as "0 left" until it was taught to aggregate variants.
+- Listings show `from {priceRange.min}`; cards and quick view set `isVariable` and offer "Choose options" instead of an add-to-cart the server would reject for want of a `variantId`.
+- The picker disables combinations with no backing variant rather than hiding them, so the control doesn't reflow as you choose.
+
+### 6.4 Database maintenance scripts
+The Market→Vendor rename left artifacts Mongoose does not clean up on its own:
+
+| Script | Purpose |
+|---|---|
+| `npm run db:sync-indexes` | Drops indexes the schemas no longer declare (`-- --dry` to preview). The rename orphaned 25 `market_*` indexes, six of them unique — `{market, slug}` on products forced slugs to be globally unique across all vendors, and `{market, number}` on orders would collide the moment a second vendor issued order 1001. |
+| `npm run db:cleanup-legacy` | Deletes documents still carrying the old `market` field (invisible to every vendor-scoped query) and rewrites the obsolete `market_admin` role to `vendor`. |
+| `npm run seed:reset` | Wipes seeded data — including legacy `demo-store` — and rebuilds. |
+
+Run `db:sync-indexes` after any index change.
 
 Each step ships compiling, typechecked code with real logic — no stubs.
