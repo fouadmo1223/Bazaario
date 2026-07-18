@@ -64,7 +64,12 @@ export function Modal({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className={`w-[calc(100vw-2rem)] ${width} rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100`}
+      // `m-auto` is load-bearing: a modal <dialog> is centred by the UA
+      // stylesheet's `margin: auto` against `inset: 0`, and Tailwind's preflight
+      // resets `margin: 0` on every element — which drops the dialog into the
+      // top-left corner. `max-h`/`overflow-auto` keep a tall body inside the
+      // viewport instead of running off the bottom.
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-auto ${width} rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100`}
     >
       {/* Inner wrapper: clicks here must not reach the backdrop handler. */}
       <div onClick={(e) => e.stopPropagation()}>

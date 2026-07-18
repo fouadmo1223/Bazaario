@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /*
+   * Lets the browser theme what CSS cannot reach: <select> option lists, the
+   * scrollbar, spinners, and the <dialog> backdrop. Without it those render in
+   * the OS light palette regardless of our variables — which is why the sort
+   * dropdown opened as a white sheet on a black page.
+   */
+  color-scheme: light dark;
 }
 
 @theme inline {

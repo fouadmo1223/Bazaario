@@ -84,16 +84,23 @@ export function QuickViewModal({
           )}
 
           <p className="mt-3 text-sm">
-            {inStock ? (
+            {!inStock ? (
+              <span className="text-red-600 dark:text-red-400">Out of stock</span>
+            ) : product.isVariable ? (
+              // A variable parent's `stock` is 0 by design — real availability
+              // lives on the variants, which this summary does not load. Quoting
+              // it here produced "In stock — only 0 left".
+              <span className="text-emerald-600 dark:text-emerald-400">
+                Available in {product.priceRange ? "several options" : "options"}
+              </span>
+            ) : (
               <span className="text-emerald-600 dark:text-emerald-400">
                 In stock{product.stock <= 5 ? ` — only ${product.stock} left` : ""}
               </span>
-            ) : (
-              <span className="text-red-600 dark:text-red-400">Out of stock</span>
             )}
           </p>
 
-          <div className="mt-auto space-y-3 pt-6">
+          <div className="mt-6 space-y-3 sm:mt-auto sm:pt-6">
             <div className="flex items-center gap-2">
               {product.isVariable ? (
                 // Variable products need a chosen variant, and the picker needs
