@@ -8,6 +8,9 @@
     "start": "next start -p 3001",
     "realtime": "tsx --env-file=.env.local src/server/realtime/server.ts",
     "seed": "tsx --tsconfig ./tsconfig.json --env-file=.env.local src/server/database/seed.ts",
+    "seed:reset": "tsx --tsconfig ./tsconfig.json --env-file=.env.local src/server/database/seed.ts --reset",
+    "db:sync-indexes": "tsx --tsconfig ./tsconfig.json --env-file=.env.local src/server/database/sync-indexes.ts",
+    "db:cleanup-legacy": "tsx --tsconfig ./tsconfig.json --env-file=.env.local src/server/database/cleanup-legacy.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint"
   },
