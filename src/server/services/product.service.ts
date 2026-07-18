@@ -167,6 +167,14 @@ export const productService = {
     );
   },
 
+  /** One product within a vendor's scope. For the dashboard, so drafts count. */
+  async getById(vendorId: string, productId: string): Promise<ProductDoc> {
+    await connectToDatabase();
+    const product = await Product.findOne({ _id: productId, vendor: vendorId });
+    if (!product) throw Errors.notFound("Product not found");
+    return product;
+  },
+
   async getBySlug(vendorId: string, slug: string): Promise<ProductDoc> {
     await connectToDatabase();
     const product = await productRepository.findBySlug(vendorId, slug);
