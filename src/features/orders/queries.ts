@@ -22,6 +22,7 @@ export type OrderListItem = {
   itemCount: number;
   /** ISO — formatted in the view so the server and client agree on the value. */
   createdAt: string;
+  vendorId: string;
   vendorName: string;
   vendorSlug: string;
   firstItemTitle: string;
@@ -82,6 +83,7 @@ function toListItem(
     grandTotal: order.totals.grandTotal,
     itemCount: order.items.reduce((n, i) => n + i.quantity, 0),
     createdAt: order.createdAt.toISOString(),
+    vendorId: String(order.vendor),
     vendorName: vendor?.name ?? "Unknown vendor",
     vendorSlug: vendor?.slug ?? "",
     firstItemTitle: first?.title ?? "",

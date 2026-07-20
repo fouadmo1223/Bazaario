@@ -65,7 +65,21 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
               {order.vendorName} · {placedAt}
             </p>
           </div>
-          <OrderStatusBadge status={order.status} />
+          <div className="flex items-center gap-3">
+            {/*
+              Contacting the store about a specific order is the single most
+              common reason a shopper needs to talk to anyone, so it lives on
+              the order itself. The order id rides along, which both scopes the
+              thread and lets the vendor open it without asking "which order?".
+            */}
+            <Link
+              href={`/account/orders/${order.id}/contact`}
+              className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            >
+              Message store
+            </Link>
+            <OrderStatusBadge status={order.status} />
+          </div>
         </div>
 
         {order.refundedTotal > 0 && (

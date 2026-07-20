@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/server/security/current-user";
+import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
+
+export const metadata: Metadata = {
+  title: "Contact support · Commerce",
+  robots: { index: false, follow: false },
+};
+
+export const dynamic = "force-dynamic";
+
+/**
+ * Shopper → platform support.
+ *
+ * No recipient picker: a shopper contacting support is contacting the platform,
+ * and letting them address a named admin would leak the staff roster and route
+ * around whoever is actually on duty.
+ */
+export default async function NewSupportThreadPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect(`/login?next=${encodeURIComponent("/account/messages/new")}`);
+
+  return (
+    <div className="min-h-dvh bg-white dark:bg-black">
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <Link href="/account/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+          ← Messages
+        </Link>
+
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Contact support
+        </h1>
+        <p className="mt-1 mb-6 text-sm text-zinc-500">
+          For questions about a specific order, message the store from the order page — they can act
+          on it directly.
+        </p>
+
+        <NewConversationForm kind="admin_customer" basePath="/account/messages" />
+      </div>
+    </div>
+  );
+}
