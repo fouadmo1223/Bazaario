@@ -456,8 +456,17 @@ isolation:
 - Mongo goes to `commerce_test`, and the run **aborts** if the resolved database
   name does not contain `test` — the per-test wipe would otherwise delete
   development data.
-- Redis goes to logical database 1, flushed once at start, so per-vendor order
-  counters and rate-limit keys do not accumulate in the development instance.
+- Redis keys are namespaced with `REDIS_KEY_PREFIX` (`vitest:`), and only keys
+  under that prefix are deleted. **Do not "simplify" this to a separate logical
+  database.** An earlier version pointed tests at database 1 and flushed it,
+  which silently destroyed development data: hosted Redis (Redis Cloud, Upstash)
+  exposes only database 0, so `SELECT 1` fails, ioredis merely logs the error,
+  and the client carries on using database 0 — where the flush then lands. The
+  worst casualty is `vendor:{id}:order_seq`; wiping it restarts order numbering
+  at 1001 while orders with those numbers still exist, and `{vendor, number}` is
+  unique, so the next checkout fails on a duplicate key. A prefix cannot fail
+  that way: if it is not applied, the cleanup finds nothing rather than deleting
+  someone else's keys.
 - `.env.local` is loaded by hand (vitest has no `--env-file`, and Vite only
   exposes prefixed variables), *before* the test overrides are applied.
 - Collections are emptied between tests rather than dropped, because dropping
@@ -471,14 +480,25 @@ Suites do not run in parallel: they share one database.
 |---|---|
 | `conversation-access.test.ts` | Who can read and write a thread — participants, the vendor shared-inbox rule, cross-vendor refusal, revoked memberships, super admin. The socket server's room joins call the same guard. |
 | `checkout-oversell.test.ts` | Stock never goes negative; ten concurrent buyers racing for one unit produce exactly one winner. Also pins the deliberate exceptions (backorder, `trackInventory: false`) so they are not "fixed" away. |
+| `order-refund.test.ts` | Refund arithmetic — validation, tenant isolation, partial vs full, stock released once and only on a full refund, and provider-initiated refunds by webhook. The two float-exactness cases are regressions for real bugs (§9.3). |
 | `stripe-webhook.test.ts` | Signature verification (wrong secret, tampered body, missing header, stale timestamp) and **idempotency** — a duplicate delivery must not increment vendor revenue twice. Also that a failed payment releases reserved stock. No network: `constructEvent` is HMAC verification, so it runs in CI with a dummy key. |
 
 ### 9.2 What is not
-Auth and token rotation, the Paymob adapter, refund arithmetic (the
-`charge.refunded` branch is exercised by no test), the order status machine,
-coupon and tax calculation, cart merging on login, and every React component.
-**Refunds are now the largest money-path gap** — a mistake there is not visibly
-wrong on screen.
+Auth and token rotation, the Paymob adapter, the order status machine, coupon
+and tax calculation, cart merging on login, and every React component. **Coupon
+and tax calculation is now the largest money-path gap**, and per §9.3 it is
+arithmetic over the same floating-point totals that refunds got wrong.
+
+### 9.3 Money is stored as floating point
+`Order.totals` and every price are JavaScript numbers, so they cannot represent
+most decimal amounts exactly. Single values are fine; **comparisons and running
+sums are not**. Two refund bugs came from exactly this — partials summing to
+1.0499999999999998 against a 1.05 total, and a remaining balance of
+0.9299999999999999 rejecting a 0.93 refund.
+
+`shared/lib/money.ts` converts to whole cents for those operations. Any new code
+that sums amounts or compares them for equality must use it. The real fix is to
+store minor units throughout, which is a migration nobody has done yet.
 
 There are no end-to-end browser tests. The messaging flows were verified by
 hand against a running dev server and socket process, which is not a substitute.
