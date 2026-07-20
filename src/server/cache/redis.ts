@@ -24,6 +24,21 @@ export function getRedis(): Redis {
   return client;
 }
 
+/**
+ * Close the connection and clear the singleton.
+ *
+ * The client keeps a persistent socket and an internal reconnect timer, so any
+ * process that wants to exit — a test run, a worker draining on SIGTERM — hangs
+ * until this is called. Clearing the cached instance means a later `getRedis()`
+ * builds a fresh client rather than handing back a closed one.
+ */
+export async function closeRedis(): Promise<void> {
+  const client = globalForRedis._redis;
+  if (!client) return;
+  globalForRedis._redis = undefined;
+  await client.quit();
+}
+
 /** Read-through cache helper with JSON serialization. */
 export async function cached<T>(
   key: string,
