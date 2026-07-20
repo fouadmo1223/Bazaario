@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addToCartAction } from "../actions";
+import { useLoginRedirect } from "@/shared/hooks/use-login-redirect";
 
 /**
  * Adds a product to the cart from the storefront.
@@ -31,6 +32,7 @@ export function AddToCartButton({
   className?: string;
 }) {
   const router = useRouter();
+  const redirectToLogin = useLoginRedirect();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -45,6 +47,9 @@ export function AddToCartButton({
       });
 
       if (!result.ok) {
+        // A cart now needs an account. Send them to sign in and back, rather
+        // than showing an error they cannot act on from a product card.
+        if (redirectToLogin(result)) return;
         setError(result.error.message);
         return;
       }

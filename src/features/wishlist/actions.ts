@@ -10,8 +10,12 @@ import { ok, toFailure, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
 
 /**
- * Wishlist mutations. Open to guests, like the cart: the owner is a signed-in
- * user or the bearer of the guest-token cookie.
+ * Wishlist mutations.
+ *
+ * **A session is required to save anything**, matching the cart. Enforced here
+ * rather than only on the heart button, because server actions are reachable by
+ * direct POST. Reads stay guest-tolerant so an existing guest list is still
+ * visible to whoever holds the cookie.
  */
 
 const productRef = z.object({
@@ -20,7 +24,8 @@ const productRef = z.object({
 
 async function mutatingOwner() {
   const user = await getCurrentUser();
-  return resolveCartOwner(user?.id, { create: true });
+  if (!user) throw Errors.unauthorized("Sign in to save items");
+  return resolveCartOwner(user.id, { create: true });
 }
 
 async function existingOwner() {

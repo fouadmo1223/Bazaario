@@ -49,8 +49,10 @@ export function StorefrontHeader() {
             </svg>
           </IconLink>
 
+          {/* Lands on the profile, which links out to orders, messages and
+              wishlist — "Account" meaning only "orders" was a dead end. */}
           <Link
-            href="/account/orders"
+            href="/account/profile"
             className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
           >
             Account

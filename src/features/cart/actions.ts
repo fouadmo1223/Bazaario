@@ -16,16 +16,26 @@ import {
 /**
  * Cart mutations.
  *
- * These are deliberately unauthenticated: shopping is open to guests. The owner
- * is whoever the request proves to be — a signed-in user, or the bearer of a
- * guest-token cookie. Nothing here trusts client-supplied prices; the service
- * re-reads them from the product, and checkout re-prices everything again.
+ * **A session is required to put anything in a cart.** This is a deliberate
+ * product decision, not a technical one: the guest-cart machinery below still
+ * works, and reverting means restoring the `{ create: true }` call.
+ *
+ * The check lives here rather than only on the buttons because server actions
+ * are reachable by direct POST — a hidden button is not an access control.
+ *
+ * Reads of an existing cart stay guest-tolerant so that anyone who still holds
+ * a guest cookie from before this change can see and clear what is in it,
+ * rather than having a cart they cannot reach.
+ *
+ * Nothing here trusts client-supplied prices; the service re-reads them from
+ * the product, and checkout re-prices everything again.
  */
 
-/** Owner for a mutation. Mints a guest token when there's no session. */
+/** Owner for a mutation. Requires a signed-in user. */
 async function mutatingOwner() {
   const user = await getCurrentUser();
-  return resolveCartOwner(user?.id, { create: true });
+  if (!user) throw Errors.unauthorized("Sign in to add items to your cart");
+  return resolveCartOwner(user.id, { create: true });
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toggleWishlistAction } from "../actions";
 import { useStorefront } from "@/features/storefront/storefront-provider";
+import { useLoginRedirect } from "@/shared/hooks/use-login-redirect";
 
 /**
  * Heart toggle.
@@ -28,6 +29,7 @@ export function WishlistButton({
   className?: string;
 }) {
   const storefront = useStorefront();
+  const redirectToLogin = useLoginRedirect();
   const [pending, startTransition] = useTransition();
   const [localSaved, setLocalSaved] = useState(initialSaved);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,9 @@ export function WishlistButton({
       const result = await toggleWishlistAction({ productId });
       if (!result.ok) {
         apply(!next); // revert
+        // Saving now needs an account. Send them to sign in rather than
+        // showing an error they cannot act on from here.
+        if (redirectToLogin(result)) return;
         setError(result.error.message);
         return;
       }
