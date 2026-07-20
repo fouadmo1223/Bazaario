@@ -277,14 +277,14 @@ create path (`getOrCreateGuestToken`, actions only).
 7. ⏳ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`), vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions and refunds. *(Driver flows, returns, and tracking UI still outstanding.)*
 8. ⏳ **Realtime & Notifications** — Socket.IO server exists; no UI surface yet.
 9. ⏳ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal. *(CMS / marketing / reviews / support still outstanding.)*
-10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; SEO done for storefront; i18n/RTL and PWA outstanding.
+10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; i18n/RTL and PWA outstanding.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; **no test suite, no CI/CD** yet.
 
 ### 6.1 Known gaps
 - **No automated tests.** Verification to date is typecheck + lint + build + throwaway service-level runtime scripts. Those scripts proved the money, transition, and isolation paths but were deleted after each run — they should become a real suite.
 - Customers cannot yet reorder, return, or download an invoice; drivers have no UI at all.
-- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, GSAP, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4.
-- Vendor product add/edit has server actions but still no UI — the dashboard cannot create a product.
+- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations).
+- The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, but the variant matrix itself is still API-only (`syncVariantsAction`) — a variable product can be declared in the UI and not yet given its variants there.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
 - Wallet payment provider is declared in the registry but unimplemented (`null`).
 
