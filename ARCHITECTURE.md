@@ -489,16 +489,33 @@ and tax calculation, cart merging on login, and every React component. **Coupon
 and tax calculation is now the largest money-path gap**, and per §9.3 it is
 arithmetic over the same floating-point totals that refunds got wrong.
 
-### 9.3 Money is stored as floating point
-`Order.totals` and every price are JavaScript numbers, so they cannot represent
-most decimal amounts exactly. Single values are fine; **comparisons and running
-sums are not**. Two refund bugs came from exactly this — partials summing to
-1.0499999999999998 against a 1.05 total, and a remaining balance of
+### 9.3 Money arithmetic
+`Order.totals` and every price are **stored** as JavaScript numbers. A single
+stored value is fine — 129.99 round-trips exactly — but summing and comparing
+them is not, and that is where every money bug here has come from: partials
+summing to 1.0499999999999998 against a 1.05 total, and a remaining balance of
 0.9299999999999999 rejecting a 0.93 refund.
 
-`shared/lib/money.ts` converts to whole cents for those operations. Any new code
-that sums amounts or compares them for equality must use it. The real fix is to
-store minor units throughout, which is a migration nobody has done yet.
+**All money computation goes through `shared/lib/money.ts` in integer cents.**
+`Minor` is a branded number, so TypeScript's arithmetic operators erase the
+brand — `a + b` on two `Minor` values yields a plain `number` that will not
+assign back to a `Minor`. Raw float arithmetic on money therefore does not
+compile; the helpers are the only way through, and they are exact. That covers
+pricing, cart subtotals, checkout line totals, refunds, and both payment
+adapters.
+
+Two known limits:
+- `toMinor` expects amounts that are already whole cents. Half-cent inputs
+  cannot be rounded predictably — 1.005 rounds down, 8.115 rounds up — because
+  the value lost the information before it arrived. The precondition holds while
+  totals are rounded before storage.
+- `vendor.stats.revenue` accumulates with `$inc` *inside Mongo*, so it drifts
+  and JS-side exactness cannot reach it. It is currently written but never read
+  (analytics aggregates orders instead). Make it exact or drop it before
+  displaying it.
+
+Storing minor units at rest would remove the conversion boundary entirely. That
+is a data migration across ~41 files and has not been done.
 
 There are no end-to-end browser tests. The messaging flows were verified by
 hand against a running dev server and socket process, which is not a substitute.
