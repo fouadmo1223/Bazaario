@@ -50,8 +50,14 @@ const serverSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   MAIL_FROM: z.string().default("no-reply@commerce.local"),
 
-  // Realtime
-  SOCKET_JWT_SECRET: z.string().min(16).optional(),
+  // Realtime.
+  //
+  // There is deliberately no separate socket secret: the Socket.IO server
+  // verifies handshake tokens with JWT_ACCESS_SECRET, because the claims it
+  // needs (sub, email, roles) are exactly the access token's. A second secret
+  // would be one more thing to rotate, and one more way for the two processes
+  // to silently disagree about who a user is.
+  REALTIME_PORT: z.coerce.number().int().positive().default(4000),
 });
 
 const clientSchema = z.object({

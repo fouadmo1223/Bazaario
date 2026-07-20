@@ -65,7 +65,11 @@ export default async function DashboardMessagesPage({
     }
   }
 
-  const inbox = await listInbox(user, { page }, { vendorId, status: activeStatus });
+  const inbox = await listInbox(
+    user,
+    { page },
+    { vendorId, status: activeStatus, platform: platformScope },
+  );
 
   const href = (params: Record<string, string | undefined>) => {
     const search = new URLSearchParams();

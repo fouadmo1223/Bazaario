@@ -335,24 +335,46 @@ export const conversationService = {
   },
 
   /**
-   * The actor's inbox.
+   * An inbox, in one of three scopes.
    *
-   * `vendorId` switches this from "threads I am in" to "every thread addressed
-   * to this vendor" — the shared-inbox view — and is authorized by the caller
-   * before it gets here.
+   * The scope is passed in, never inferred. An earlier version derived it from
+   * which options happened to be set, and the platform inbox silently fell back
+   * to "threads I am in" — which for a support ticket a customer opened is
+   * none of them, because no admin is a participant until one replies. The
+   * platform inbox rendered empty while tickets sat unanswered.
+   *
+   * - `platform` — every thread addressed to the platform rather than to a
+   *   store. Super admin only; rejected here rather than trusted from the page.
+   * - `vendorId` — every thread addressed to that vendor (the shared inbox).
+   *   Authorized by the caller, which has to resolve the vendor anyway.
+   * - neither — the actor's own threads.
    */
   async listForUser(
     actor: Actor,
     query: unknown,
-    opts: { vendorId?: string; kind?: ConversationKind; status?: ConversationStatus } = {},
+    opts: {
+      vendorId?: string;
+      kind?: ConversationKind;
+      status?: ConversationStatus;
+      platform?: boolean;
+    } = {},
   ): Promise<Paginated<ConversationDoc>> {
     await connectToDatabase();
     const pagination = paginationSchema.parse(query);
     const skip = (pagination.page - 1) * pagination.limit;
 
     const filter: Record<string, unknown> = {};
-    if (opts.vendorId) filter.vendor = opts.vendorId;
-    else if (!opts.kind || !isSuperAdmin(actor)) filter["participants.user"] = actor.id;
+
+    if (opts.platform) {
+      if (!isSuperAdmin(actor)) throw Errors.forbidden();
+      filter.kind = { $in: ["admin_customer", "admin_vendor", "internal"] };
+    } else if (opts.vendorId) {
+      filter.vendor = opts.vendorId;
+    } else {
+      filter["participants.user"] = actor.id;
+    }
+
+    // An explicit kind narrows whichever scope was chosen.
     if (opts.kind) filter.kind = opts.kind;
     if (opts.status) filter.status = opts.status;
 

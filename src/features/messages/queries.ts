@@ -41,15 +41,22 @@ export type Inbox = {
 /**
  * One inbox, for any of the three audiences.
  *
- * `vendorId` switches from "threads I am in" to the vendor's shared inbox. The
- * caller must have already authorized that vendor — this function does not
- * re-check it, because the pages that pass it have to resolve the vendor with
- * `requireVendorPermission` anyway to know which one to show.
+ * `vendorId` switches from "threads I am in" to the vendor's shared inbox, and
+ * `platform` to every thread addressed to the platform. The caller must have
+ * already authorized the vendor — this function does not re-check it, because
+ * the pages that pass it have to resolve the vendor with
+ * `requireVendorPermission` anyway to know which one to show. The `platform`
+ * scope is re-checked in the service, since it is not tied to a vendor.
  */
 export async function listInbox(
   actor: Actor,
   query: { page?: string },
-  opts: { vendorId?: string; kind?: ConversationKind; status?: ConversationStatus } = {},
+  opts: {
+    vendorId?: string;
+    kind?: ConversationKind;
+    status?: ConversationStatus;
+    platform?: boolean;
+  } = {},
 ): Promise<Inbox> {
   const paginated = await conversationService.listForUser(actor, { page: query.page }, opts);
   const ids = paginated.items.map((c) => String(c._id));
