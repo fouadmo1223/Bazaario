@@ -42,11 +42,39 @@ export async function closeRedis(): Promise<void> {
   await client.quit();
 }
 
-/** Read-through cache helper with JSON serialization. */
+/**
+ * Rejects Mongoose documents anywhere in a cached value.
+ *
+ * A document does not survive a JSON round-trip as itself: `JSON.stringify`
+ * calls the schema's `toJSON`, and `basePlugin` renames `_id` to `id`. A cache
+ * miss therefore hands back a document while every hit for the rest of the TTL
+ * hands back a differently-shaped plain object, with the type signature
+ * claiming both are the same thing. That produced a real bug — the vendor page
+ * read `_id`, got `undefined` on cached reads, and gave every product card the
+ * same React key.
+ *
+ * `toObject` is the marker: Mongoose documents have it, plain values do not.
+ * Producers must map to plain objects before returning.
+ */
+type NoDocuments<T> = T extends { toObject: (...args: never[]) => unknown }
+  ? [never, "Cache a plain object, not a Mongoose document — see NoDocuments"]
+  : T extends Date
+    ? T
+    : T extends readonly (infer U)[]
+      ? readonly NoDocuments<U>[]
+      : T extends object
+        ? { [K in keyof T]: NoDocuments<T[K]> }
+        : T;
+
+/**
+ * Read-through cache with JSON serialization.
+ *
+ * The value must be plain — see `NoDocuments`.
+ */
 export async function cached<T>(
   key: string,
   ttlSeconds: number,
-  producer: () => Promise<T>,
+  producer: () => Promise<T & NoDocuments<T>>,
 ): Promise<T> {
   const redis = getRedis();
   const hit = await redis.get(key);

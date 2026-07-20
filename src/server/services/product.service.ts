@@ -15,6 +15,43 @@ import type {
   ProductQueryInput,
 } from "@/features/products/schemas";
 
+/**
+ * A product as the storefront renders it — plain and JSON-safe, so it survives
+ * the Redis round-trip unchanged. Deliberately not `ProductDoc`: see the note
+ * on `listStorefront`.
+ */
+export type StorefrontProduct = {
+  id: string;
+  slug: string;
+  title: string;
+  type: "simple" | "variable";
+  price: number;
+  priceRange: { min: number; max: number } | null;
+  compareAtPrice: number | null;
+  image: string | null;
+  ratingAvg: number;
+  ratingCount: number;
+  stock: number;
+};
+
+function toStorefrontProduct(p: ProductDoc): StorefrontProduct {
+  return {
+    id: String(p._id),
+    slug: p.slug,
+    title: p.title,
+    type: p.type as "simple" | "variable",
+    price: p.price,
+    priceRange: p.priceRange
+      ? { min: p.priceRange.min ?? 0, max: p.priceRange.max ?? 0 }
+      : null,
+    compareAtPrice: p.compareAtPrice ?? null,
+    image: p.media[0]?.url ?? null,
+    ratingAvg: p.ratingAvg ?? 0,
+    ratingCount: p.ratingCount ?? 0,
+    stock: p.stock ?? 0,
+  };
+}
+
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 180);
 
@@ -158,13 +195,33 @@ export const productService = {
    * products, or a different `vendor` and cross the tenant boundary — the
    * storefront only ever shows this vendor's active catalogue.
    */
-  async listStorefront(vendorId: string, query: unknown): Promise<Paginated<ProductDoc>> {
+  /**
+   * Storefront listing, cached for 60s.
+   *
+   * Returns **plain objects, not Mongoose documents**, and that is load-bearing
+   * rather than tidiness. `cached()` round-trips its value through
+   * `JSON.stringify`, which invokes the schema's `toJSON` — and `basePlugin`'s
+   * transform renames `_id` to `id`. Caching documents therefore returned one
+   * shape on a cache miss and a different one on every hit for the next minute,
+   * while the type signature promised `ProductDoc` throughout. The vendor page
+   * read `p._id`, got `undefined` on each cached read, and rendered every card
+   * with the same React key.
+   *
+   * Mapping here means the cached value and the fresh value are the same shape
+   * by construction, and the type says what callers actually receive.
+   */
+  async listStorefront(vendorId: string, query: unknown): Promise<Paginated<StorefrontProduct>> {
     await connectToDatabase();
     const pagination = paginationSchema.parse(query);
     const filters = storefrontFilterSchema.parse(query ?? {});
-    return cached(listCacheKey(vendorId, filters, pagination), 60, () =>
-      productRepository.search({ ...filters, vendor: vendorId, status: "active" }, pagination),
-    );
+
+    return cached(listCacheKey(vendorId, filters, pagination), 60, async () => {
+      const result = await productRepository.search(
+        { ...filters, vendor: vendorId, status: "active" },
+        pagination,
+      );
+      return { ...result, items: result.items.map(toStorefrontProduct) };
+    });
   },
 
   /** One product within a vendor's scope. For the dashboard, so drafts count. */
