@@ -29,7 +29,7 @@ Infrastructure     → Mongo, Redis, Cloudinary, Stripe/Paymob, Mail, Socket.IO
 **Rule:** Presentation never touches Mongoose. Controllers never embed business logic. Services never import Next.js request objects. This keeps the domain testable and framework-agnostic.
 
 ### 1.3 Realtime
-A standalone Socket.IO server (`server/realtime`) run as a Vercel-external Node service (or long-running container), since Vercel serverless can't hold sockets. Auth via short-lived socket JWT. Rooms: `vendor:{id}`, `order:{id}`, `user:{id}`, `ticket:{id}`. Redis adapter for horizontal scale + pub/sub between serverless actions and the socket server.
+A standalone Socket.IO server (`server/realtime`) run as a Vercel-external Node service (or long-running container), since Vercel serverless can't hold sockets. Auth via a short-lived token from `/api/realtime/token`, verified with `JWT_ACCESS_SECRET`. Rooms: `vendor:{id}`, `order:{id}`, `user:{id}`, `conversation:{id}` — **every join is authorized against the database**, not taken on the client's word. Redis pub/sub bridges server actions to the socket process; the Redis *adapter* for multi-instance scale is not installed yet (§8.3). See §7.1.
 
 ### 1.4 Caching strategy
 - **Redis**: sessions/refresh-token allowlist, rate-limit counters, cart TTL for guests, hot product reads, search facets, idempotency keys.
@@ -275,7 +275,7 @@ create path (`getOrCreateGuestToken`, actions only).
 5. ✅ **Cart & Checkout** — cart service + actions + UI, guest/user/merge, coupons, taxes, server-resolved shipping, order creation, confirmation.
 6. ✅ **Payments** — Stripe + Paymob + COD strategy adapters + webhooks + idempotency. *(Provider credentials still unset in `.env.local`; only COD is selectable until they are.)*
 7. ⏳ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`), vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions and refunds. *(Driver flows, returns, and tracking UI still outstanding.)*
-8. ⏳ **Realtime & Notifications** — Socket.IO server exists; no UI surface yet.
+8. ⏳ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes. *(Notification bell UI and email fallback for offline recipients still outstanding.)*
 9. ⏳ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal. *(CMS / marketing / reviews / support still outstanding.)*
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; i18n/RTL and PWA outstanding.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; **no test suite, no CI/CD** yet.
@@ -287,7 +287,8 @@ create path (`getOrCreateGuestToken`, actions only).
 - The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, but the variant matrix itself is still API-only (`syncVariantsAction`) — a variable product can be declared in the UI and not yet given its variants there.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
 - Wallet payment provider is declared in the registry but unimplemented (`null`).
-
+- Chat attachments exist in the schema and the send path, but nothing uploads a
+  file — there is no storage integration, so the field is unreachable from the UI.
 ### 6.2 Inventory reservation
 `checkout.service` claims stock with a **conditional** update — `{_id, stock: {$gte: qty}}` — so the read and the write are one atomic operation and two concurrent checkouts cannot both take the last unit. A multi-line order rolls back everything it already reserved if any line is refused, and again if the Order insert itself fails. Verified under 10 simultaneous checkouts for 1 unit: exactly one succeeds, stock lands at 0, never negative.
 
@@ -314,3 +315,118 @@ The Market→Vendor rename left artifacts Mongoose does not clean up on its own:
 Run `db:sync-indexes` after any index change.
 
 Each step ships compiling, typechecked code with real logic — no stubs.
+
+---
+
+## 7. Messaging
+
+Four thread shapes, one service. `Conversation.kind` decides who may read a
+thread and where it surfaces:
+
+| kind | between | vendor |
+|---|---|---|
+| `customer_vendor` | shopper ↔ a store's staff | required |
+| `admin_vendor` | platform ↔ a store's staff | required |
+| `admin_customer` | platform ↔ shopper (support) | null |
+| `internal` | staff ↔ super admin | optional |
+
+**Threads are addressed to a side, not to a person.** Any active staff member
+holding `ticket:respond` on the vendor can read and answer that vendor's
+threads; any super admin can answer platform threads. `participants` records who
+has actually taken part — for read receipts and unread counts — and is *not* the
+access-control list. `conversationService.assertCanAccess` is the only place
+that rule is written.
+
+This is not a stylistic choice. Pinning a shopper's question to one employee
+means it goes unanswered the moment that employee is off shift, with no signal to
+the shopper that nobody is there. It is also what made the platform inbox render
+empty in its first version: a support ticket a customer opens has no admin
+participant until one replies, so an inbox filtered by participation showed
+nothing while tickets accumulated.
+
+Unread counts are derived by counting messages newer than the viewer's
+`lastReadAt`, not stored — a counter would drift, and a wrong badge is worse than
+no badge. One `$or`-of-cutoffs aggregation covers a whole inbox page.
+
+### 7.1 Realtime transport
+Sending is a **server action**, never a socket emit. The socket only decides
+whether the *other* side's replies appear without a refresh, so chat degrades to
+a working-but-manual experience when realtime is down rather than breaking. The
+composer reports connection state in a status line instead of disabling itself.
+
+Path: server action → `publishRealtime` → Redis pub/sub → standalone Socket.IO
+process → room fan-out. Serverless functions cannot hold long-lived connections,
+which is why the socket server is a separate process (`npm run realtime`).
+
+Clients authenticate the handshake with a **60-second token** from
+`/api/realtime/token`. The session cookie is httpOnly and browser JS cannot hand
+it to `io({ auth })`; dropping httpOnly to work around that would expose the real
+session to any XSS on the page. The client re-mints on reconnect, because
+Socket.IO replays the original handshake and a minute-old token can never
+succeed after a longer outage.
+
+**Room authorization is checked against the database on every join.** An earlier
+version joined whatever room the client named, under a comment claiming the check
+happened server-side — it did not, and any authenticated shopper could join
+`vendor:<anyone>` to watch a competitor's live order feed. Membership is
+re-queried rather than read from the JWT, since vendor access can be revoked
+while a socket is still live on an unexpired token.
+
+There is deliberately no separate socket secret: the socket server verifies with
+`JWT_ACCESS_SECRET` because the claims it needs are exactly the access token's.
+
+
+## 8. Production readiness
+
+What is genuinely done, and what is not. Ordered by what would hurt first.
+
+### 8.1 Blocking
+- **No automated tests, no CI/CD.** This is the single largest risk. Every
+  guarantee documented here — tenant isolation, oversell prevention, room
+  authorization, refund arithmetic — is currently protected by nothing but the
+  next reader's attention. Verification has been typecheck + lint + build +
+  throwaway scripts that were deleted after each run.
+- **Payment credentials unset.** Only COD is selectable until Stripe/Paymob keys
+  are configured, so the platform cannot actually take money.
+- **No error tracking or metrics.** `pino` writes structured logs to stdout and
+  nothing aggregates them. A 500 in production is invisible unless someone is
+  tailing a container.
+- **Run `npm run db:sync-indexes` before first deploy** and after any index
+  change. Conversation and Message ship new indexes.
+
+### 8.2 Security
+Verified present: httpOnly cookies, refresh-token rotation with a Redis
+allowlist and reuse detection, per-request auth in every server action,
+vendor-scoped guards, webhook signature verification on both providers
+(now constant-time), `X-Frame-Options`/`nosniff`/`Referrer-Policy`, input
+validation via zod at every boundary, error masking in production.
+
+Outstanding:
+- **No Content-Security-Policy.** The other headers are set; CSP is the one that
+  actually contains an XSS, and it is absent.
+- **Rate limiting covers only auth and chat.** Checkout, password reset, and the
+  storefront search/filter endpoints are unthrottled.
+- No account lockout after repeated failed logins (rate limiting only).
+- Chat has no abuse tooling — no blocking, reporting, or profanity handling. A
+  vendor cannot stop a customer from messaging them.
+
+### 8.3 Scaling
+- **The Socket.IO server is single-instance.** Redis pub/sub carries events from
+  Next into it, so published events reach every instance, but socket-to-socket
+  emits (typing, presence, read receipts) do not cross instances. Running more
+  than one replica needs `@socket.io/redis-adapter`.
+- `catalog.service` resolves active vendors to an id list and matches with `$in`
+  — fine now, an aggregation `$lookup` at thousands of vendors.
+- Inventory reservation avoids transactions deliberately (§6.2); a replica set
+  would let the Order insert join the same atomic unit.
+- No CDN/image pipeline: media is remote URLs, `next/image` is limited to three
+  allow-listed hosts, and there is no upload path at all.
+
+### 8.4 Operational
+- `/api/health` checks Mongo and Redis and returns 503 when degraded — usable as
+  a readiness probe.
+- No backup or restore procedure is documented.
+- No graceful shutdown in the realtime server: it does not drain sockets or close
+  the Redis subscriber on SIGTERM, so deploys drop connections abruptly.
+- The realtime process must be deployed somewhere that holds long-lived
+  connections (container/VM), not on serverless.

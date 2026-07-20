@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type { PaymentProvider, PaymentInitResult, WebhookOutcome } from "../types";
 import type { OrderDoc } from "@/server/database/models/order.model";
 import { getServerEnv } from "@/shared/config/env";
@@ -125,7 +125,14 @@ export class PaymobProvider implements PaymentProvider {
     const concatenated = PaymobProvider.HMAC_FIELDS.map((f) => PaymobProvider.pick(obj, f)).join("");
     const expected = createHmac("sha512", secret).update(concatenated).digest("hex");
 
-    if (expected !== received) {
+    // Constant-time compare. `!==` leaks how many leading characters matched
+    // through its timing, which over enough attempts lets a caller forge a
+    // signature one character at a time — and this endpoint is public.
+    // timingSafeEqual throws on a length mismatch, so that is checked first
+    // (the length of a SHA-512 hex digest is not a secret).
+    const expectedBuf = Buffer.from(expected, "utf8");
+    const receivedBuf = Buffer.from(received, "utf8");
+    if (expectedBuf.length !== receivedBuf.length || !timingSafeEqual(expectedBuf, receivedBuf)) {
       logger.warn("Paymob HMAC verification failed");
       throw Errors.unauthorized("Invalid webhook signature");
     }
