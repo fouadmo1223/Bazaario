@@ -29,6 +29,16 @@ process.env.JWT_REFRESH_SECRET ??= "test-refresh-secret-that-is-long-enough";
 process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017";
 process.env.REDIS_URL ??= "redis://127.0.0.1:6379";
 
+/**
+ * Stripe. Both are overridden unconditionally, not defaulted, so the webhook
+ * suite signs with a secret it knows regardless of what .env.local holds.
+ *
+ * No network call is made: `constructEvent` is pure HMAC verification, and the
+ * secret key is only needed because the client is constructed to reach it.
+ */
+process.env.STRIPE_SECRET_KEY = "sk_test_dummy_key_for_tests";
+process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret_for_signature_checks";
+
 process.env.MONGODB_DB_NAME = process.env.MONGODB_DB_NAME_TEST ?? "commerce_test";
 
 /**

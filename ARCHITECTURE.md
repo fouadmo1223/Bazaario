@@ -381,13 +381,18 @@ There is deliberately no separate socket secret: the socket server verifies with
 What is genuinely done, and what is not. Ordered by what would hurt first.
 
 ### 8.1 Blocking
-- **Test coverage does not yet reach the payment paths.** CI now runs typecheck,
-  lint, the suite, and a build on every push (§9), and the two invariants most
-  likely to break silently are pinned. But refund arithmetic, the order status
-  machine, webhook idempotency, and cart merging are still guarded by nothing
-  but the next reader's attention — and those are where money is.
-- **Payment credentials unset.** Only COD is selectable until Stripe/Paymob keys
-  are configured, so the platform cannot actually take money.
+- **Test coverage reaches Stripe but not refunds.** CI runs typecheck, lint, the
+  suite, and a build on every push (§9). Stripe signature verification and
+  webhook idempotency are now pinned, along with the oversell guard. Refund
+  arithmetic, the order status machine, and cart merging are still guarded by
+  nothing but the next reader's attention — and those are where money is.
+- **Stripe is configured in test mode; Paymob is not configured at all.**
+  `enabledProviders()` returns `['cod', 'stripe']`. Going live needs live-mode
+  keys and a **production** `STRIPE_WEBHOOK_SECRET` from the dashboard endpoint —
+  the CLI's `whsec_` from `stripe listen` is local-only. Without the right
+  secret every delivery 400s, and orders stay `pending` after a successful
+  payment, because fulfillment is driven by the webhook and never by the
+  browser return (which is spoofable).
 - **No error tracking or metrics.** `pino` writes structured logs to stdout and
   nothing aggregates them. A 500 in production is invisible unless someone is
   tailing a container.
@@ -466,13 +471,14 @@ Suites do not run in parallel: they share one database.
 |---|---|
 | `conversation-access.test.ts` | Who can read and write a thread — participants, the vendor shared-inbox rule, cross-vendor refusal, revoked memberships, super admin. The socket server's room joins call the same guard. |
 | `checkout-oversell.test.ts` | Stock never goes negative; ten concurrent buyers racing for one unit produce exactly one winner. Also pins the deliberate exceptions (backorder, `trackInventory: false`) so they are not "fixed" away. |
+| `stripe-webhook.test.ts` | Signature verification (wrong secret, tampered body, missing header, stale timestamp) and **idempotency** — a duplicate delivery must not increment vendor revenue twice. Also that a failed payment releases reserved stock. No network: `constructEvent` is HMAC verification, so it runs in CI with a dummy key. |
 
 ### 9.2 What is not
-Auth and token rotation, payment provider adapters and webhook idempotency,
-refund arithmetic, the order status machine, coupon and tax calculation, cart
-merging on login, and every React component. **Refunds and webhooks are the
-gap that should close first** — they move money, and unlike the catalogue a
-mistake there is not visibly wrong on screen.
+Auth and token rotation, the Paymob adapter, refund arithmetic (the
+`charge.refunded` branch is exercised by no test), the order status machine,
+coupon and tax calculation, cart merging on login, and every React component.
+**Refunds are now the largest money-path gap** — a mistake there is not visibly
+wrong on screen.
 
 There are no end-to-end browser tests. The messaging flows were verified by
 hand against a running dev server and socket process, which is not a substitute.
