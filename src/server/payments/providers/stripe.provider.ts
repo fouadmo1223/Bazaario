@@ -4,6 +4,7 @@ import type { OrderDoc } from "@/server/database/models/order.model";
 import { getServerEnv } from "@/shared/config/env";
 import { Errors } from "@/shared/lib/errors";
 import { logger } from "@/shared/lib/logger";
+import { toMinor, toMajor, cents } from "@/shared/lib/money";
 
 /**
  * Stripe Checkout Session flow: we create a hosted session and redirect the
@@ -37,7 +38,7 @@ export class StripeProvider implements PaymentProvider {
         quantity: i.quantity,
         price_data: {
           currency,
-          unit_amount: Math.round(i.unitPrice * 100),
+          unit_amount: toMinor(i.unitPrice),
           product_data: { name: i.title, ...(i.image ? { images: [i.image] } : {}) },
         },
       })),
@@ -49,7 +50,7 @@ export class StripeProvider implements PaymentProvider {
               {
                 shipping_rate_data: {
                   type: "fixed_amount" as const,
-                  fixed_amount: { amount: Math.round(order.totals.shipping * 100), currency },
+                  fixed_amount: { amount: toMinor(order.totals.shipping), currency },
                   display_name: order.shipping?.method ?? "Shipping",
                 },
               },
@@ -92,7 +93,7 @@ export class StripeProvider implements PaymentProvider {
           orderRef: s.metadata?.orderId ?? String(s.client_reference_id),
           status: "paid",
           providerReference: s.id,
-          amount: (s.amount_total ?? 0) / 100,
+          amount: toMajor(cents(s.amount_total ?? 0)),
         };
       }
       case "checkout.session.async_payment_failed":
@@ -106,7 +107,7 @@ export class StripeProvider implements PaymentProvider {
           orderRef: c.metadata?.orderId ?? "",
           status: "refunded",
           providerReference: c.id,
-          amount: (c.amount_refunded ?? 0) / 100,
+          amount: toMajor(cents(c.amount_refunded ?? 0)),
         };
       }
       default:

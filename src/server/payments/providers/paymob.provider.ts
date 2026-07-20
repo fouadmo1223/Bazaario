@@ -4,6 +4,7 @@ import type { OrderDoc } from "@/server/database/models/order.model";
 import { getServerEnv } from "@/shared/config/env";
 import { Errors } from "@/shared/lib/errors";
 import { logger } from "@/shared/lib/logger";
+import { toMinor, toMajor, cents } from "@/shared/lib/money";
 
 const BASE = "https://accept.paymob.com/api";
 
@@ -38,7 +39,7 @@ export class PaymobProvider implements PaymentProvider {
   // the integration's dashboard settings, not from the payment-key request.
   async initiate(order: OrderDoc, _opts: { returnUrl: string }): Promise<PaymentInitResult> {
     const token = await this.authToken();
-    const amountCents = Math.round(order.totals.grandTotal * 100);
+    const amountCents = toMinor(order.totals.grandTotal);
 
     // 2) Register the order with Paymob.
     const orderRes = await fetch(`${BASE}/ecommerce/orders`, {
@@ -52,7 +53,7 @@ export class PaymobProvider implements PaymentProvider {
         merchant_order_id: `${order.number}-${Date.now()}`, // must be unique per attempt
         items: order.items.map((i) => ({
           name: i.title,
-          amount_cents: Math.round(i.unitPrice * 100),
+          amount_cents: toMinor(i.unitPrice),
           quantity: i.quantity,
         })),
       }),
@@ -147,7 +148,7 @@ export class PaymobProvider implements PaymentProvider {
       orderRef: merchantOrderId.split("-")[0], // our order number
       status: refunded ? "refunded" : success ? "paid" : "failed",
       providerReference: String(obj.id ?? ""),
-      amount: Number(obj.amount_cents ?? 0) / 100,
+      amount: toMajor(cents(Number(obj.amount_cents ?? 0))),
     };
   }
 }

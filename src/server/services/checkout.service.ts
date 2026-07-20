@@ -10,6 +10,7 @@ import { Errors } from "@/shared/lib/errors";
 import { validateCoupon, computeTotals, vendorTaxRate, type CartLine } from "./pricing.service";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
+import { toMinor, toMajor, timesQuantity } from "@/shared/lib/money";
 import type { Types } from "mongoose";
 
 type OrderItemInput = {
@@ -185,7 +186,7 @@ export const checkoutService = {
         sku: sku ?? null,
         unitPrice: price,
         quantity: item.quantity,
-        total: Math.round(price * item.quantity * 100) / 100,
+        total: toMajor(timesQuantity(toMinor(price), item.quantity)),
       });
       reservations.push({
         title: product.title,

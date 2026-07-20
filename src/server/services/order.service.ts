@@ -5,7 +5,7 @@ import { Errors } from "@/shared/lib/errors";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
 import { paginationSchema, buildPaginated, toSortObject, type Paginated } from "@/shared/lib/pagination";
-import { toMinorUnits, fromMinorUnits, sumMinorUnits } from "@/shared/lib/money";
+import { toMinor, toMajor, addMinor, subMinor, sumAmounts } from "@/shared/lib/money";
 
 /**
  * Legal order status transitions. Encoding this as a machine prevents invalid
@@ -111,16 +111,14 @@ export const orderService = {
     // values a refund that exactly settles the balance can read as both "more
     // than remaining" and "less than the total", so a fully refunded order gets
     // stuck in `partially_refunded` and its stock is never released.
-    const totalMinor = toMinorUnits(order.totals.grandTotal);
-    const alreadyRefundedMinor = sumMinorUnits(order.refunds.map((r) => r.amount));
-    const remainingMinor = totalMinor - alreadyRefundedMinor;
-    const amountMinor = toMinorUnits(input.amount);
+    const total = toMinor(order.totals.grandTotal);
+    const alreadyRefunded = sumAmounts(order.refunds.map((r) => r.amount));
+    const remaining = subMinor(total, alreadyRefunded);
+    const amount = toMinor(input.amount);
 
-    if (amountMinor <= 0) throw Errors.badRequest("Refund amount must be positive");
-    if (amountMinor > remainingMinor) {
-      throw Errors.badRequest(
-        `Refund exceeds remaining amount (${fromMinorUnits(remainingMinor).toFixed(2)})`,
-      );
+    if (amount <= 0) throw Errors.badRequest("Refund amount must be positive");
+    if (amount > remaining) {
+      throw Errors.badRequest(`Refund exceeds remaining amount (${toMajor(remaining).toFixed(2)})`);
     }
 
     order.refunds.push({
@@ -131,7 +129,7 @@ export const orderService = {
       by: actorId as never,
     });
 
-    const isFull = alreadyRefundedMinor + amountMinor >= totalMinor;
+    const isFull = addMinor(alreadyRefunded, amount) >= total;
     order.payment.status = isFull ? "refunded" : "partially_refunded";
     if (isFull) {
       order.status = "refunded";

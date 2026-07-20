@@ -64,6 +64,20 @@ export const paymentService = {
       order.payment.reference = outcome.providerReference;
       order.status = "paid";
       order.timeline.push({ status: "paid", note: "Payment captured", at: new Date() });
+      /**
+       * Denormalized running total. Two caveats before anyone relies on it:
+       *
+       * 1. It is currently **written but never read** — `analytics.service`
+       *    computes revenue by aggregating `totals.grandTotal` over orders,
+       *    which is the authoritative figure.
+       * 2. `$inc` accumulates floats *inside Mongo*, so this drifts by a
+       *    fraction of a cent per order and cannot be corrected from here the
+       *    way JS-side arithmetic can (see shared/lib/money.ts).
+       *
+       * Displaying this without first making it exact — storing minor units, or
+       * dropping it in favour of the aggregation — would show a number that
+       * slowly diverges from the orders it claims to summarize.
+       */
       await Vendor.updateOne(
         { _id: order.vendor },
         { $inc: { "stats.revenue": order.totals.grandTotal } },

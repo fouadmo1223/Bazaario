@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/server/database/connection";
+import { toMinor, toMajor } from "@/shared/lib/money";
 import { Order } from "@/server/database/models/order.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
@@ -45,14 +46,17 @@ export const analyticsService = {
       },
     ]);
 
+    // The sum happens inside Mongo over float totals, so the result can carry a
+    // sub-cent artefact (a few 1e-10). Snapping to whole cents recovers the true
+    // figure; it is not merely cosmetic rounding.
     const revenue = agg?.revenue ?? 0;
     const orders = agg?.orders ?? 0;
     const customers = agg?.customers?.filter(Boolean).length ?? 0;
 
     return {
-      revenue: Math.round(revenue * 100) / 100,
+      revenue: toMajor(toMinor(revenue)),
       orders,
-      averageOrderValue: orders ? Math.round((revenue / orders) * 100) / 100 : 0,
+      averageOrderValue: orders ? toMajor(toMinor(revenue / orders)) : 0,
       customers,
       conversionProxy: 0, // requires traffic data; wired when analytics ingestion lands
     };
@@ -81,7 +85,7 @@ export const analyticsService = {
 
     return rows.map((r) => ({
       date: r._id,
-      revenue: Math.round(r.revenue * 100) / 100,
+      revenue: toMajor(toMinor(r.revenue)),
       orders: r.orders,
     }));
   },
@@ -212,7 +216,7 @@ export const analyticsService = {
         Product.countDocuments({ status: "active" }),
       ]);
       return {
-        revenue: Math.round((orderAgg?.revenue ?? 0) * 100) / 100,
+        revenue: toMajor(toMinor(orderAgg?.revenue ?? 0)),
         orders: orderAgg?.orders ?? 0,
         users,
         products,

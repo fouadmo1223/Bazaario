@@ -1,6 +1,19 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { Coupon, type CouponDoc } from "@/server/database/models/coupon.model";
 import { Errors } from "@/shared/lib/errors";
+import {
+  type Minor,
+  ZERO,
+  toMinor,
+  toMajor,
+  addMinor,
+  subMinor,
+  timesQuantity,
+  percentOf,
+  sumMinor,
+  minMinor,
+  clampToZero,
+} from "@/shared/lib/money";
 
 export type CartLine = { unitPrice: number; quantity: number };
 
@@ -11,8 +24,6 @@ export type Totals = {
   shipping: number;
   grandTotal: number;
 };
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** TODO: replace with per-vendor tax rules (jurisdiction + product class). */
 const DEFAULT_TAX_RATE = 0.14;
@@ -50,39 +61,65 @@ export async function validateCoupon(
   return coupon;
 }
 
-/** Discount amount a coupon yields against a subtotal. Shipping is not an input:
- *  a free-shipping coupon reports the fact and the caller zeroes the fee. */
-export function couponDiscount(coupon: CouponDoc, subtotal: number): { discount: number; freeShipping: boolean } {
-  if (coupon.type === "free_shipping") return { discount: 0, freeShipping: true };
-  if (coupon.type === "fixed") return { discount: Math.min(coupon.value, subtotal), freeShipping: false };
-  // percentage
-  let d = (subtotal * coupon.value) / 100;
-  if (coupon.maxDiscount != null) d = Math.min(d, coupon.maxDiscount);
-  return { discount: Math.min(d, subtotal), freeShipping: false };
+/**
+ * Discount a coupon yields against a subtotal, in cents.
+ *
+ * Shipping is not an input: a free-shipping coupon reports the fact and the
+ * caller zeroes the fee. The discount is capped at the subtotal so a generous
+ * fixed-amount coupon cannot produce a negative order.
+ */
+export function couponDiscount(
+  coupon: CouponDoc,
+  subtotal: Minor,
+): { discount: Minor; freeShipping: boolean } {
+  if (coupon.type === "free_shipping") return { discount: ZERO, freeShipping: true };
+  if (coupon.type === "fixed") {
+    return { discount: minMinor(toMinor(coupon.value), subtotal), freeShipping: false };
+  }
+
+  // Percentage. `coupon.value` is a percentage (10 = 10%), not an amount.
+  let discount = percentOf(subtotal, coupon.value);
+  if (coupon.maxDiscount != null) discount = minMinor(discount, toMinor(coupon.maxDiscount));
+  return { discount: minMinor(discount, subtotal), freeShipping: false };
 }
 
 /**
- * Compute order totals. `taxRate` is a fraction (0.14 = 14%), `shippingBase`
- * is the method's flat fee. Coupons apply to subtotal before tax.
+ * Compute order totals.
+ *
+ * Every step runs in whole cents and only the final `Totals` converts back to
+ * decimals for storage. Doing it the other way — rounding to two decimals after
+ * each step, as this used to — is correct for any single figure but leaves the
+ * stored values as floats that later code then sums, which is exactly how the
+ * refund bugs happened.
+ *
+ * `taxRate` is a fraction (0.14 = 14%), matching how callers configure it;
+ * `percentOf` wants a percentage, hence the conversion at the call.
  */
 export function computeTotals(
   lines: CartLine[],
   opts: { coupon?: CouponDoc | null; taxRate?: number; shippingBase?: number; taxInclusive?: boolean } = {},
 ): Totals {
-  const subtotal = round2(lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0));
+  const subtotal = sumMinor(
+    lines.map((line) => timesQuantity(toMinor(line.unitPrice), line.quantity)),
+  );
 
-  let shipping = opts.shippingBase ?? 0;
-  let discount = 0;
+  let shipping = toMinor(opts.shippingBase ?? 0);
+  let discount = ZERO;
   if (opts.coupon) {
-    const res = couponDiscount(opts.coupon, subtotal);
-    discount = round2(res.discount);
-    if (res.freeShipping) shipping = 0;
+    const result = couponDiscount(opts.coupon, subtotal);
+    discount = result.discount;
+    if (result.freeShipping) shipping = ZERO;
   }
 
-  const taxable = Math.max(0, subtotal - discount);
-  const taxRate = opts.taxRate ?? 0;
-  const tax = opts.taxInclusive ? 0 : round2(taxable * taxRate);
+  const taxable = clampToZero(subMinor(subtotal, discount));
+  const tax = opts.taxInclusive ? ZERO : percentOf(taxable, (opts.taxRate ?? 0) * 100);
+  const grandTotal = addMinor(addMinor(taxable, tax), shipping);
 
-  const grandTotal = round2(taxable + tax + shipping);
-  return { subtotal, discount, tax, shipping, grandTotal };
+  return {
+    subtotal: toMajor(subtotal),
+    discount: toMajor(discount),
+    tax: toMajor(tax),
+    shipping: toMajor(shipping),
+    grandTotal: toMajor(grandTotal),
+  };
 }
