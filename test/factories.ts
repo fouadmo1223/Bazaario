@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { User, type UserDoc } from "@/server/database/models/user.model";
 import { Vendor, type VendorDoc } from "@/server/database/models/vendor.model";
 import { Membership, type MembershipDoc } from "@/server/database/models/membership.model";
+import { Product, type ProductDoc } from "@/server/database/models/product.model";
+import { Cart, type CartDoc } from "@/server/database/models/cart.model";
 import { ROLES, type Role, type Permission } from "@/shared/constants/rbac";
 import type { Actor } from "@/server/services/conversation.service";
 
@@ -73,6 +75,61 @@ export async function makeMembership(
     status: opts.status ?? "active",
   });
 }
+
+export async function makeProduct(
+  vendorId: Types.ObjectId | string,
+  opts: {
+    price?: number;
+    stock?: number;
+    title?: string;
+    trackInventory?: boolean;
+    allowBackorder?: boolean;
+    status?: "draft" | "active" | "archived";
+  } = {},
+): Promise<ProductDoc> {
+  const n = unique();
+  return Product.create({
+    vendor: vendorId,
+    type: "simple",
+    title: opts.title ?? `Product ${n}`,
+    slug: `product-${n}`,
+    price: opts.price ?? 25,
+    stock: opts.stock ?? 10,
+    trackInventory: opts.trackInventory ?? true,
+    allowBackorder: opts.allowBackorder ?? false,
+    status: opts.status ?? "active",
+  });
+}
+
+/** A one-line cart, which is all the checkout tests need. */
+export async function makeCart(
+  vendorId: Types.ObjectId | string,
+  userId: Types.ObjectId | string,
+  product: ProductDoc,
+  quantity = 1,
+): Promise<CartDoc> {
+  return Cart.create({
+    vendor: vendorId,
+    user: userId,
+    items: [
+      {
+        product: product._id,
+        title: product.title,
+        unitPrice: product.price,
+        quantity,
+      },
+    ],
+  });
+}
+
+/** A plausible shipping address — no test asserts on it. */
+export const testAddress = {
+  recipient: "Test Recipient",
+  phone: "+10000000000",
+  line1: "1 Test Street",
+  city: "Testville",
+  country: "US",
+};
 
 /** The shape services take as the acting user. */
 export function actor(user: UserDoc): Actor {

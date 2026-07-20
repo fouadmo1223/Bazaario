@@ -2,27 +2,25 @@ import { beforeAll, afterAll, beforeEach } from "vitest";
 import mongoose from "mongoose";
 
 /**
- * Redirect every test at a throwaway database *before* any application module
+ * Redirect every test at throwaway datastores *before* any application module
  * is imported.
  *
- * `connectToDatabase` reads `MONGODB_DB_NAME` through the validated env at call
- * time, so overriding the variable here is enough — but only because this file
- * is a `setupFile` and therefore runs before the test's own imports. Setting it
- * inside a test would come too late for a module that had already connected.
+ * `connectToDatabase` and `getRedis` read their configuration through the
+ * validated env at call time, so overriding the variables here is enough — but
+ * only because this file is a `setupFile` and therefore runs before the tests'
+ * own imports. Setting them inside a test would come too late for a module that
+ * had already connected.
  */
+
 // Vitest has no --env-file, and Vite only exposes prefixed variables, so the
-// real connection strings are loaded here. This must come *before* the test-db
-// override below, or .env.local's own MONGODB_DB_NAME would win and the wipe
-// would run against development data.
+// real connection strings are loaded here. This must come before the overrides
+// below, or .env.local's own values would win and the wipes would run against
+// development data.
 try {
   process.loadEnvFile(".env.local");
 } catch {
   // Absent in CI, where the variables come from the environment instead.
 }
-
-const TEST_DB = process.env.MONGODB_DB_NAME_TEST ?? "commerce_test";
-
-process.env.MONGODB_DB_NAME = TEST_DB;
 
 // Secrets the env schema demands. Values are irrelevant to the assertions but
 // must exist and satisfy the minimum lengths, or `getServerEnv()` throws.
@@ -30,6 +28,22 @@ process.env.JWT_ACCESS_SECRET ??= "test-access-secret-that-is-long-enough";
 process.env.JWT_REFRESH_SECRET ??= "test-refresh-secret-that-is-long-enough";
 process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017";
 process.env.REDIS_URL ??= "redis://127.0.0.1:6379";
+
+process.env.MONGODB_DB_NAME = process.env.MONGODB_DB_NAME_TEST ?? "commerce_test";
+
+/**
+ * Move Redis to a separate logical database too.
+ *
+ * Checkout increments a per-vendor order counter and the rate limiter writes
+ * per-user keys; on the default database those would accumulate in whatever
+ * Redis development is using. Database 1 is flushed wholesale below, which is
+ * only safe because nothing else is expected to use it.
+ */
+{
+  const url = new URL(process.env.REDIS_URL);
+  url.pathname = `/${process.env.REDIS_TEST_DB ?? "1"}`;
+  process.env.REDIS_URL = url.toString();
+}
 
 beforeAll(async () => {
   const { connectToDatabase } = await import("@/server/database/connection");
@@ -43,6 +57,9 @@ beforeAll(async () => {
       `Refusing to run tests against database "${name}" — the name must contain "test".`,
     );
   }
+
+  const { getRedis } = await import("@/server/cache/redis");
+  await getRedis().flushdb();
 });
 
 /**
