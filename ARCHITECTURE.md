@@ -278,10 +278,10 @@ create path (`getOrCreateGuestToken`, actions only).
 8. ⏳ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes. *(Notification bell UI and email fallback for offline recipients still outstanding.)*
 9. ⏳ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal. *(CMS / marketing / reviews / support still outstanding.)*
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; i18n/RTL and PWA outstanding.
-11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; **no test suite, no CI/CD** yet.
+11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; vitest suite (§9) and GitHub Actions CI running typecheck, lint, tests, and build. *(Coverage is still narrow — see §9.1.)*
 
 ### 6.1 Known gaps
-- **No automated tests.** Verification to date is typecheck + lint + build + throwaway service-level runtime scripts. Those scripts proved the money, transition, and isolation paths but were deleted after each run — they should become a real suite.
+- **Test coverage is narrow.** A suite exists (§9) and covers the two invariants most likely to be broken silently — conversation access control and the oversell guard — but auth, payments, refunds, cart merging, and the order status machine are still unprotected.
 - Customers cannot yet reorder, return, or download an invoice; drivers have no UI at all.
 - Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations).
 - The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, but the variant matrix itself is still API-only (`syncVariantsAction`) — a variable product can be declared in the UI and not yet given its variants there.
@@ -381,11 +381,11 @@ There is deliberately no separate socket secret: the socket server verifies with
 What is genuinely done, and what is not. Ordered by what would hurt first.
 
 ### 8.1 Blocking
-- **No automated tests, no CI/CD.** This is the single largest risk. Every
-  guarantee documented here — tenant isolation, oversell prevention, room
-  authorization, refund arithmetic — is currently protected by nothing but the
-  next reader's attention. Verification has been typecheck + lint + build +
-  throwaway scripts that were deleted after each run.
+- **Test coverage does not yet reach the payment paths.** CI now runs typecheck,
+  lint, the suite, and a build on every push (§9), and the two invariants most
+  likely to break silently are pinned. But refund arithmetic, the order status
+  machine, webhook idempotency, and cart merging are still guarded by nothing
+  but the next reader's attention — and those are where money is.
 - **Payment credentials unset.** Only COD is selectable until Stripe/Paymob keys
   are configured, so the platform cannot actually take money.
 - **No error tracking or metrics.** `pino` writes structured logs to stdout and
@@ -430,3 +430,49 @@ Outstanding:
   the Redis subscriber on SIGTERM, so deploys drop connections abruptly.
 - The realtime process must be deployed somewhere that holds long-lived
   connections (container/VM), not on serverless.
+
+---
+
+## 9. Testing
+
+`npm test` (vitest, `test/`). CI runs typecheck → lint → tests → build on every
+push and pull request (`.github/workflows/ci.yml`), with Mongo and Redis as
+service containers.
+
+**Tests run against real MongoDB and Redis, not mocks.** Almost every invariant
+worth protecting here is a database behaviour: the oversell guard is a
+conditional update that two writers must genuinely race on, tenant isolation is
+a query filter, unread counts are an aggregation. A mocked driver would assert
+that the mock behaves as written and leave all three unverified.
+
+The cost is that a test run needs both services up. `test/setup.ts` handles
+isolation:
+
+- Mongo goes to `commerce_test`, and the run **aborts** if the resolved database
+  name does not contain `test` — the per-test wipe would otherwise delete
+  development data.
+- Redis goes to logical database 1, flushed once at start, so per-vendor order
+  counters and rate-limit keys do not accumulate in the development instance.
+- `.env.local` is loaded by hand (vitest has no `--env-file`, and Vite only
+  exposes prefixed variables), *before* the test overrides are applied.
+- Collections are emptied between tests rather than dropped, because dropping
+  takes the indexes with it and some assertions depend on a unique index
+  actually rejecting a duplicate.
+
+Suites do not run in parallel: they share one database.
+
+### 9.1 What is covered
+| Suite | Protects |
+|---|---|
+| `conversation-access.test.ts` | Who can read and write a thread — participants, the vendor shared-inbox rule, cross-vendor refusal, revoked memberships, super admin. The socket server's room joins call the same guard. |
+| `checkout-oversell.test.ts` | Stock never goes negative; ten concurrent buyers racing for one unit produce exactly one winner. Also pins the deliberate exceptions (backorder, `trackInventory: false`) so they are not "fixed" away. |
+
+### 9.2 What is not
+Auth and token rotation, payment provider adapters and webhook idempotency,
+refund arithmetic, the order status machine, coupon and tax calculation, cart
+merging on login, and every React component. **Refunds and webhooks are the
+gap that should close first** — they move money, and unlike the catalogue a
+mistake there is not visibly wrong on screen.
+
+There are no end-to-end browser tests. The messaging flows were verified by
+hand against a running dev server and socket process, which is not a substitute.

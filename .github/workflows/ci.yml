@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# A second push to the same branch makes the first run's result irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    # The suite runs against real Mongo and Redis rather than mocks — see
+    # vitest.config.ts for why. These are the same versions development uses.
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017
+      REDIS_URL: redis://127.0.0.1:6379
+      # Dummy values: the suite asserts nothing about them, but the env schema
+      # rejects anything shorter, and every import of it would throw.
+      JWT_ACCESS_SECRET: ci-access-secret-that-is-long-enough
+      JWT_REFRESH_SECRET: ci-refresh-secret-that-is-long-enough
+      NEXT_PUBLIC_APP_URL: http://localhost:3001
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # Last because it is the slowest, and a type or test failure is a faster,
+      # clearer signal for the same underlying mistake.
+      - name: Build
+        run: npm run build
