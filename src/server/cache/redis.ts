@@ -11,10 +11,13 @@ const globalForRedis = globalThis as unknown as { _redis?: Redis };
 export function getRedis(): Redis {
   if (globalForRedis._redis) return globalForRedis._redis;
 
-  const client = new Redis(getServerEnv().REDIS_URL, {
+  const env = getServerEnv();
+  const client = new Redis(env.REDIS_URL, {
     maxRetriesPerRequest: 3,
     lazyConnect: false,
     enableAutoPipelining: true,
+    // Empty outside tests, so real keys are unprefixed and unchanged.
+    keyPrefix: env.REDIS_KEY_PREFIX,
   });
 
   client.on("error", (err) => logger.error({ err }, "Redis error"));

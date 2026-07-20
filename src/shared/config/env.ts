@@ -16,6 +16,14 @@ const serverSchema = z.object({
   MONGODB_URI: z.string().url().or(z.string().startsWith("mongodb")),
   MONGODB_DB_NAME: z.string().min(1).default("commerce"),
   REDIS_URL: z.string().min(1),
+  /**
+   * Namespace applied to every Redis key. Empty in development and production.
+   *
+   * Exists because the test suite cannot get isolation from a separate logical
+   * database: hosted Redis (Redis Cloud, Upstash) exposes only database 0, so
+   * `SELECT 1` fails and the client silently stays on the shared one.
+   */
+  REDIS_KEY_PREFIX: z.string().default(""),
 
   // Auth / crypto
   JWT_ACCESS_SECRET: z.string().min(32),
