@@ -3,7 +3,11 @@ import { Server, type Socket } from "socket.io";
 import Redis from "ioredis";
 import jwt from "jsonwebtoken";
 import { REALTIME_CHANNEL, type RealtimeEvent } from "@/server/services/notification.service";
-import type { Role } from "@/shared/constants/rbac";
+import { canAccess } from "@/server/services/conversation.service";
+import { connectToDatabase } from "@/server/database/connection";
+import { Membership } from "@/server/database/models/membership.model";
+import { Order } from "@/server/database/models/order.model";
+import { ROLES, type Role } from "@/shared/constants/rbac";
 
 /**
  * Standalone Socket.IO server.
@@ -27,8 +31,40 @@ export const rooms = {
   user: (id: string) => `user:${id}`,
   vendor: (id: string) => `vendor:${id}`,
   order: (id: string) => `order:${id}`,
-  ticket: (id: string) => `ticket:${id}`,
+  conversation: (id: string) => `conversation:${id}`,
 };
+
+/**
+ * Room authorization.
+ *
+ * These deliberately re-query rather than trusting the JWT's `roles`: the token
+ * carries global roles only, and vendor access lives in Membership, which can be
+ * revoked while a socket is still connected on an unexpired token.
+ */
+
+async function canReadVendor(user: SocketUser, vendorId: string): Promise<boolean> {
+  if (user.roles.includes(ROLES.SUPER_ADMIN)) return true;
+  try {
+    await connectToDatabase();
+    const membership = await Membership.findOne({ user: user.id, vendor: vendorId, status: "active" }).select("_id");
+    return membership != null;
+  } catch {
+    return false;
+  }
+}
+
+async function canReadOrder(user: SocketUser, orderId: string): Promise<boolean> {
+  if (user.roles.includes(ROLES.SUPER_ADMIN)) return true;
+  try {
+    await connectToDatabase();
+    const order = await Order.findById(orderId).select("customer vendor");
+    if (!order) return false;
+    if (order.customer && String(order.customer) === user.id) return true;
+    return canReadVendor(user, String(order.vendor));
+  } catch {
+    return false;
+  }
+}
 
 function start() {
   const httpServer = createServer((_req, res) => {
@@ -63,31 +99,71 @@ function start() {
     const user = socket.user;
     if (!user) return socket.disconnect(true);
 
+    /**
+     * Rooms this socket has been cleared for.
+     *
+     * Every `*:subscribe` used to join whatever room the client named, with a
+     * comment claiming authorization happened "server-side" — it did not. Any
+     * authenticated shopper could join `vendor:<anyone>` and read a competitor's
+     * live order feed, or `conversation:<any id>` and watch a stranger's support
+     * thread. The join handlers below now check the database before joining, and
+     * the emit handlers only trust rooms recorded here rather than re-deriving
+     * permission from client input.
+     */
+    const authorized = new Set<string>();
+
     // Every user gets their own room for direct notifications.
     socket.join(rooms.user(user.id));
 
-    // Presence: announce online status to interested rooms.
-    socket.broadcast.emit("presence:online", { userId: user.id });
+    // Presence is announced only to the rooms this socket shares, once it has
+    // joined them — a global broadcast told every connected client the id of
+    // every user who came online.
 
-    /** Staff subscribe to their vendor's stream (authorization is re-checked server-side). */
-    socket.on("vendor:subscribe", (vendorId: string) => {
-      socket.join(rooms.vendor(vendorId));
-    });
-    socket.on("order:subscribe", (orderId: string) => {
-      socket.join(rooms.order(orderId));
+    socket.on("vendor:subscribe", async (vendorId: string) => {
+      if (!(await canReadVendor(user, vendorId))) return;
+      const room = rooms.vendor(vendorId);
+      authorized.add(room);
+      socket.join(room);
     });
 
-    // --- Chat / support tickets ---
-    socket.on("ticket:join", (ticketId: string) => socket.join(rooms.ticket(ticketId)));
-    socket.on("ticket:typing", ({ ticketId, typing }: { ticketId: string; typing: boolean }) => {
-      socket.to(rooms.ticket(ticketId)).emit("ticket:typing", { userId: user.id, typing });
+    socket.on("order:subscribe", async (orderId: string) => {
+      if (!(await canReadOrder(user, orderId))) return;
+      const room = rooms.order(orderId);
+      authorized.add(room);
+      socket.join(room);
     });
-    socket.on("ticket:read", ({ ticketId, messageId }: { ticketId: string; messageId: string }) => {
-      socket.to(rooms.ticket(ticketId)).emit("ticket:read", { userId: user.id, messageId });
+
+    // --- Chat ---
+    socket.on("conversation:join", async (conversationId: string) => {
+      if (!(await canAccess(conversationId, user))) return;
+      const room = rooms.conversation(conversationId);
+      authorized.add(room);
+      socket.join(room);
+      socket.to(room).emit("presence:online", { userId: user.id });
+    });
+
+    socket.on("conversation:leave", (conversationId: string) => {
+      const room = rooms.conversation(conversationId);
+      authorized.delete(room);
+      socket.leave(room);
+    });
+
+    socket.on("conversation:typing", ({ conversationId, typing }: { conversationId: string; typing: boolean }) => {
+      const room = rooms.conversation(conversationId);
+      if (!authorized.has(room)) return;
+      socket.to(room).emit("conversation:typing", { userId: user.id, typing });
+    });
+
+    socket.on("conversation:read", ({ conversationId, messageId }: { conversationId: string; messageId: string }) => {
+      const room = rooms.conversation(conversationId);
+      if (!authorized.has(room)) return;
+      socket.to(room).emit("conversation:read", { userId: user.id, messageId });
     });
 
     socket.on("disconnect", () => {
-      socket.broadcast.emit("presence:offline", { userId: user.id });
+      for (const room of authorized) {
+        socket.to(room).emit("presence:offline", { userId: user.id });
+      }
     });
   });
 
@@ -118,7 +194,7 @@ function start() {
         io.to(rooms.vendor(event.vendor)).emit("order:update", event);
         break;
       case "chat:message":
-        io.to(rooms.ticket(event.ticketId)).emit("chat:message", event.payload);
+        io.to(rooms.conversation(event.conversationId)).emit("chat:message", event.payload);
         break;
     }
   });

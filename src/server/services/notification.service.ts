@@ -22,7 +22,7 @@ export const REALTIME_CHANNEL = "realtime:events";
 export type RealtimeEvent =
   | { kind: "notification"; userId: string; payload: Record<string, unknown> }
   | { kind: "order:update"; vendor: string; orderId: string; status: string }
-  | { kind: "chat:message"; ticketId: string; payload: Record<string, unknown> };
+  | { kind: "chat:message"; conversationId: string; payload: Record<string, unknown> };
 
 /**
  * Publish an event for the Socket.IO server to fan out. Serverless functions

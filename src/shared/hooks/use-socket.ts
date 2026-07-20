@@ -1,46 +1,83 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { clientEnv } from "@/shared/config/env";
 
 /**
- * Connects to the standalone realtime server. The access token is httpOnly, so
- * the page passes a short-lived socket token fetched from an endpoint rather
- * than reading the cookie directly.
+ * Fetch a handshake token from `/api/realtime/token`.
+ *
+ * The session cookie is httpOnly, so the browser cannot read it to authenticate
+ * the socket; that endpoint reads it server-side and returns a 60-second token
+ * instead. Callers must therefore be able to ask for a *fresh* one, which is
+ * why this is a function rather than a value fetched once.
+ */
+async function fetchSocketToken(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/realtime/token", { credentials: "include" });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { data?: { token?: string } };
+    return body.data?.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Connect to the standalone realtime server.
  *
  * The socket lives in state, not a ref: subscribers need a re-render when it is
  * created, otherwise their `socket`-dependent effects never re-run.
+ *
+ * Reconnection re-mints the token. Socket.IO replays the original handshake on
+ * reconnect, and the original token has a 60-second life — so after any outage
+ * longer than a minute, every reconnect attempt would fail authentication and
+ * the client would give up while apparently still "reconnecting".
  */
-export function useSocket(token: string | null): { socket: Socket | null; connected: boolean } {
+export function useSocket(): { socket: Socket | null; connected: boolean } {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (!token) return;
     const url = clientEnv.NEXT_PUBLIC_SOCKET_URL;
     if (!url) return;
 
-    const next = io(url, {
-      auth: { token },
-      transports: ["websocket"],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
-    // The socket is created by connecting to an external system, so publishing
-    // the instance from the effect is the only place it can come from.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSocket(next);
+    let cancelled = false;
 
-    next.on("connect", () => setConnected(true));
-    next.on("disconnect", () => setConnected(false));
+    void (async () => {
+      const token = await fetchSocketToken();
+      if (cancelled || !token) return;
+
+      const next = io(url, {
+        auth: { token },
+        transports: ["websocket"],
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+      });
+      socketRef.current = next;
+
+      next.on("connect", () => setConnected(true));
+      next.on("disconnect", () => setConnected(false));
+
+      // Refresh the handshake token before each retry.
+      next.io.on("reconnect_attempt", () => {
+        void fetchSocketToken().then((fresh) => {
+          if (fresh) next.auth = { token: fresh };
+        });
+      });
+
+      setSocket(next);
+    })();
 
     return () => {
-      next.disconnect();
+      cancelled = true;
+      socketRef.current?.disconnect();
+      socketRef.current = null;
       setSocket(null);
       setConnected(false);
     };
-  }, [token]);
+  }, []);
 
   return { socket, connected };
 }
@@ -55,8 +92,8 @@ export type NotificationPayload = {
 };
 
 /** Subscribe to live notifications, keeping an unread counter. */
-export function useNotifications(token: string | null) {
-  const { socket, connected } = useSocket(token);
+export function useNotifications() {
+  const { socket, connected } = useSocket();
   const [items, setItems] = useState<NotificationPayload[]>([]);
   const [unread, setUnread] = useState(0);
 
@@ -73,4 +110,67 @@ export function useNotifications(token: string | null) {
   }, [socket]);
 
   return { items, unread, connected, clearUnread: () => setUnread(0) };
+}
+
+export type ChatMessagePayload = {
+  id: string;
+  conversationId: string;
+  body: string;
+  attachments: { url: string; name: string; mime?: string; size?: number }[];
+  system: boolean;
+  senderId: string | null;
+  senderName: string;
+  createdAt: string;
+};
+
+/**
+ * Live view of one conversation.
+ *
+ * `initial` seeds the thread from the server render so the first paint is not
+ * empty while the socket is still shaking hands. Incoming messages are
+ * de-duplicated by id: the sender's own message arrives twice — once as the
+ * server action's return value, once through the socket fan-out.
+ */
+export function useConversation(conversationId: string, initial: ChatMessagePayload[] = []) {
+  const { socket, connected } = useSocket();
+  const [messages, setMessages] = useState<ChatMessagePayload[]>(initial);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  const append = useCallback((message: ChatMessagePayload) => {
+    setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
+  }, []);
+
+  useEffect(() => {
+    if (!socket || !conversationId) return;
+
+    socket.emit("conversation:join", conversationId);
+
+    const onMessage = (payload: ChatMessagePayload) => {
+      if (payload.conversationId !== conversationId) return;
+      append(payload);
+    };
+    const onTyping = ({ userId, typing }: { userId: string; typing: boolean }) => {
+      setTypingUsers((prev) =>
+        typing ? (prev.includes(userId) ? prev : [...prev, userId]) : prev.filter((u) => u !== userId),
+      );
+    };
+
+    socket.on("chat:message", onMessage);
+    socket.on("conversation:typing", onTyping);
+
+    return () => {
+      socket.emit("conversation:leave", conversationId);
+      socket.off("chat:message", onMessage);
+      socket.off("conversation:typing", onTyping);
+    };
+  }, [socket, conversationId, append]);
+
+  const setTyping = useCallback(
+    (typing: boolean) => {
+      socket?.emit("conversation:typing", { conversationId, typing });
+    },
+    [socket, conversationId],
+  );
+
+  return { messages, append, typingUsers, connected, setTyping };
 }

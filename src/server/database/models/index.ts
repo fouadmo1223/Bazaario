@@ -17,6 +17,8 @@ export { Coupon } from "./coupon.model";
 export { Address } from "./address.model";
 export { Order } from "./order.model";
 export { Notification } from "./notification.model";
+export { Conversation } from "./conversation.model";
+export { Message } from "./message.model";
 export { VerificationToken } from "./verification-token.model";
 export { AuditLog } from "./audit-log.model";
 
@@ -34,3 +36,5 @@ export type { CouponRaw, CouponDoc } from "./coupon.model";
 export type { AddressRaw, AddressDoc } from "./address.model";
 export type { OrderRaw, OrderDoc, OrderStatus } from "./order.model";
 export type { NotificationRaw, NotificationDoc } from "./notification.model";
+export type { ConversationRaw, ConversationDoc, ConversationKind, ConversationStatus } from "./conversation.model";
+export type { MessageRaw, MessageDoc } from "./message.model";
