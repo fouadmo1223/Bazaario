@@ -60,7 +60,7 @@ export const profileService = {
           updatedBy: userId,
         },
       },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!user) throw Errors.notFound("Account not found");
 
@@ -109,7 +109,7 @@ export const profileService = {
     const address = await Address.findOneAndUpdate(
       { _id: addressId, user: userId },
       { $set: { ...input, isDefault: input.isDefault ?? false, updatedBy: userId } },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!address) throw Errors.notFound("Address not found");
     return address;

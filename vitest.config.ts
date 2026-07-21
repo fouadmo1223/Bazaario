@@ -24,7 +24,19 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     // Suites share one database, so they must not interleave writes.
     fileParallelism: false,
-    testTimeout: 20000,
-    hookTimeout: 30000,
+
+    /**
+     * Generous, because these are real network round-trips.
+     *
+     * If `.env.local` points at hosted Mongo/Redis (Atlas, Redis Cloud) every
+     * assertion pays that latency, a full run takes minutes, and the earlier
+     * 20s timeout produced *flaky* failures — suites that pass alone failing in
+     * a full run, which reads like a real bug and is not.
+     *
+     * Pointing MONGODB_URI and REDIS_URL at local instances for tests is the
+     * actual fix; these ceilings just stop the flakiness in the meantime.
+     */
+    testTimeout: 60000,
+    hookTimeout: 60000,
   },
 });
