@@ -37,6 +37,20 @@ export function vendorTaxRate(settings: { taxInclusive: boolean }): number {
 }
 
 /**
+ * Sum cart lines, exactly, in cents.
+ *
+ * Exported because the subtotal is also what decides whether a coupon's minimum
+ * spend is met, and that check runs before `computeTotals` does. Computing it a
+ * second way there — `lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0)`,
+ * as checkout used to — reintroduces the drift for that one comparison: a cart
+ * of 0.35 and 0.70 sums to 1.0499999999999998, so a coupon with a 1.05 minimum
+ * is refused on a cart that meets it.
+ */
+export function subtotalOf(lines: CartLine[]): Minor {
+  return sumMinor(lines.map((line) => timesQuantity(toMinor(line.unitPrice), line.quantity)));
+}
+
+/**
  * Validate a coupon against the current cart. Throws with a user-safe message
  * when invalid. Does NOT increment usage — that happens on successful order.
  */
@@ -99,9 +113,7 @@ export function computeTotals(
   lines: CartLine[],
   opts: { coupon?: CouponDoc | null; taxRate?: number; shippingBase?: number; taxInclusive?: boolean } = {},
 ): Totals {
-  const subtotal = sumMinor(
-    lines.map((line) => timesQuantity(toMinor(line.unitPrice), line.quantity)),
-  );
+  const subtotal = subtotalOf(lines);
 
   let shipping = toMinor(opts.shippingBase ?? 0);
   let discount = ZERO;

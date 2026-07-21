@@ -4,6 +4,7 @@ import { Vendor, type VendorDoc } from "@/server/database/models/vendor.model";
 import { Membership, type MembershipDoc } from "@/server/database/models/membership.model";
 import { Product, type ProductDoc } from "@/server/database/models/product.model";
 import { Cart, type CartDoc } from "@/server/database/models/cart.model";
+import { Coupon, type CouponDoc } from "@/server/database/models/coupon.model";
 import { ROLES, type Role, type Permission } from "@/shared/constants/rbac";
 import type { Actor } from "@/server/services/conversation.service";
 
@@ -119,6 +120,44 @@ export async function makeCart(
         quantity,
       },
     ],
+  });
+}
+
+/**
+ * A coupon, defaulting to an unconstrained 10% off.
+ *
+ * Every constraint is opt-in so a test that cares about, say, expiry says only
+ * that — the rest stays out of the way.
+ */
+export async function makeCoupon(
+  vendorId: Types.ObjectId | string,
+  opts: {
+    code?: string;
+    type?: "percentage" | "fixed" | "free_shipping";
+    value?: number;
+    minSpend?: number;
+    maxDiscount?: number | null;
+    usageLimit?: number | null;
+    perUserLimit?: number | null;
+    usedCount?: number;
+    startsAt?: Date | null;
+    expiresAt?: Date | null;
+    isActive?: boolean;
+  } = {},
+): Promise<CouponDoc> {
+  return Coupon.create({
+    vendor: vendorId,
+    code: opts.code ?? `SAVE-${unique()}`,
+    type: opts.type ?? "percentage",
+    value: opts.value ?? 10,
+    minSpend: opts.minSpend ?? 0,
+    maxDiscount: opts.maxDiscount ?? null,
+    usageLimit: opts.usageLimit ?? null,
+    perUserLimit: opts.perUserLimit ?? null,
+    usedCount: opts.usedCount ?? 0,
+    startsAt: opts.startsAt ?? null,
+    expiresAt: opts.expiresAt ?? null,
+    isActive: opts.isActive ?? true,
   });
 }
 

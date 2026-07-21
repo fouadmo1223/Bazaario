@@ -3,8 +3,8 @@ import { Cart, type CartDoc } from "@/server/database/models/cart.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { Errors } from "@/shared/lib/errors";
-import { toMinor, toMajor, sumMinor, timesQuantity } from "@/shared/lib/money";
-import { validateCoupon } from "./pricing.service";
+import { toMajor } from "@/shared/lib/money";
+import { validateCoupon, subtotalOf } from "./pricing.service";
 
 type CartOwner = { userId?: string; guestToken?: string };
 
@@ -129,9 +129,7 @@ export const cartService = {
 
     // Exact: this subtotal decides whether a coupon's minimum spend is met, so
     // drift here can reject a cart that does qualify.
-    const subtotal = toMajor(
-      sumMinor(cart.items.map((i) => timesQuantity(toMinor(i.unitPrice), i.quantity))),
-    );
+    const subtotal = toMajor(subtotalOf(cart.items));
     const coupon = await validateCoupon(vendorId, code, subtotal);
 
     cart.coupon = coupon.code;

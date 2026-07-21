@@ -7,7 +7,7 @@ import { Coupon } from "@/server/database/models/coupon.model";
 import { Vendor } from "@/server/database/models/vendor.model";
 import { getRedis } from "@/server/cache/redis";
 import { Errors } from "@/shared/lib/errors";
-import { validateCoupon, computeTotals, vendorTaxRate, type CartLine } from "./pricing.service";
+import { validateCoupon, computeTotals, subtotalOf, vendorTaxRate, type CartLine } from "./pricing.service";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
 import { toMinor, toMajor, timesQuantity } from "@/shared/lib/money";
@@ -199,7 +199,9 @@ export const checkoutService = {
 
     // Coupon (optional).
     let coupon = null;
-    const subtotalPreview = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
+    // Exact: this subtotal decides whether the minimum spend is met, and float
+    // drift here refuses a coupon on a cart that qualifies.
+    const subtotalPreview = toMajor(subtotalOf(lines));
     if (cart.coupon) {
       coupon = await validateCoupon(vendorId, cart.coupon, subtotalPreview);
     }
