@@ -39,6 +39,19 @@ process.env.REDIS_URL ??= "redis://127.0.0.1:6379";
 process.env.STRIPE_SECRET_KEY = "sk_test_dummy_key_for_tests";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret_for_signature_checks";
 
+/**
+ * Cloudinary. Same reasoning as Stripe, and set here for a second reason:
+ * `getServerEnv()` memoizes on its first call, and the `beforeAll` below
+ * connects to Mongo — which reads the env. Assigning these in a test file's own
+ * `beforeAll` would therefore land *after* the values were already cached.
+ *
+ * No upload is performed. The signature is a local SHA-1, so the suite verifies
+ * it without touching the network.
+ */
+process.env.CLOUDINARY_CLOUD_NAME = "test-cloud";
+process.env.CLOUDINARY_API_KEY = "123456789";
+process.env.CLOUDINARY_API_SECRET = "test-api-secret";
+
 process.env.MONGODB_DB_NAME = process.env.MONGODB_DB_NAME_TEST ?? "commerce_test";
 
 /**

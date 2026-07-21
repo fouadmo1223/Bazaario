@@ -22,20 +22,25 @@ const address = {
   country: "EG",
 };
 
+/** Matches what `signAvatarUpload` scopes a signature to. See cloudinary.test.ts. */
+const ownAvatar = (userId: string) =>
+  `https://res.cloudinary.com/test-cloud/image/upload/v1712345678/avatars/${userId}.webp`;
+
 describe("profile updates", () => {
   it("updates the fields a user owns", async () => {
     const user = await makeUser();
+    const avatar = ownAvatar(String(user._id));
 
     await profileService.update(String(user._id), {
       name: "New Name",
       phone: "+123456",
-      avatar: "https://example.com/a.png",
+      avatar,
     });
 
     const fresh = await User.findById(user._id);
     expect(fresh!.name).toBe("New Name");
     expect(fresh!.phone).toBe("+123456");
-    expect(fresh!.avatar).toBe("https://example.com/a.png");
+    expect(fresh!.avatar).toBe(avatar);
   });
 
   /**
@@ -56,6 +61,91 @@ describe("profile updates", () => {
     const fresh = await User.findById(user._id);
     expect(fresh!.email).toBe(originalEmail);
     expect(fresh!.roles).toEqual([ROLES.CUSTOMER]);
+  });
+});
+
+/**
+ * Avatars.
+ *
+ * Saved on their own the moment an upload finishes, rather than with the form.
+ * The regression this pins: the URL used to live only in React state until Save
+ * was pressed, so uploading a photo and reloading lost it — while the image sat
+ * in Cloudinary, already uploaded.
+ */
+describe("avatar", () => {
+  it("persists an uploaded avatar without touching name or phone", async () => {
+    const user = await makeUser([], { name: "Original Name" });
+    const id = String(user._id);
+
+    await profileService.setAvatar(id, ownAvatar(id));
+
+    const fresh = await User.findById(id);
+    expect(fresh!.avatar).toBe(ownAvatar(id));
+    expect(fresh!.name).toBe("Original Name");
+  });
+
+  it("survives a re-read, which is what reloading the page does", async () => {
+    const user = await makeUser();
+    const id = String(user._id);
+
+    await profileService.setAvatar(id, ownAvatar(id));
+    const reloaded = await profileService.get(id);
+
+    expect(reloaded.avatar).toBe(ownAvatar(id));
+  });
+
+  it("clears the avatar", async () => {
+    const user = await makeUser();
+    const id = String(user._id);
+
+    await profileService.setAvatar(id, ownAvatar(id));
+    await profileService.setAvatar(id, null);
+
+    expect((await User.findById(id))!.avatar).toBeNull();
+  });
+
+  /**
+   * The action takes a URL, and a server action is reachable by direct POST, so
+   * the check cannot live in the form. Storing an arbitrary host matters
+   * because the value is rendered through `next/image`, whose optimizer fetches
+   * whatever it is handed.
+   */
+  it("refuses a URL the user did not upload", async () => {
+    const user = await makeUser();
+    const id = String(user._id);
+
+    for (const url of [
+      "https://evil.example.com/a.png",
+      "https://res.cloudinary.com/someone-else/image/upload/v1/avatars/" + id + ".png",
+    ]) {
+      await expect(profileService.setAvatar(id, url)).rejects.toThrow(/upload an image/i);
+    }
+    expect((await User.findById(id))!.avatar).toBeFalsy();
+  });
+
+  it("refuses another user's avatar", async () => {
+    const [mine, theirs] = await Promise.all([makeUser(), makeUser()]);
+
+    await expect(
+      profileService.setAvatar(String(mine._id), ownAvatar(String(theirs._id))),
+    ).rejects.toThrow(/upload an image/i);
+  });
+
+  /**
+   * Google sign-in sets an avatar on `lh3.googleusercontent.com`, which no user
+   * uploaded. Editing a name must not fail because of it.
+   */
+  it("lets a Google user keep the avatar OAuth gave them", async () => {
+    const user = await makeUser();
+    const id = String(user._id);
+    const google = "https://lh3.googleusercontent.com/a/ACg8ocK123=s96-c";
+
+    await User.updateOne({ _id: id }, { $set: { avatar: google } });
+
+    await expect(
+      profileService.update(id, { name: "Renamed", avatar: google }),
+    ).resolves.toBeTruthy();
+    expect((await User.findById(id))!.name).toBe("Renamed");
   });
 });
 

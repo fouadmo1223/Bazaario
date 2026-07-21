@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateProfileAction } from "../actions";
+import { AvatarUpload } from "./avatar-upload";
 
 type FieldErrors = Record<string, string[] | undefined>;
 
@@ -14,11 +15,9 @@ type FieldErrors = Record<string, string[] | undefined>;
  * profile form that silently swaps a login is a way to lock someone out of
  * their own account. The action refuses it too, not just this input.
  *
- * The avatar is a URL rather than a file picker because there is no storage
- * integration yet. It previews with a plain `<img>`, not `next/image`: the
- * optimizer only accepts allow-listed hosts, so an arbitrary user-supplied URL
- * would 400 — and routing untrusted URLs through the optimizer is how it turns
- * into a proxy for probing internal addresses.
+ * The avatar is handled by `AvatarUpload`, which uploads to Cloudinary and
+ * saves the result itself. This form keeps the URL in state only so the preview
+ * stays current; submitting sends it back unchanged.
  */
 export function ProfileForm({
   initial,
@@ -45,7 +44,9 @@ export function ProfileForm({
       const result = await updateProfileAction({
         name: String(form.get("name") ?? "").trim(),
         phone: String(form.get("phone") ?? "").trim(),
-        avatar: String(form.get("avatar") ?? "").trim(),
+        // From component state, not the form: the file input holds a file, and
+        // the uploaded URL never lives in a form field.
+        avatar,
       });
 
       if (!result.ok) {
@@ -76,38 +77,14 @@ export function ProfileForm({
         </p>
       ) : null}
 
-      <div className="flex items-center gap-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary host; see the note above. */}
-        <img
-          src={avatar || "/avatar-placeholder.svg"}
-          alt=""
-          width={64}
-          height={64}
-          className="h-16 w-16 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-800"
-          onError={(e) => {
-            e.currentTarget.src = "/avatar-placeholder.svg";
-          }}
-        />
-        <div className="min-w-0 flex-1">
-          <label htmlFor="avatar" className={label}>
-            Avatar image URL
-          </label>
-          <input
-            id="avatar"
-            name="avatar"
-            value={avatar}
-            onChange={(e) => setAvatar(e.target.value)}
-            placeholder="https://…"
-            className={field}
-          />
-          {fieldErrors.avatar ? (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.avatar[0]}</p>
-          ) : (
-            <p className="mt-1 text-xs text-zinc-400">
-              Paste an https image link. File uploads need image storage, which isn&apos;t set up yet.
-            </p>
-          )}
+      <div>
+        <span className={label}>Photo</span>
+        <div className="mt-2">
+          <AvatarUpload value={avatar} onChange={setAvatar} disabled={pending} />
         </div>
+        {fieldErrors.avatar ? (
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.avatar[0]}</p>
+        ) : null}
       </div>
 
       <div>

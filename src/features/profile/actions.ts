@@ -7,6 +7,7 @@ import { ok, toFailure, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
 import {
   profileSchema,
+  avatarOnlySchema,
   addressSchema,
   addressIdSchema,
   updateAddressSchema,
@@ -31,6 +32,28 @@ export async function updateProfileAction(input: unknown): Promise<ApiResult<nul
 
     revalidatePath("/account/profile");
     return ok(null, { message: "Profile updated." });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+/**
+ * Save the avatar alone, as soon as the upload to Cloudinary completes.
+ *
+ * Avatars persist on upload rather than on form submit: picking a photo reads
+ * as a completed action, and leaving it staged meant a reload discarded it
+ * while the image sat in Cloudinary, already uploaded.
+ */
+export async function updateAvatarAction(input: unknown): Promise<ApiResult<null>> {
+  try {
+    const user = await requireUser();
+    const parsed = avatarOnlySchema.safeParse(input);
+    if (!parsed.success) throw Errors.validation("Invalid image", parsed.error.flatten());
+
+    await profileService.setAvatar(user.id, parsed.data.avatar ?? null);
+
+    revalidatePath("/account/profile");
+    return ok(null, { message: "Photo updated." });
   } catch (err) {
     return toFailure(err);
   }

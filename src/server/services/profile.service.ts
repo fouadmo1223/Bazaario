@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/server/database/connection";
 import { User, type UserDoc } from "@/server/database/models/user.model";
 import { Address, type AddressDoc } from "@/server/database/models/address.model";
 import { Errors } from "@/shared/lib/errors";
+import { isOwnAvatarUrl } from "@/server/storage/cloudinary";
 import { writeAudit } from "./audit.service";
 
 /**
@@ -50,6 +51,30 @@ export const profileService = {
    */
   async update(userId: string, input: ProfileInput): Promise<UserDoc> {
     await connectToDatabase();
+
+    /**
+     * An avatar must be one this user uploaded — or the one they already have.
+     *
+     * The upload endpoint signs a `public_id` derived from the session, so the
+     * browser cannot write anywhere else. But this action takes a *URL*, and a
+     * server action is reachable by direct POST, so without this check the
+     * stored value is whatever string someone sends. That matters because the
+     * value is rendered through `next/image`, whose optimizer will fetch any
+     * host it is handed — turning a profile field into a request proxy.
+     *
+     * The "already have" clause exists for Google sign-in: those avatars are on
+     * `lh3.googleusercontent.com`, set by the OAuth callback rather than
+     * uploaded here. Without it, a Google user who edited their name would have
+     * their avatar rejected for being exactly what it already was.
+     */
+    if (input.avatar) {
+      const current = await User.findById(userId).select("avatar").lean();
+      const unchanged = current?.avatar === input.avatar;
+      if (!unchanged && !isOwnAvatarUrl(input.avatar, userId)) {
+        throw Errors.badRequest("Upload an image instead of linking to one.");
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       {
@@ -67,6 +92,37 @@ export const profileService = {
     await writeAudit({
       actor: userId,
       action: "profile.update",
+      entity: "User",
+      entityId: userId,
+    });
+    return user;
+  },
+
+  /**
+   * Set or clear just the avatar.
+   *
+   * Separate from `update` because the avatar is saved the instant an upload
+   * finishes, not when the form is submitted. Reusing `update` would mean
+   * sending the name and phone along with it — and whatever was in those inputs
+   * mid-edit would be committed as a side effect of picking a photo.
+   */
+  async setAvatar(userId: string, avatar: string | null): Promise<UserDoc> {
+    await connectToDatabase();
+
+    if (avatar && !isOwnAvatarUrl(avatar, userId)) {
+      throw Errors.badRequest("Upload an image instead of linking to one.");
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { avatar, updatedBy: userId } },
+      { returnDocument: "after" },
+    );
+    if (!user) throw Errors.notFound("Account not found");
+
+    await writeAudit({
+      actor: userId,
+      action: avatar ? "profile.avatar.set" : "profile.avatar.clear",
       entity: "User",
       entityId: userId,
     });

@@ -5,10 +5,15 @@ const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Invalid id");
 /**
  * Avatar URL.
  *
- * Restricted to https, and to a URL rather than an upload, because there is no
- * storage integration yet (no Cloudinary/S3 — see ARCHITECTURE §8.3). Plain
- * http is refused because the page is served over https in production and a
- * mixed-content image silently fails to load.
+ * Shape only — that this is an https URL of sane length. *Ownership* is checked
+ * in the service, which knows who is acting: the value must be an asset this
+ * application uploaded for that specific user (see `isOwnAvatarUrl`). It cannot
+ * be checked here because a schema has no session.
+ *
+ * The form no longer takes a typed URL at all; it uploads to Cloudinary and
+ * submits the returned `secure_url`. This field still exists because a server
+ * action is reachable by direct POST, so the value arriving is not necessarily
+ * the value the form produced.
  *
  * `data:` and `blob:` are refused by `z.url()` combined with the protocol
  * check: a base64 avatar would be embedded in every query that returns the
@@ -33,6 +38,9 @@ export const profileSchema = z.object({
     .or(z.literal("").transform(() => null)),
   avatar: avatarUrl,
 });
+
+/** Saved on its own, the moment an upload finishes. */
+export const avatarOnlySchema = z.object({ avatar: avatarUrl });
 
 export const addressSchema = z.object({
   label: z.string().trim().max(40).optional(),
