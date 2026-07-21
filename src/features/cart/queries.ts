@@ -1,9 +1,14 @@
 import { Cart } from "@/server/database/models/cart.model";
-import { Coupon } from "@/server/database/models/coupon.model";
 import { connectToDatabase } from "@/server/database/connection";
 import { getCurrentUser } from "@/server/security/current-user";
 import { readGuestToken } from "@/server/security/guest-token";
-import { computeTotals, vendorTaxRate, type Totals } from "@/server/services/pricing.service";
+import {
+  computeTotals,
+  resolveCouponForPreview,
+  vendorTaxRate,
+  type Totals,
+} from "@/server/services/pricing.service";
+import { toMinor, toMajor, timesQuantity } from "@/shared/lib/money";
 import type { VendorDoc } from "@/server/database/models/vendor.model";
 
 /**
@@ -69,25 +74,22 @@ export async function getCartView(vendor: VendorDoc): Promise<CartView> {
     sku: i.sku ?? null,
     unitPrice: i.unitPrice,
     quantity: i.quantity,
-    lineTotal: Math.round(i.unitPrice * i.quantity * 100) / 100,
+    lineTotal: toMajor(timesQuantity(toMinor(i.unitPrice), i.quantity)),
   }));
 
-  // A stored coupon may have expired or been withdrawn since it was applied, so
-  // resolve it again rather than trusting the code on the cart.
-  const coupon = cart.coupon
-    ? await Coupon.findOne({ vendor: vendor._id, code: cart.coupon, isActive: true })
-    : null;
+  const lines = items.map((i) => ({ unitPrice: i.unitPrice, quantity: i.quantity }));
 
-  const totals = computeTotals(
-    items.map((i) => ({ unitPrice: i.unitPrice, quantity: i.quantity })),
-    {
-      coupon,
-      taxRate: vendorTaxRate(vendor.settings),
-      taxInclusive: vendor.settings.taxInclusive,
-      // Shipping is unknown until a delivery method is picked at checkout.
-      shippingBase: 0,
-    },
-  );
+  // Re-validated, not just looked up: an expired or exhausted coupon must stop
+  // showing a discount here that checkout would refuse. See the service.
+  const coupon = await resolveCouponForPreview(String(vendor._id), cart.coupon, lines);
+
+  const totals = computeTotals(lines, {
+    coupon,
+    taxRate: vendorTaxRate(vendor.settings),
+    taxInclusive: vendor.settings.taxInclusive,
+    // Shipping is unknown until a delivery method is picked at checkout.
+    shippingBase: 0,
+  });
 
   return {
     currency,

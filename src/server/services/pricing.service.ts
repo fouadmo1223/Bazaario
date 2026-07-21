@@ -76,6 +76,27 @@ export async function validateCoupon(
 }
 
 /**
+ * Resolve a cart's stored coupon for a *preview*, or null if it no longer holds.
+ *
+ * Same check as checkout, deliberately: the cart page and the checkout that
+ * charges the customer must not disagree about whether a coupon applies. An
+ * earlier version of the cart preview matched on `isActive` alone, so an
+ * expired or exhausted coupon — or one whose minimum spend the cart had since
+ * dropped below — kept showing a discount that checkout then refused.
+ *
+ * Where checkout throws, this returns null: a preview has no one to report to,
+ * and the customer finds out at checkout, which is where the message belongs.
+ */
+export async function resolveCouponForPreview(
+  vendorId: string,
+  code: string | null | undefined,
+  lines: CartLine[],
+): Promise<CouponDoc | null> {
+  if (!code) return null;
+  return validateCoupon(vendorId, code, toMajor(subtotalOf(lines))).catch(() => null);
+}
+
+/**
  * Discount a coupon yields against a subtotal, in cents.
  *
  * Shipping is not an input: a free-shipping coupon reports the fact and the

@@ -482,12 +482,17 @@ Suites do not run in parallel: they share one database.
 | `checkout-oversell.test.ts` | Stock never goes negative; ten concurrent buyers racing for one unit produce exactly one winner. Also pins the deliberate exceptions (backorder, `trackInventory: false`) so they are not "fixed" away. |
 | `order-refund.test.ts` | Refund arithmetic — validation, tenant isolation, partial vs full, stock released once and only on a full refund, and provider-initiated refunds by webhook. The two float-exactness cases are regressions for real bugs (§9.3). |
 | `stripe-webhook.test.ts` | Signature verification (wrong secret, tampered body, missing header, stale timestamp) and **idempotency** — a duplicate delivery must not increment vendor revenue twice. Also that a failed payment releases reserved stock. No network: `constructEvent` is HMAC verification, so it runs in CI with a dummy key. |
+| `pricing.test.ts` | Coupon and tax arithmetic — each discount kind and its caps, tax applying to the *discounted* subtotal and not to shipping, free shipping, an over-generous fixed coupon settling the cart without going negative, and the stored parts reconciling against the grand total. `validateCoupon` is covered against a real database for expiry, activation window, usage limit, minimum spend, case folding, and vendor scoping — and `resolveCouponForPreview` is pinned to agree with it on every outcome (§9.4). |
 
 ### 9.2 What is not
-Auth and token rotation, the Paymob adapter, the order status machine, coupon
-and tax calculation, cart merging on login, and every React component. **Coupon
-and tax calculation is now the largest money-path gap**, and per §9.3 it is
-arithmetic over the same floating-point totals that refunds got wrong.
+Auth and token rotation, the Paymob adapter, the order status machine, cart
+merging on login, and every React component.
+
+Two coupon constraints are **unimplemented**, not merely untested: `perUserLimit`
+is stored on the schema and never read, so a per-user-limited coupon is
+unlimited per user; and `appliesToProducts` / `appliesToCategories` are stored
+and never applied, so every discount hits the whole subtotal regardless of what
+is in the cart. Tests would pin the wrong behaviour, so there are none.
 
 ### 9.3 Money arithmetic
 `Order.totals` and every price are **stored** as JavaScript numbers. A single
@@ -516,6 +521,27 @@ Two known limits:
 
 Storing minor units at rest would remove the conversion boundary entirely. That
 is a data migration across ~41 files and has not been done.
+
+### 9.4 One subtotal, one coupon check
+The subtotal is not just a number to display: it decides whether a coupon's
+minimum spend is met, and that check runs *before* `computeTotals` does. It was
+computed two different ways — `cart.service` in exact cents, `checkout.service`
+with a plain float reduce — and a cart of 0.35 and 0.70 sums to
+1.0499999999999998 in the second, refusing a coupon on a cart that meets its
+1.05 minimum. `subtotalOf()` is now the only way to sum lines, and all three
+call sites use it.
+
+The same principle applies to coupon *validity*. The cart preview resolved the
+stored coupon with a `findOne` on `isActive` alone, while checkout ran the full
+`validateCoupon`. An expired or exhausted coupon therefore kept showing a
+discount on the cart page that checkout refused at the moment of payment.
+`resolveCouponForPreview()` now runs exactly the check checkout runs and simply
+returns null where checkout throws, since a preview has nobody to report an
+error to. A test asserts the two agree on every outcome.
+
+The rule both cases point at: **when the customer is shown a number and later
+charged one, the two must come from the same code.** A second implementation of
+"the same" calculation is where they drift apart.
 
 There are no end-to-end browser tests. The messaging flows were verified by
 hand against a running dev server and socket process, which is not a substitute.

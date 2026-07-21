@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeTotals,
   couponDiscount,
+  resolveCouponForPreview,
   subtotalOf,
   validateCoupon,
   vendorTaxRate,
@@ -261,5 +262,85 @@ describe("validateCoupon", () => {
 
     const subtotal = toMajor(subtotalOf([line(0.35), line(0.7)]));
     await expect(validateCoupon(String(vendor._id), "EXACT", subtotal)).resolves.toBeTruthy();
+  });
+});
+
+/**
+ * The cart preview and the checkout that charges the customer must agree about
+ * whether a coupon applies.
+ *
+ * The preview used to match on `isActive` alone, so each of these cases showed
+ * a discount on the cart page that checkout then refused — the customer saw a
+ * total, clicked pay, and was told the coupon was invalid.
+ */
+describe("resolveCouponForPreview", () => {
+  it("returns the coupon when it is genuinely valid", async () => {
+    const vendor = await makeVendor();
+    await makeCoupon(vendor._id, { code: "GOOD" });
+
+    const found = await resolveCouponForPreview(String(vendor._id), "GOOD", [line(100)]);
+    expect(found?.code).toBe("GOOD");
+  });
+
+  it("is null when the cart has no coupon", async () => {
+    const vendor = await makeVendor();
+    expect(await resolveCouponForPreview(String(vendor._id), null, [line(100)])).toBeNull();
+  });
+
+  it("drops an expired coupon instead of previewing a discount", async () => {
+    const vendor = await makeVendor();
+    await makeCoupon(vendor._id, { code: "GONE", expiresAt: new Date(Date.now() - 60_000) });
+
+    expect(await resolveCouponForPreview(String(vendor._id), "GONE", [line(100)])).toBeNull();
+  });
+
+  it("drops a coupon that has reached its usage limit", async () => {
+    const vendor = await makeVendor();
+    await makeCoupon(vendor._id, { code: "MAXED", usageLimit: 1, usedCount: 1 });
+
+    expect(await resolveCouponForPreview(String(vendor._id), "MAXED", [line(100)])).toBeNull();
+  });
+
+  /**
+   * The case that needs the subtotal, and the reason this takes the lines
+   * rather than a resolved coupon: a cart that qualified when the coupon was
+   * applied can drop below the minimum when an item is removed.
+   */
+  it("drops a coupon once the cart falls below its minimum spend", async () => {
+    const vendor = await makeVendor();
+    await makeCoupon(vendor._id, { code: "BIG", minSpend: 50 });
+
+    expect(await resolveCouponForPreview(String(vendor._id), "BIG", [line(60)])).toBeTruthy();
+    expect(await resolveCouponForPreview(String(vendor._id), "BIG", [line(40)])).toBeNull();
+  });
+
+  it("drops another vendor's coupon", async () => {
+    const [mine, theirs] = await Promise.all([makeVendor(), makeVendor()]);
+    await makeCoupon(theirs._id, { code: "SHARED" });
+
+    expect(await resolveCouponForPreview(String(mine._id), "SHARED", [line(100)])).toBeNull();
+  });
+
+  /**
+   * The agreement stated directly: for the same cart, whatever the preview
+   * shows a discount for is exactly what checkout accepts.
+   */
+  it("agrees with validateCoupon on every outcome", async () => {
+    const vendor = await makeVendor();
+    const vendorId = String(vendor._id);
+    const lines = [line(100)];
+
+    await makeCoupon(vendor._id, { code: "OK" });
+    await makeCoupon(vendor._id, { code: "DEAD", expiresAt: new Date(Date.now() - 60_000) });
+    await makeCoupon(vendor._id, { code: "STEEP", minSpend: 500 });
+
+    for (const code of ["OK", "DEAD", "STEEP", "MISSING"]) {
+      const previewed = await resolveCouponForPreview(vendorId, code, lines);
+      const accepted = await validateCoupon(vendorId, code, 100).then(
+        () => true,
+        () => false,
+      );
+      expect(previewed !== null).toBe(accepted);
+    }
   });
 });
