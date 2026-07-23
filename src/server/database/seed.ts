@@ -447,7 +447,13 @@ async function main() {
         createdBy: admin._id,
         logo: `https://picsum.photos/seed/${v.slug}-logo/200/200`,
         banner: `https://picsum.photos/seed/${v.slug}-banner/1600/400`,
-        settings: { currency: v.currency, locales: ["en", "ar"], defaultLocale: "en", codEnabled: true },
+        settings: {
+          currency: v.currency,
+          locales: ["en", "ar"],
+          defaultLocale: "en",
+          codEnabled: true,
+          stripeEnabled: true,
+        },
       });
     }
     const vendorId = vendor._id;

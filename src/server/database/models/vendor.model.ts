@@ -15,7 +15,11 @@ const vendorSettingsSchema = new Schema(
     taxInclusive: { type: Boolean, default: false },
     supportEmail: { type: String, default: null },
     codEnabled: { type: Boolean, default: true },
-    stripeEnabled: { type: Boolean, default: false },
+    // Card payments are on by default; whether "Card" actually appears at
+    // checkout still depends on the deployment having Stripe credentials
+    // (see `enabledProviders()`), so a vendor with no keys configured simply
+    // shows no card option rather than a broken one.
+    stripeEnabled: { type: Boolean, default: true },
     paymobEnabled: { type: Boolean, default: false },
   },
   { _id: false },
