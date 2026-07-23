@@ -488,11 +488,14 @@ Suites do not run in parallel: they share one database.
 Auth and token rotation, the Paymob adapter, the order status machine, cart
 merging on login, and every React component.
 
-There is **no vendor-facing coupon CRUD** yet: coupons are created only by the
-seed (or directly in the database). The storefront has a code-entry form; the
-dashboard has no screen to author or edit a coupon. So while every constraint
-below is enforced, only a seeded/DB-created coupon can carry the fields that
-exercise them.
+Vendors author coupons from **`/dashboard/coupons`** (`coupon:write`, i.e. Vendor
+Admin, Marketing, or Super Admin). The screen lists a vendor's coupons and
+creates/edits/deletes them through `couponService`; the form exposes every
+constraint field — type, value/cap, min spend, total and per-user limits, the
+active window, and the product/category scope, checkboxes over that vendor's own
+catalogue. Delete is a soft delete (orders keep the code as a string); the
+`{vendor, code}` unique index counts soft-deleted rows, so re-creating a deleted
+code revives that row rather than colliding. Covered by `coupon-service.test.ts`.
 
 Both coupon constraints that were once stored-but-ignored are now **enforced**
 (`pricing.service`, covered in `pricing.test.ts`):
