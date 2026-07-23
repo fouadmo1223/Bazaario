@@ -105,6 +105,65 @@ export function signAvatarUpload(userId: string): SignedUpload {
   };
 }
 
+/** Folder chat attachments live in, namespaced per uploader. */
+export const CHAT_FOLDER = "chat";
+
+/**
+ * Sign a chat-attachment upload for one user.
+ *
+ * Unlike the avatar signer this fixes no `public_id`: a thread accumulates many
+ * files, so Cloudinary assigns each a fresh id inside the user's `chat/<id>`
+ * folder. `resource_type` is chosen by the caller as `auto` at upload time
+ * (images and videos both), which is a URL path segment and not part of the
+ * signature. Only `folder` and `timestamp` are signed — enough to bind the
+ * capability to this user's folder without freezing the filename.
+ */
+export function signChatUpload(userId: string): SignedUpload {
+  const { cloudName, apiKey, apiSecret } = credentials();
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = `${CHAT_FOLDER}/${userId}`;
+  const signed = { folder, timestamp };
+
+  return {
+    cloudName,
+    apiKey,
+    timestamp,
+    signature: signature(signed, apiSecret),
+    publicId: "",
+    folder,
+  };
+}
+
+/**
+ * Is this a chat-attachment URL on *our* Cloudinary account?
+ *
+ * Attachments arrive from the client as plain strings on a message the sender
+ * could POST directly, and other people's browsers will load them — so the send
+ * path validates every URL through here before storing it, the same way the
+ * avatar action validates its one URL. Anything not under our cloud's `chat/`
+ * folder is refused, which keeps `<img>`/`<video>` src values to assets this
+ * application actually produced.
+ */
+export function isChatAttachmentUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  const env = getServerEnv();
+  if (parsed.protocol !== "https:") return false;
+  if (parsed.hostname !== "res.cloudinary.com") return false;
+  if (!env.CLOUDINARY_CLOUD_NAME) return false;
+
+  // `/<cloud>/(image|video|raw)/upload/<transforms?>/v<version>/chat/<userId>/<id>.<ext>`
+  const prefix = `/${env.CLOUDINARY_CLOUD_NAME}/`;
+  if (!parsed.pathname.startsWith(prefix)) return false;
+  return parsed.pathname.includes(`/upload/`) && parsed.pathname.includes(`/${CHAT_FOLDER}/`);
+}
+
 /**
  * Is this a URL for the given user's avatar on *our* Cloudinary account?
  *

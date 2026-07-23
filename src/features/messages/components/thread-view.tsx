@@ -7,6 +7,8 @@ import {
   sendMessageAction,
   setConversationStatusAction,
 } from "../actions";
+import { EmojiPicker } from "./emoji-picker";
+import { attachmentKind, uploadChatFile, type ChatAttachment } from "../upload";
 import type { Thread } from "../queries";
 
 /**
@@ -29,9 +31,13 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
     thread.initialReads,
   );
   const [body, setBody] = useState("");
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [uploading, setUploading] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const nameById = useMemo(
@@ -98,16 +104,58 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
     typingTimer.current = setTimeout(() => setTyping(false), 2000);
   }
 
+  function insertEmoji(emoji: string) {
+    const el = textareaRef.current;
+    if (!el) {
+      setBody((b) => b + emoji);
+      return;
+    }
+    // Splice the emoji in at the caret rather than always appending, so it lands
+    // where the writer is looking.
+    const start = el.selectionStart ?? body.length;
+    const end = el.selectionEnd ?? body.length;
+    const next = body.slice(0, start) + emoji + body.slice(end);
+    setBody(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const caret = start + emoji.length;
+      el.setSelectionRange(caret, caret);
+    });
+  }
+
+  async function onFilesChosen(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setError(null);
+    const chosen = Array.from(files);
+    setUploading((n) => n + chosen.length);
+    for (const file of chosen) {
+      try {
+        const attachment = await uploadChatFile(file);
+        setAttachments((prev) => [...prev, attachment]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Upload failed.");
+      } finally {
+        setUploading((n) => n - 1);
+      }
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const text = body.trim();
-    if (!text || pending) return;
+    if ((!text && attachments.length === 0) || pending || uploading > 0) return;
 
     setError(null);
     setTyping(false);
 
+    const outgoing = attachments;
     startTransition(async () => {
-      const result = await sendMessageAction({ conversationId: thread.id, body: text, attachments: [] });
+      const result = await sendMessageAction({
+        conversationId: thread.id,
+        body: text,
+        attachments: outgoing,
+      });
       if (!result.ok) {
         setError(result.error.message);
         return;
@@ -115,6 +163,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
       // Only clear the box once the send is known to have worked — losing a
       // typed message to a failed request is unforgivable.
       setBody("");
+      setAttachments([]);
       append(result.data);
     });
   }
@@ -198,15 +247,24 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 {!mine ? (
                   <p className="mb-0.5 px-1 text-[11px] font-medium text-zinc-500">{message.senderName}</p>
                 ) : null}
-                <div
-                  className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                    mine
-                      ? "bg-indigo-600 text-white"
-                      : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                  }`}
-                >
-                  {message.body}
-                </div>
+                {message.body ? (
+                  <div
+                    className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                      mine
+                        ? "bg-indigo-600 text-white"
+                        : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                    }`}
+                  >
+                    {message.body}
+                  </div>
+                ) : null}
+                {message.attachments.length > 0 ? (
+                  <div className={`mt-1 flex flex-col gap-1.5 ${mine ? "items-end" : "items-start"}`}>
+                    {message.attachments.map((a, i) => (
+                      <Attachment key={`${a.url}-${i}`} attachment={a} />
+                    ))}
+                  </div>
+                ) : null}
                 <p className={`mt-0.5 px-1 text-[11px] text-zinc-400 ${mine ? "text-right" : ""}`}>
                   {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
@@ -259,34 +317,75 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
             This conversation is closed.
           </p>
         ) : (
-          <form onSubmit={onSubmit} className="flex items-end gap-2">
-            <label htmlFor="chat-body" className="sr-only">
-              Message
-            </label>
-            <textarea
-              id="chat-body"
-              value={body}
-              onChange={(e) => onChange(e.target.value)}
-              onKeyDown={(e) => {
-                // Enter sends, Shift+Enter breaks the line — the convention
-                // every chat app has trained people to expect.
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
-              }}
-              rows={2}
-              maxLength={5000}
-              placeholder="Write a message…"
-              className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-            />
-            <button
-              type="submit"
-              disabled={pending || body.trim().length === 0}
-              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {pending ? "Sending…" : "Send"}
-            </button>
+          <form onSubmit={onSubmit} className="space-y-2">
+            {(attachments.length > 0 || uploading > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {attachments.map((a, i) => (
+                  <AttachmentPreview
+                    key={`${a.url}-${i}`}
+                    attachment={a}
+                    onRemove={() => setAttachments((prev) => prev.filter((_, j) => j !== i))}
+                  />
+                ))}
+                {uploading > 0 ? (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-[10px] text-zinc-400 dark:border-zinc-700">
+                    Uploading…
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            <div className="flex items-end gap-2">
+              <EmojiPicker onPick={insertEmoji} />
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                hidden
+                onChange={(e) => onFilesChosen(e.target.files)}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                aria-label="Attach image or video"
+                className="rounded-lg px-2 py-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden>
+                  <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24 4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              <label htmlFor="chat-body" className="sr-only">
+                Message
+              </label>
+              <textarea
+                id="chat-body"
+                ref={textareaRef}
+                value={body}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter sends, Shift+Enter breaks the line — the convention
+                  // every chat app has trained people to expect.
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                rows={2}
+                maxLength={5000}
+                placeholder="Write a message…"
+                className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+              <button
+                type="submit"
+                disabled={pending || uploading > 0 || (body.trim().length === 0 && attachments.length === 0)}
+                className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+              >
+                {pending ? "Sending…" : "Send"}
+              </button>
+            </div>
           </form>
         )}
 
@@ -305,5 +404,78 @@ function Dot({ delay }: { delay: string }) {
       className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400"
       style={{ animationDelay: delay }}
     />
+  );
+}
+
+/**
+ * A sent attachment in the transcript. Images and short videos render inline;
+ * anything else is a labelled link. Plain `<img>`/`<video>` (not `next/image`)
+ * because the src is user content the send path has already constrained to our
+ * own Cloudinary — there is nothing to optimise and no domain to allow-list.
+ */
+function Attachment({ attachment }: { attachment: ChatAttachment }) {
+  const kind = attachmentKind(attachment);
+
+  if (kind === "image") {
+    return (
+      <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="block">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={attachment.url}
+          alt={attachment.name}
+          className="max-h-64 max-w-[16rem] rounded-xl border border-zinc-200 object-cover dark:border-zinc-800"
+        />
+      </a>
+    );
+  }
+  if (kind === "video") {
+    return (
+      <video
+        src={attachment.url}
+        controls
+        className="max-h-64 max-w-[16rem] rounded-xl border border-zinc-200 dark:border-zinc-800"
+      />
+    );
+  }
+  return (
+    <a
+      href={attachment.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-2 text-xs text-indigo-600 hover:underline dark:border-zinc-800 dark:text-indigo-400"
+    >
+      📎 {attachment.name}
+    </a>
+  );
+}
+
+/** A staged attachment in the composer, with a control to drop it before send. */
+function AttachmentPreview({
+  attachment,
+  onRemove,
+}: {
+  attachment: ChatAttachment;
+  onRemove: () => void;
+}) {
+  const kind = attachmentKind(attachment);
+  return (
+    <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+      {kind === "image" ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
+      ) : kind === "video" ? (
+        <video src={attachment.url} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-2xl">📎</div>
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${attachment.name}`}
+        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white transition hover:bg-black/80"
+      >
+        ✕
+      </button>
+    </div>
   );
 }

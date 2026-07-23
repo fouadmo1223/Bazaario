@@ -74,7 +74,14 @@ export async function sendMessageAction(input: unknown): Promise<ApiResult<ChatM
       id: String(message._id),
       conversationId: parsed.data.conversationId,
       body: message.body,
-      attachments: parsed.data.attachments,
+      // The stored attachments, not the raw input — the service drops any that
+      // are not valid chat-upload URLs, so this reflects what was actually kept.
+      attachments: message.attachments.map((a) => ({
+        url: a.url,
+        name: a.name,
+        mime: a.mime ?? undefined,
+        size: a.size ?? undefined,
+      })),
       system: false,
       senderId: user.id,
       senderName: user.email,

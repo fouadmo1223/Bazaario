@@ -10,6 +10,7 @@ import { Message, type MessageDoc } from "@/server/database/models/message.model
 import { Membership } from "@/server/database/models/membership.model";
 import { User } from "@/server/database/models/user.model";
 import { notificationService, publishRealtime } from "./notification.service";
+import { isChatAttachmentUrl } from "@/server/storage/cloudinary";
 import { ROLES, PERMISSIONS, roleHasPermission, type Role, type Permission } from "@/shared/constants/rbac";
 import { paginationSchema, buildPaginated, type Paginated } from "@/shared/lib/pagination";
 import { Errors } from "@/shared/lib/errors";
@@ -219,16 +220,26 @@ export const conversationService = {
     const conversation = await assertCanAccess(conversationId, actor);
 
     const text = body.trim();
-    if (!text) throw Errors.validation("Message cannot be empty");
     if (text.length > MAX_BODY_LENGTH) throw Errors.validation("Message is too long");
+
+    // Attachment URLs arrive from the client and are rendered in other people's
+    // browsers, so keep only the ones that point at our own Cloudinary chat
+    // folder — anything else is dropped rather than stored and served.
+    const cleanAttachments = attachments.filter((a) => isChatAttachmentUrl(a.url));
+    if (!text && cleanAttachments.length === 0) throw Errors.validation("Message cannot be empty");
 
     const message = await Message.create({
       conversation: conversation._id,
       sender: actor.id,
       body: text,
-      attachments,
+      attachments: cleanAttachments,
       createdBy: actor.id,
     });
+
+    // The inbox needs *something* to show for a photo with no caption.
+    const preview = text
+      ? text.slice(0, 140)
+      : `📎 ${cleanAttachments.length} attachment${cleanAttachments.length === 1 ? "" : "s"}`;
 
     // Answering pulls a thread back to "open" — a vendor replying to a ticket
     // they had marked pending has, by replying, made it active again.
@@ -237,7 +248,7 @@ export const conversationService = {
       {
         $set: {
           lastMessageAt: message.createdAt,
-          lastMessagePreview: text.slice(0, 140),
+          lastMessagePreview: preview,
           lastMessageBy: actor.id,
           ...(conversation.status === "pending" ? { status: "open" as ConversationStatus } : {}),
         },
@@ -269,7 +280,7 @@ export const conversationService = {
       id: String(message._id),
       conversationId: String(conversation._id),
       body: text,
-      attachments,
+      attachments: cleanAttachments,
       system: false,
       senderId: actor.id,
       senderName: sender?.name ?? sender?.email ?? "Unknown",
@@ -277,7 +288,7 @@ export const conversationService = {
     };
 
     await publishRealtime({ kind: "chat:message", conversationId: String(conversation._id), payload });
-    await this.notifyOthers(conversation, actor, text);
+    await this.notifyOthers(conversation, actor, preview);
 
     return message;
   },

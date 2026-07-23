@@ -25,7 +25,9 @@ const messageSchema = new Schema({
   conversation: { type: Schema.Types.ObjectId, ref: "Conversation", required: true, index: true },
   /** Null for system messages ("Order marked shipped", "Thread closed by admin"). */
   sender: { type: Schema.Types.ObjectId, ref: "User", default: null },
-  body: { type: String, required: true },
+  // Not required: an attachment-only message (a photo with no caption) is a
+  // normal thing to send, and `required` rejects the empty string.
+  body: { type: String, default: "" },
   attachments: { type: [attachmentSchema], default: [] },
   /** System messages are rendered as a centred notice, not a chat bubble. */
   system: { type: Boolean, default: false },

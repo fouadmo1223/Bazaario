@@ -20,21 +20,29 @@ export const startConversationSchema = z.object({
   body,
 });
 
-export const sendMessageSchema = z.object({
-  conversationId: objectId,
-  body,
-  attachments: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        name: z.string().trim().min(1).max(200),
-        mime: z.string().max(100).optional(),
-        size: z.number().int().nonnegative().optional(),
-      }),
-    )
-    .max(10)
-    .default([]),
-});
+export const sendMessageSchema = z
+  .object({
+    conversationId: objectId,
+    // Optional here (not the shared `body`, which requires ≥1 char): a message
+    // may be an attachment with no caption. The refinement below still forbids
+    // a message that is entirely empty.
+    body: z.string().trim().max(MAX_BODY_LENGTH).default(""),
+    attachments: z
+      .array(
+        z.object({
+          url: z.string().url(),
+          name: z.string().trim().min(1).max(200),
+          mime: z.string().max(100).optional(),
+          size: z.number().int().nonnegative().optional(),
+        }),
+      )
+      .max(10)
+      .default([]),
+  })
+  .refine((d) => d.body.length > 0 || d.attachments.length > 0, {
+    message: "Message cannot be empty",
+    path: ["body"],
+  });
 
 export const setStatusSchema = z.object({
   conversationId: objectId,
