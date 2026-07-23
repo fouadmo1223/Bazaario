@@ -140,6 +140,8 @@ export async function makeCoupon(
     usageLimit?: number | null;
     perUserLimit?: number | null;
     usedCount?: number;
+    appliesToProducts?: (Types.ObjectId | string)[];
+    appliesToCategories?: (Types.ObjectId | string)[];
     startsAt?: Date | null;
     expiresAt?: Date | null;
     isActive?: boolean;
@@ -155,6 +157,8 @@ export async function makeCoupon(
     usageLimit: opts.usageLimit ?? null,
     perUserLimit: opts.perUserLimit ?? null,
     usedCount: opts.usedCount ?? 0,
+    appliesToProducts: opts.appliesToProducts ?? [],
+    appliesToCategories: opts.appliesToCategories ?? [],
     startsAt: opts.startsAt ?? null,
     expiresAt: opts.expiresAt ?? null,
     isActive: opts.isActive ?? true,

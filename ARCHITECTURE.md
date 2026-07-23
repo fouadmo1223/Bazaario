@@ -482,17 +482,29 @@ Suites do not run in parallel: they share one database.
 | `checkout-oversell.test.ts` | Stock never goes negative; ten concurrent buyers racing for one unit produce exactly one winner. Also pins the deliberate exceptions (backorder, `trackInventory: false`) so they are not "fixed" away. |
 | `order-refund.test.ts` | Refund arithmetic — validation, tenant isolation, partial vs full, stock released once and only on a full refund, and provider-initiated refunds by webhook. The two float-exactness cases are regressions for real bugs (§9.3). |
 | `stripe-webhook.test.ts` | Signature verification (wrong secret, tampered body, missing header, stale timestamp) and **idempotency** — a duplicate delivery must not increment vendor revenue twice. Also that a failed payment releases reserved stock. No network: `constructEvent` is HMAC verification, so it runs in CI with a dummy key. |
-| `pricing.test.ts` | Coupon and tax arithmetic — each discount kind and its caps, tax applying to the *discounted* subtotal and not to shipping, free shipping, an over-generous fixed coupon settling the cart without going negative, and the stored parts reconciling against the grand total. `validateCoupon` is covered against a real database for expiry, activation window, usage limit, minimum spend, case folding, and vendor scoping — and `resolveCouponForPreview` is pinned to agree with it on every outcome (§9.4). |
+| `pricing.test.ts` | Coupon and tax arithmetic — each discount kind and its caps, tax applying to the *discounted* subtotal and not to shipping, free shipping, an over-generous fixed coupon settling the cart without going negative, and the stored parts reconciling against the grand total. `validateCoupon` is covered against a real database for expiry, activation window, usage limit, minimum spend, case folding, vendor scoping, per-user limit (counting prior non-cancelled orders, not enforced for guests), and product/category scope (discounting only the targeted lines, refused when it reaches nothing) — and `resolveCouponForPreview` is pinned to agree with it on every outcome (§9.4). |
 
 ### 9.2 What is not
 Auth and token rotation, the Paymob adapter, the order status machine, cart
 merging on login, and every React component.
 
-Two coupon constraints are **unimplemented**, not merely untested: `perUserLimit`
-is stored on the schema and never read, so a per-user-limited coupon is
-unlimited per user; and `appliesToProducts` / `appliesToCategories` are stored
-and never applied, so every discount hits the whole subtotal regardless of what
-is in the cart. Tests would pin the wrong behaviour, so there are none.
+There is **no vendor-facing coupon CRUD** yet: coupons are created only by the
+seed (or directly in the database). The storefront has a code-entry form; the
+dashboard has no screen to author or edit a coupon. So while every constraint
+below is enforced, only a seeded/DB-created coupon can carry the fields that
+exercise them.
+
+Both coupon constraints that were once stored-but-ignored are now **enforced**
+(`pricing.service`, covered in `pricing.test.ts`):
+- `perUserLimit` — `validateCoupon` counts the shopper's prior non-cancelled
+  orders carrying the code and refuses once the limit is reached. It is only
+  enforceable for a signed-in shopper; a guest has no durable identity to count,
+  so the limit does not apply to guest checkout.
+- `appliesToProducts` / `appliesToCategories` — when either is set, the discount
+  applies to *only* the cart lines the coupon targets (`discountableSubtotal`),
+  and the coupon is refused outright if it reaches nothing in the cart. `minSpend`
+  still measures the whole cart, not the targeted subset. Cart lines carry the
+  product id and its categories so the cart preview and checkout agree.
 
 ### 9.3 Money arithmetic
 `Order.totals` and every price are **stored** as JavaScript numbers. A single

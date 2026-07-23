@@ -6,6 +6,7 @@ import {
   computeTotals,
   resolveCouponForPreview,
   vendorTaxRate,
+  withCouponScope,
   type Totals,
 } from "@/server/services/pricing.service";
 import { toMinor, toMajor, timesQuantity } from "@/shared/lib/money";
@@ -77,11 +78,20 @@ export async function getCartView(vendor: VendorDoc): Promise<CartView> {
     lineTotal: toMajor(timesQuantity(toMinor(i.unitPrice), i.quantity)),
   }));
 
-  const lines = items.map((i) => ({ unitPrice: i.unitPrice, quantity: i.quantity }));
+  // Only pay for category lookups when there is a coupon whose scope might need
+  // them; an empty cart or a couponless one prices on the money-only lines.
+  const lines = cart.coupon
+    ? await withCouponScope(
+        items.map((i) => ({ productId: i.productId, unitPrice: i.unitPrice, quantity: i.quantity })),
+      )
+    : items.map((i) => ({ unitPrice: i.unitPrice, quantity: i.quantity }));
 
-  // Re-validated, not just looked up: an expired or exhausted coupon must stop
-  // showing a discount here that checkout would refuse. See the service.
-  const coupon = await resolveCouponForPreview(String(vendor._id), cart.coupon, lines);
+  // Re-validated, not just looked up: an expired or exhausted coupon — or one
+  // the shopper has hit their per-user limit on, or that reaches nothing in the
+  // cart — must stop showing a discount here that checkout would refuse.
+  const coupon = await resolveCouponForPreview(String(vendor._id), cart.coupon, lines, {
+    userId: user?.id,
+  });
 
   const totals = computeTotals(lines, {
     coupon,

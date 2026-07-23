@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { Types } from "mongoose";
 import {
   computeTotals,
   couponDiscount,
+  discountableSubtotal,
   resolveCouponForPreview,
   subtotalOf,
   validateCoupon,
@@ -9,8 +11,9 @@ import {
   type CartLine,
 } from "@/server/services/pricing.service";
 import type { CouponDoc } from "@/server/database/models/coupon.model";
+import { Order, type OrderStatus } from "@/server/database/models/order.model";
 import { toMinor, toMajor } from "@/shared/lib/money";
-import { makeVendor, makeCoupon } from "./factories";
+import { makeVendor, makeCoupon, makeProduct, makeUser } from "./factories";
 
 /**
  * Coupon and tax arithmetic.
@@ -24,12 +27,48 @@ import { makeVendor, makeCoupon } from "./factories";
  * pay the round trip.
  */
 
-/** A coupon shaped like the document, without a database round trip. */
-function coupon(fields: Partial<CouponDoc>): CouponDoc {
-  return { type: "percentage", value: 10, maxDiscount: null, ...fields } as CouponDoc;
+/**
+ * A coupon shaped like the document, without a database round trip. The scope
+ * arrays accept plain string ids — scope matching compares them as strings, so a
+ * pure test needn't mint ObjectIds.
+ */
+function coupon(
+  fields: Partial<Omit<CouponDoc, "appliesToProducts" | "appliesToCategories">> & {
+    appliesToProducts?: string[];
+    appliesToCategories?: string[];
+  },
+): CouponDoc {
+  return { type: "percentage", value: 10, maxDiscount: null, ...fields } as unknown as CouponDoc;
 }
 
 const line = (unitPrice: number, quantity = 1): CartLine => ({ unitPrice, quantity });
+
+/** A line tagged with a product and its categories, for coupon-scope tests. */
+const scopedLine = (
+  unitPrice: number,
+  ids: { productId?: string; categories?: string[] },
+  quantity = 1,
+): CartLine => ({ unitPrice, quantity, ...ids });
+
+let orderSeq = 0;
+
+/** A minimal order that carries a coupon, for per-user-limit counting. */
+async function redemption(
+  vendorId: string,
+  userId: string,
+  code: string,
+  status: OrderStatus = "paid",
+): Promise<void> {
+  await Order.create({
+    vendor: vendorId,
+    number: `R${Date.now()}-${orderSeq++}`,
+    customer: userId,
+    coupon: code,
+    items: [],
+    totals: { subtotal: 0, grandTotal: 0 },
+    status,
+  });
+}
 
 describe("subtotalOf", () => {
   it("sums lines exactly where floats would drift", () => {
@@ -72,6 +111,32 @@ describe("couponDiscount", () => {
   it("reports free shipping instead of a discount", () => {
     const result = couponDiscount(coupon({ type: "free_shipping", value: 0 }), toMinor(100));
     expect(result).toEqual({ discount: 0, freeShipping: true });
+  });
+});
+
+describe("discountableSubtotal", () => {
+  const lines = [
+    scopedLine(100, { productId: "p1", categories: ["audio"] }),
+    scopedLine(40, { productId: "p2", categories: ["home"] }),
+  ];
+
+  it("is the whole subtotal for an unscoped coupon", () => {
+    expect(discountableSubtotal(coupon({}), lines)).toBe(toMinor(140));
+  });
+
+  it("counts only the targeted product when scoped to products", () => {
+    const c = coupon({ appliesToProducts: ["p1"] });
+    expect(discountableSubtotal(c, lines)).toBe(toMinor(100));
+  });
+
+  it("counts only lines in a targeted category when scoped to categories", () => {
+    const c = coupon({ appliesToCategories: ["home"] });
+    expect(discountableSubtotal(c, lines)).toBe(toMinor(40));
+  });
+
+  it("is zero when a scoped coupon reaches nothing in the cart", () => {
+    const c = coupon({ appliesToProducts: ["nope"] });
+    expect(discountableSubtotal(c, lines)).toBe(0);
   });
 });
 
@@ -164,6 +229,23 @@ describe("computeTotals", () => {
   it("handles an empty cart without producing NaN", () => {
     const totals = computeTotals([], { taxRate: 0.14 });
     expect(totals).toEqual({ subtotal: 0, discount: 0, tax: 0, shipping: 0, grandTotal: 0 });
+  });
+
+  /**
+   * A product/category-scoped coupon discounts only the lines it targets: 20%
+   * off the $100 audio line is $20, not 20% of the whole $140 cart.
+   */
+  it("discounts only the scoped lines, not the whole cart", () => {
+    const lines = [
+      scopedLine(100, { productId: "p1", categories: ["audio"] }),
+      scopedLine(40, { productId: "p2", categories: ["home"] }),
+    ];
+    const totals = computeTotals(lines, {
+      coupon: coupon({ value: 20, appliesToProducts: ["p1"] }),
+    });
+    expect(totals.subtotal).toBe(140);
+    expect(totals.discount).toBe(20); // 20% of 100, not of 140
+    expect(totals.grandTotal).toBe(120);
   });
 });
 
@@ -262,6 +344,99 @@ describe("validateCoupon", () => {
 
     const subtotal = toMajor(subtotalOf([line(0.35), line(0.7)]));
     await expect(validateCoupon(String(vendor._id), "EXACT", subtotal)).resolves.toBeTruthy();
+  });
+
+  describe("product / category scope", () => {
+    it("accepts a scoped coupon when the cart holds a targeted product", async () => {
+      const vendor = await makeVendor();
+      const product = await makeProduct(vendor._id);
+      await makeCoupon(vendor._id, { code: "AUDIO", appliesToProducts: [product._id] });
+
+      const lines = [scopedLine(100, { productId: String(product._id) })];
+      await expect(
+        validateCoupon(String(vendor._id), "AUDIO", 100, { lines }),
+      ).resolves.toBeTruthy();
+    });
+
+    it("rejects a scoped coupon that reaches nothing in the cart", async () => {
+      const vendor = await makeVendor();
+      const [targeted, other] = await Promise.all([
+        makeProduct(vendor._id),
+        makeProduct(vendor._id),
+      ]);
+      await makeCoupon(vendor._id, { code: "AUDIO", appliesToProducts: [targeted._id] });
+
+      const lines = [scopedLine(100, { productId: String(other._id) })];
+      await expect(
+        validateCoupon(String(vendor._id), "AUDIO", 100, { lines }),
+      ).rejects.toThrow(/does not apply/i);
+    });
+
+    it("matches on category as well as product", async () => {
+      const vendor = await makeVendor();
+      // A real category id: the schema stores these as ObjectIds, and the line
+      // carries the same id (as a string) the way a priced cart line would.
+      const categoryId = new Types.ObjectId();
+      await makeCoupon(vendor._id, { code: "HOME", appliesToCategories: [categoryId] });
+
+      const lines = [scopedLine(100, { productId: "x", categories: [String(categoryId)] })];
+      await expect(
+        validateCoupon(String(vendor._id), "HOME", 100, { lines }),
+      ).resolves.toBeTruthy();
+    });
+  });
+
+  describe("per-user limit", () => {
+    it("rejects a shopper who has reached their limit", async () => {
+      const [vendor, user] = await Promise.all([makeVendor(), makeUser()]);
+      await makeCoupon(vendor._id, { code: "ONCE", perUserLimit: 1 });
+      await redemption(String(vendor._id), String(user._id), "ONCE");
+
+      await expect(
+        validateCoupon(String(vendor._id), "ONCE", 100, { userId: String(user._id) }),
+      ).rejects.toThrow(/already used/i);
+    });
+
+    it("still accepts a shopper with a redemption left", async () => {
+      const [vendor, user] = await Promise.all([makeVendor(), makeUser()]);
+      await makeCoupon(vendor._id, { code: "TWICE", perUserLimit: 2 });
+      await redemption(String(vendor._id), String(user._id), "TWICE");
+
+      await expect(
+        validateCoupon(String(vendor._id), "TWICE", 100, { userId: String(user._id) }),
+      ).resolves.toBeTruthy();
+    });
+
+    it("does not count a cancelled order against the limit", async () => {
+      const [vendor, user] = await Promise.all([makeVendor(), makeUser()]);
+      await makeCoupon(vendor._id, { code: "ONCE", perUserLimit: 1 });
+      await redemption(String(vendor._id), String(user._id), "ONCE", "cancelled");
+
+      await expect(
+        validateCoupon(String(vendor._id), "ONCE", 100, { userId: String(user._id) }),
+      ).resolves.toBeTruthy();
+    });
+
+    it("does not enforce a per-user limit for a guest (no user id)", async () => {
+      const [vendor, user] = await Promise.all([makeVendor(), makeUser()]);
+      await makeCoupon(vendor._id, { code: "ONCE", perUserLimit: 1 });
+      // Even with a redemption on record, a guest checkout has no identity to
+      // count, so the limit cannot apply.
+      await redemption(String(vendor._id), String(user._id), "ONCE");
+
+      await expect(validateCoupon(String(vendor._id), "ONCE", 100)).resolves.toBeTruthy();
+    });
+
+    it("scopes the count to this coupon and this shopper", async () => {
+      const [vendor, user, other] = await Promise.all([makeVendor(), makeUser(), makeUser()]);
+      await makeCoupon(vendor._id, { code: "MINE", perUserLimit: 1 });
+      // Another shopper's redemption of the same code must not lock this one out.
+      await redemption(String(vendor._id), String(other._id), "MINE");
+
+      await expect(
+        validateCoupon(String(vendor._id), "MINE", 100, { userId: String(user._id) }),
+      ).resolves.toBeTruthy();
+    });
   });
 });
 

@@ -177,7 +177,14 @@ export const checkoutService = {
         throw Errors.conflict(`Only ${stock} of "${product.title}" left`);
       }
 
-      lines.push({ unitPrice: price, quantity: item.quantity });
+      lines.push({
+        unitPrice: price,
+        quantity: item.quantity,
+        // Carried so a product/category-scoped coupon can tell which lines it
+        // may discount. Free here — the product is already loaded for re-pricing.
+        productId: String(product._id),
+        categories: (product.categories ?? []).map((c) => String(c)),
+      });
       orderItems.push({
         product: product._id,
         variant: item.variant ?? null,
@@ -203,7 +210,12 @@ export const checkoutService = {
     // drift here refuses a coupon on a cart that qualifies.
     const subtotalPreview = toMajor(subtotalOf(lines));
     if (cart.coupon) {
-      coupon = await validateCoupon(vendorId, cart.coupon, subtotalPreview);
+      // Pass the owner and the priced lines so the per-user limit and any
+      // product/category scope are enforced here, at the moment of charge.
+      coupon = await validateCoupon(vendorId, cart.coupon, subtotalPreview, {
+        userId: owner.userId,
+        lines,
+      });
     }
 
     const taxRate = vendorTaxRate(vendor.settings);

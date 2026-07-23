@@ -4,7 +4,7 @@ import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { Errors } from "@/shared/lib/errors";
 import { toMajor } from "@/shared/lib/money";
-import { validateCoupon, subtotalOf } from "./pricing.service";
+import { validateCoupon, subtotalOf, withCouponScope } from "./pricing.service";
 
 type CartOwner = { userId?: string; guestToken?: string };
 
@@ -127,10 +127,20 @@ export const cartService = {
     const cart = await this.getOrCreate(vendorId, owner);
     if (cart.items.length === 0) throw Errors.badRequest("Add an item before applying a coupon");
 
+    // Lines carry their product's categories so a scoped coupon can be rejected
+    // here if it matches nothing in the cart — the same check checkout runs.
+    const lines = await withCouponScope(
+      cart.items.map((i) => ({
+        productId: String(i.product),
+        unitPrice: i.unitPrice,
+        quantity: i.quantity,
+      })),
+    );
+
     // Exact: this subtotal decides whether a coupon's minimum spend is met, so
     // drift here can reject a cart that does qualify.
-    const subtotal = toMajor(subtotalOf(cart.items));
-    const coupon = await validateCoupon(vendorId, code, subtotal);
+    const subtotal = toMajor(subtotalOf(lines));
+    const coupon = await validateCoupon(vendorId, code, subtotal, { userId: owner.userId, lines });
 
     cart.coupon = coupon.code;
     await cart.save();
