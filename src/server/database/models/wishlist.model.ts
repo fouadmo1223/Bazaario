@@ -35,10 +35,17 @@ const wishlistSchema = new Schema({
 
 wishlistSchema.plugin(basePlugin);
 
-// One list per owner. `sparse` keeps the null side of each pair out of the index,
-// so many user-owned lists (guestToken: null) don't collide with each other.
-wishlistSchema.index({ user: 1 }, { unique: true, sparse: true });
-wishlistSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
+// One list per owner. Partial indexes, not `sparse`: a sparse unique index still
+// indexes an explicit `guestToken: null` (sparse skips only *absent* fields), and
+// the schema default writes that null on every user-owned list — so the second
+// such list collides with `guestToken: null` already taken. Filtering on type
+// indexes a document only once its owning field holds a real value, so the null
+// side of each pair never enters the unique index.
+wishlistSchema.index({ user: 1 }, { unique: true, partialFilterExpression: { user: { $type: "objectId" } } });
+wishlistSchema.index(
+  { guestToken: 1 },
+  { unique: true, partialFilterExpression: { guestToken: { $type: "string" } } },
+);
 
 wishlistSchema.virtual("itemCount").get(function (this: { items: unknown[] }) {
   return this.items.length;
