@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
+    "dev:all": "node scripts/dev-all.mjs",
     "build": "next build",
     "start": "next start -p 3001",
     "realtime": "tsx --env-file=.env.local src/server/realtime/server.ts",

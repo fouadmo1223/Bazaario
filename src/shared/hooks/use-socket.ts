@@ -131,10 +131,18 @@ export type ChatMessagePayload = {
  * de-duplicated by id: the sender's own message arrives twice — once as the
  * server action's return value, once through the socket fan-out.
  */
-export function useConversation(conversationId: string, initial: ChatMessagePayload[] = []) {
+export function useConversation(
+  conversationId: string,
+  initial: ChatMessagePayload[] = [],
+  initialReads: Record<string, string> = {},
+) {
   const { socket, connected } = useSocket();
   const [messages, setMessages] = useState<ChatMessagePayload[]>(initial);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  // Per other participant, the id (or ISO time) of the newest message they have
+  // read. Seeded from the server so a reload still shows "Seen" without waiting
+  // for a fresh socket event.
+  const [reads, setReads] = useState<Record<string, string>>(initialReads);
 
   const append = useCallback((message: ChatMessagePayload) => {
     setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
@@ -154,14 +162,21 @@ export function useConversation(conversationId: string, initial: ChatMessagePayl
         typing ? (prev.includes(userId) ? prev : [...prev, userId]) : prev.filter((u) => u !== userId),
       );
     };
+    const onRead = ({ userId, messageId }: { userId: string; messageId: string }) => {
+      setReads((prev) => ({ ...prev, [userId]: messageId }));
+      // Someone who is reading is, by definition, no longer typing.
+      setTypingUsers((prev) => prev.filter((u) => u !== userId));
+    };
 
     socket.on("chat:message", onMessage);
     socket.on("conversation:typing", onTyping);
+    socket.on("conversation:read", onRead);
 
     return () => {
       socket.emit("conversation:leave", conversationId);
       socket.off("chat:message", onMessage);
       socket.off("conversation:typing", onTyping);
+      socket.off("conversation:read", onRead);
     };
   }, [socket, conversationId, append]);
 
@@ -172,5 +187,13 @@ export function useConversation(conversationId: string, initial: ChatMessagePayl
     [socket, conversationId],
   );
 
-  return { messages, append, typingUsers, connected, setTyping };
+  /** Tell the other side we have read up to `messageId`. */
+  const emitRead = useCallback(
+    (messageId: string) => {
+      socket?.emit("conversation:read", { conversationId, messageId });
+    },
+    [socket, conversationId],
+  );
+
+  return { messages, append, typingUsers, connected, setTyping, reads, emitRead };
 }

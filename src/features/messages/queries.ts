@@ -96,6 +96,14 @@ export type Thread = {
   subject: string | null;
   vendorName: string | null;
   counterparties: string[];
+  /** Other participants by id, so the client can name whoever is typing. */
+  others: { id: string; name: string }[];
+  /**
+   * Read state seeded for the client: other participant id → the id of the
+   * newest message they had read at load time. Lets "Seen" survive a reload
+   * without waiting for a live socket event.
+   */
+  initialReads: Record<string, string>;
   orderId: string | null;
   messages: ChatMessagePayload[];
   /** Whether the viewer may resolve/close — drives whether those controls render. */
@@ -140,6 +148,28 @@ export async function getThread(
       };
     });
 
+  // Other participants, and how far each had read at load time. Computed before
+  // `markRead` below moves the viewer's own cursor — that call is about the
+  // viewer's unread badge, not these counterparties' receipts.
+  const otherParticipants = conversation.participants.filter(
+    (p) => String((p.user as unknown as PopulatedUser)?._id ?? p.user) !== actor.id,
+  );
+
+  const initialReads: Record<string, string> = {};
+  for (const p of otherParticipants) {
+    const readAt = p.lastReadAt ? new Date(p.lastReadAt) : null;
+    if (!readAt) continue;
+    // messages is oldest-first, so the last one at or before their cutoff is
+    // the newest message they have read.
+    let readId: string | null = null;
+    for (const m of messages) {
+      if (new Date(m.createdAt) <= readAt) readId = m.id;
+      else break;
+    }
+    const uid = String((p.user as unknown as PopulatedUser)?._id ?? p.user);
+    if (readId) initialReads[uid] = readId;
+  }
+
   // Reading the thread is what marks it read; doing it here means the badge
   // clears on open without the client needing a second round-trip.
   await conversationService.markRead(actor, conversationId);
@@ -150,9 +180,12 @@ export async function getThread(
     status: conversation.status,
     subject: conversation.subject ?? null,
     vendorName: vendor?.name ?? null,
-    counterparties: conversation.participants
-      .filter((p) => String((p.user as unknown as PopulatedUser)?._id ?? p.user) !== actor.id)
-      .map((p) => displayName(p.user as unknown as PopulatedUser)),
+    counterparties: otherParticipants.map((p) => displayName(p.user as unknown as PopulatedUser)),
+    others: otherParticipants.map((p) => ({
+      id: String((p.user as unknown as PopulatedUser)?._id ?? p.user),
+      name: displayName(p.user as unknown as PopulatedUser),
+    })),
+    initialReads,
     orderId: conversation.order ? String(conversation.order) : null,
     messages,
     canModerate: opts.canModerate ?? false,

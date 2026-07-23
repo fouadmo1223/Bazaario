@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useConversation } from "@/shared/hooks/use-socket";
-import { sendMessageAction, setConversationStatusAction } from "../actions";
+import {
+  markConversationReadAction,
+  sendMessageAction,
+  setConversationStatusAction,
+} from "../actions";
 import type { Thread } from "../queries";
 
 /**
@@ -19,9 +23,10 @@ import type { Thread } from "../queries";
  * quiet status line rather than disabling the form.
  */
 export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: string }) {
-  const { messages, append, typingUsers, connected, setTyping } = useConversation(
+  const { messages, append, typingUsers, connected, setTyping, reads, emitRead } = useConversation(
     thread.id,
     thread.messages,
+    thread.initialReads,
   );
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +34,54 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const nameById = useMemo(
+    () => new Map(thread.others.map((o) => [o.id, o.name])),
+    [thread.others],
+  );
+
   // Follow the conversation as it grows, the way every chat client does.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length]);
+
+  // When someone else's message is the latest, we have read it by looking at it.
+  // Tell the other side (live receipt) and persist it (so the badge clears and
+  // a reload still shows we read it). Our own sends never need marking.
+  const lastMessage = messages[messages.length - 1];
+  const lastId = lastMessage?.id;
+  const lastIsSystem = lastMessage?.system ?? false;
+  const lastSenderId = lastMessage?.senderId ?? null;
+  useEffect(() => {
+    if (!lastId || lastIsSystem) return;
+    if (lastSenderId === viewerId) return;
+    emitRead(lastId);
+    void markConversationReadAction(thread.id);
+  }, [lastId, lastIsSystem, lastSenderId, viewerId, emitRead, thread.id]);
+
+  // My last message, and whether anyone on the other side has read it — the
+  // "Seen" line hangs off this one bubble.
+  const myLastId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (!m.system && m.senderId === viewerId) return m.id;
+    }
+    return null;
+  }, [messages, viewerId]);
+
+  const seenByNames = useMemo(() => {
+    if (!myLastId) return [];
+    const myLast = messages.find((m) => m.id === myLastId);
+    if (!myLast) return [];
+    const myTime = new Date(myLast.createdAt).getTime();
+    return thread.others
+      .filter((o) => {
+        const readId = reads[o.id];
+        if (!readId) return false;
+        const readMsg = messages.find((m) => m.id === readId);
+        return readMsg ? new Date(readMsg.createdAt).getTime() >= myTime : false;
+      })
+      .map((o) => o.name);
+  }, [myLastId, messages, reads, thread.others]);
 
   // Stop broadcasting "typing" if the component goes away mid-sentence,
   // otherwise the other side sees a typing indicator that never clears.
@@ -161,15 +210,38 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 <p className={`mt-0.5 px-1 text-[11px] text-zinc-400 ${mine ? "text-right" : ""}`}>
                   {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
+                {mine && message.id === myLastId ? (
+                  <p className="px-1 text-right text-[11px] text-zinc-400" aria-live="polite">
+                    {seenByNames.length > 0
+                      ? thread.others.length > 1
+                        ? `Seen by ${seenByNames.join(", ")}`
+                        : "Seen"
+                      : connected
+                        ? "Sent"
+                        : "Sending…"}
+                  </p>
+                ) : null}
               </div>
             </div>
           );
         })}
 
         {typingUsers.length > 0 ? (
-          <p className="px-1 text-xs text-zinc-400" aria-live="polite">
-            Typing…
-          </p>
+          <div className="flex items-center gap-2 px-1" aria-live="polite">
+            <span className="flex gap-1">
+              <Dot delay="0ms" />
+              <Dot delay="150ms" />
+              <Dot delay="300ms" />
+            </span>
+            <span className="text-xs text-zinc-400">
+              {(() => {
+                const names = typingUsers.map((id) => nameById.get(id)).filter(Boolean) as string[];
+                if (names.length === 0) return "Typing…";
+                if (names.length === 1) return `${names[0]} is typing…`;
+                return `${names.join(", ")} are typing…`;
+              })()}
+            </span>
+          </div>
         ) : null}
 
         <div ref={bottomRef} />
@@ -223,5 +295,15 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
         </p>
       </div>
     </div>
+  );
+}
+
+/** One bouncing dot of the typing indicator; `delay` staggers the three. */
+function Dot({ delay }: { delay: string }) {
+  return (
+    <span
+      className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400"
+      style={{ animationDelay: delay }}
+    />
   );
 }
