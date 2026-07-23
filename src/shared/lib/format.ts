@@ -1,11 +1,21 @@
 /**
  * Presentation formatters shared by server and client components.
  *
- * Locale is intentionally left undefined so `Intl` resolves the runtime default.
- * Once next-intl lands, these take the active locale explicitly.
+ * The locale is **pinned**, not left to the runtime default: `Intl` resolves an
+ * undefined locale from the host environment, and the server (Node's ICU) and
+ * the browser disagree — USD renders "US$68.00" on one and "$68.00" on the
+ * other, so a price formatted on the server mismatches the client on hydration.
+ * A fixed default makes the two agree. Callers may still override it, and once
+ * next-intl lands these take the active locale explicitly.
  */
 
-export function formatMoney(amount: number, currency: string, locale?: string): string {
+const DEFAULT_LOCALE = "en-US";
+
+export function formatMoney(
+  amount: number,
+  currency: string,
+  locale: string = DEFAULT_LOCALE,
+): string {
   return new Intl.NumberFormat(locale, { style: "currency", currency }).format(amount);
 }
 
