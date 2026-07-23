@@ -6,9 +6,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/shared/components/modal";
 import { ProductFormModal } from "./product-form-modal";
+import { VariantMatrixModal } from "./variant-matrix-modal";
 import { deleteProductAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
-import type { Option, ProductRow, ProductFormValues } from "../queries";
+import type { Option, ProductRow, ProductFormValues, VariantEditorData } from "../queries";
 
 const STATUS_STYLE: Record<ProductRow["status"], string> = {
   active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
@@ -40,8 +41,10 @@ export function ProductTable({
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<ProductFormValues | null>(null);
+  const [variants, setVariants] = useState<VariantEditorData | null>(null);
   const [deleting, setDeleting] = useState<ProductRow | null>(null);
   const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
+  const [loadingVariants, setLoadingVariants] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +68,25 @@ export function ProductTable({
       setError("Could not load that product.");
     } finally {
       setLoadingEdit(null);
+    }
+  }
+
+  /** Load the option definitions and variant grid, then open the matrix editor. */
+  async function openVariants(row: ProductRow) {
+    setError(null);
+    setLoadingVariants(row.id);
+    try {
+      const res = await fetch(`/api/dashboard/products/${row.id}/variants`, { cache: "no-store" });
+      const body = (await res.json()) as { ok: boolean; data?: VariantEditorData; error?: { message: string } };
+      if (!body.ok || !body.data) {
+        setError(body.error?.message ?? "Could not load variants.");
+        return;
+      }
+      setVariants(body.data);
+    } catch {
+      setError("Could not load variants.");
+    } finally {
+      setLoadingVariants(null);
     }
   }
 
@@ -183,6 +205,16 @@ export function ProductTable({
                           View
                         </Link>
                       )}
+                      {p.type === "variable" && (
+                        <button
+                          type="button"
+                          onClick={() => openVariants(p)}
+                          disabled={loadingVariants === p.id}
+                          className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50 dark:text-indigo-400"
+                        >
+                          {loadingVariants === p.id ? "Loading…" : "Variants"}
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => openEdit(p)}
@@ -225,6 +257,15 @@ export function ProductTable({
           categories={categories}
           brands={brands}
           initial={editing}
+        />
+      )}
+
+      {variants && (
+        <VariantMatrixModal
+          open
+          onClose={() => setVariants(null)}
+          vendorId={vendorId}
+          data={variants}
         />
       )}
 

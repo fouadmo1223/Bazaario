@@ -12,6 +12,7 @@ import type {
   CreateProductInput,
   UpdateProductInput,
   VariantInput,
+  AttributeInput,
   ProductQueryInput,
 } from "@/features/products/schemas";
 
@@ -141,11 +142,20 @@ export const productService = {
     });
   },
 
-  /** Replace a variable product's variants and refresh its denormalized price range. */
+  /**
+   * Replace a variable product's option definitions and its variant matrix, and
+   * refresh the denormalized price range.
+   *
+   * Attributes and variants are saved together because they are one thing: a
+   * variant's `options` only mean something against the attributes that name
+   * them. `priceRange` and the `from` price are computed from **active**
+   * variants only — an inactive combination is not something a shopper can buy,
+   * so pricing the card off it would advertise a price that leads nowhere.
+   */
   async syncVariants(
     vendorId: string,
     productId: string,
-    variants: VariantInput[],
+    input: { attributes: AttributeInput[]; variants: VariantInput[] },
     actorId: string,
   ): Promise<void> {
     await connectToDatabase();
@@ -153,19 +163,46 @@ export const productService = {
     if (!product) throw Errors.notFound("Product not found");
     if (product.type !== "variable") throw Errors.badRequest("Product is not variable");
 
+    product.set(
+      "attributes",
+      input.attributes.map((a) => ({
+        name: a.name,
+        values: a.values,
+        variantDefining: a.variantDefining,
+      })),
+    );
+
     await Variant.deleteMany({ product: productId });
-    if (variants.length) {
+    if (input.variants.length) {
       await Variant.insertMany(
-        variants.map((v) => ({ ...v, vendor: vendorId, product: productId, createdBy: actorId })),
+        input.variants.map((v) => ({ ...v, vendor: vendorId, product: productId, createdBy: actorId })),
       );
-      const prices = variants.map((v) => v.price);
-      product.priceRange = { min: Math.min(...prices), max: Math.max(...prices) };
-      product.price = Math.min(...prices);
+    }
+
+    const activePrices = input.variants.filter((v) => v.isActive).map((v) => v.price);
+    if (activePrices.length) {
+      product.priceRange = { min: Math.min(...activePrices), max: Math.max(...activePrices) };
+      product.price = Math.min(...activePrices);
     } else {
       product.priceRange = { min: null, max: null };
     }
+
     await product.save();
+    await writeAudit({
+      actor: actorId, vendor: vendorId, action: "product.variants.sync",
+      entity: "Product", entityId: productId, diff: { variantCount: input.variants.length },
+    });
     await invalidateVendorProducts(vendorId);
+  },
+
+  /**
+   * All variants for the dashboard editor — including inactive ones, which the
+   * storefront `listVariants` deliberately hides. The editor must show them so a
+   * vendor can see and re-enable a combination they previously turned off.
+   */
+  async listAllVariants(vendorId: string, productId: string): Promise<VariantDoc[]> {
+    await connectToDatabase();
+    return Variant.find({ vendor: vendorId, product: productId }).sort({ createdAt: 1 }).exec();
   },
 
   async list(vendorId: string, query: ProductQueryInput, pagination: PaginationInput): Promise<Paginated<ProductDoc>> {

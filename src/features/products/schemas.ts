@@ -57,7 +57,38 @@ export const variantInputSchema = z.object({
   stock: z.number().int().min(0).default(0),
   weight: z.number().nullable().optional(),
   image: z.string().url().nullable().optional(),
+  isActive: z.boolean().default(true),
 });
+
+/**
+ * The variant editor saves the option definitions and the variant matrix in one
+ * call: the two are inseparable — a variant's `options` are meaningless without
+ * the attributes that name them, and saving them apart could leave a product
+ * whose variants reference an option it no longer declares.
+ *
+ * SKUs must be unique within the payload. They carry a per-vendor unique index,
+ * and `syncVariants` deletes-then-inserts, so a collision inside one save would
+ * fail the insert midway and is far friendlier to catch here.
+ */
+export const variantMatrixSchema = z
+  .object({
+    attributes: z.array(attributeInputSchema).default([]),
+    variants: z.array(variantInputSchema).default([]),
+  })
+  .superRefine((data, ctx) => {
+    const seen = new Set<string>();
+    data.variants.forEach((v, i) => {
+      const sku = v.sku.trim().toLowerCase();
+      if (seen.has(sku)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Duplicate SKU "${v.sku}"`,
+          path: ["variants", i, "sku"],
+        });
+      }
+      seen.add(sku);
+    });
+  });
 
 /**
  * A query-string flag. `z.coerce.boolean()` is wrong here: it applies
@@ -93,5 +124,7 @@ export const productQuerySchema = storefrontFilterSchema.extend({
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type VariantInput = z.infer<typeof variantInputSchema>;
+export type VariantMatrixInput = z.infer<typeof variantMatrixSchema>;
+export type AttributeInput = z.infer<typeof attributeInputSchema>;
 export type ProductQueryInput = z.infer<typeof productQuerySchema>;
 export type StorefrontFilterInput = z.infer<typeof storefrontFilterSchema>;

@@ -10,9 +10,8 @@ import { Vendor } from "@/server/database/models/vendor.model";
 import {
   createProductSchema,
   updateProductSchema,
-  variantInputSchema,
+  variantMatrixSchema,
 } from "./schemas";
-import { z } from "zod";
 import type { ProductDoc } from "@/server/database/models/product.model";
 
 function serialize(p: ProductDoc) {
@@ -96,11 +95,11 @@ export async function deleteProductAction(
 export async function syncVariantsAction(
   vendorId: string,
   productId: string,
-  variants: unknown,
+  input: unknown,
 ): Promise<ApiResult<null>> {
   try {
     const { user } = await requireVendorPermission(vendorId, PERMISSIONS.PRODUCT_WRITE);
-    const parsed = z.array(variantInputSchema).safeParse(variants);
+    const parsed = variantMatrixSchema.safeParse(input);
     if (!parsed.success) throw Errors.validation("Invalid variants", parsed.error.flatten());
 
     await productService.syncVariants(vendorId, productId, parsed.data, user.id);

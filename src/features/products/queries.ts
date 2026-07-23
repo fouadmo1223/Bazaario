@@ -53,6 +53,25 @@ export type ProductFormValues = {
 
 export type Option = { id: string; name: string };
 
+/** One row of the variant editor — a concrete option combination and its terms. */
+export type VariantEditorRow = {
+  options: Record<string, string>;
+  sku: string;
+  price: number;
+  compareAtPrice: number | null;
+  stock: number;
+  image: string | null;
+  isActive: boolean;
+};
+
+/** Everything the variant matrix editor needs: the options and the current grid. */
+export type VariantEditorData = {
+  productId: string;
+  title: string;
+  attributes: { name: string; values: string[] }[];
+  variants: VariantEditorRow[];
+};
+
 async function variantStock(products: ProductDoc[]): Promise<Map<string, { stock: number; count: number }>> {
   const variableIds = products.filter((p) => p.type === "variable").map((p) => p._id);
   if (variableIds.length === 0) return new Map();
@@ -143,6 +162,40 @@ export async function getProductForEdit(
     trackInventory: product.trackInventory,
     allowBackorder: product.allowBackorder,
     media: product.media.map((m) => ({ url: m.url, alt: m.alt ?? null })),
+  };
+}
+
+/**
+ * A variable product's option definitions and its full variant grid, shaped for
+ * the matrix editor. Returns null for a missing product or a simple one — the
+ * editor only makes sense for a variable product.
+ */
+export async function getVariantEditorData(
+  vendorId: string,
+  productId: string,
+): Promise<VariantEditorData | null> {
+  await connectToDatabase();
+  const product = await productService.getById(vendorId, productId).catch(() => null);
+  if (!product || product.type !== "variable") return null;
+
+  const variants = await productService.listAllVariants(vendorId, productId);
+
+  return {
+    productId: String(product._id),
+    title: product.title,
+    attributes: product.attributes
+      .filter((a) => a.variantDefining)
+      .map((a) => ({ name: a.name, values: [...a.values] })),
+    variants: variants.map((v) => ({
+      // `options` is a Mongoose Map; a plain object is what the editor works with.
+      options: Object.fromEntries(v.options as unknown as Map<string, string>),
+      sku: v.sku,
+      price: v.price,
+      compareAtPrice: v.compareAtPrice ?? null,
+      stock: v.stock,
+      image: v.image ?? null,
+      isActive: v.isActive,
+    })),
   };
 }
 
