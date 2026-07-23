@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/server/database/connection";
 import { User, type UserDoc } from "@/server/database/models/user.model";
 import { hashPassword, verifyPassword } from "@/server/security/password";
 import { issueOneTimeToken, consumeOneTimeToken } from "@/server/security/one-time-token";
-import { createSession, destroySession } from "@/server/security/session";
+import { createSession, destroySession, rotateSession } from "@/server/security/session";
 import { Errors } from "@/shared/lib/errors";
 import { ROLES, type Role } from "@/shared/constants/rbac";
 import { logger } from "@/shared/lib/logger";
@@ -89,6 +89,29 @@ export const authService = {
 
     logger.info({ userId: String(user._id) }, "User logged in");
     return toPublicUser(user);
+  },
+
+  /**
+   * Silently renew the session from the refresh cookie — the counterpart to the
+   * 15-minute access token. Identity is re-read from the database so a role
+   * change or suspension since login lands in the new token; a suspended or
+   * deleted account is refused rather than re-issued a session.
+   *
+   * Throws (leaving the caller to send the visitor to login) when there is no
+   * valid refresh cookie or its allow-list entry is gone.
+   */
+  async refresh(): Promise<PublicUser> {
+    await connectToDatabase();
+    let publicUser: PublicUser | null = null;
+    await rotateSession(async (sub) => {
+      const user = await User.findById(sub);
+      if (!user) throw Errors.unauthorized("Account no longer exists");
+      if (user.status === "suspended") throw Errors.forbidden("This account is suspended");
+      publicUser = toPublicUser(user);
+      return { sub: String(user._id), email: user.email, roles: user.roles as Role[] };
+    });
+    // rotateSession resolves only after the provider ran, so this is set.
+    return publicUser!;
   },
 
   async logout(): Promise<void> {

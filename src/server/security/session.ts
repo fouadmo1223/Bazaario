@@ -77,8 +77,17 @@ export async function createSession(
   jar.set(REFRESH_COOKIE, refresh.token, await baseCookieOptions(refreshTtl, opts.rememberMe ?? false));
 }
 
-/** Rotate the session from a valid refresh cookie. Detects & punishes reuse. */
-export async function rotateSession(refreshClaimsProvider: () => Promise<AccessClaims>): Promise<void> {
+/**
+ * Rotate the session from a valid refresh cookie. Detects & punishes reuse.
+ *
+ * The provider receives the token's verified `sub` and returns the claims for
+ * the new access token — loaded fresh from the database rather than copied from
+ * the old token, so a role change or suspension since login takes effect on the
+ * next refresh rather than lingering for the token's whole lifetime.
+ */
+export async function rotateSession(
+  refreshClaimsProvider: (sub: string) => Promise<AccessClaims>,
+): Promise<void> {
   const jar = await cookies();
   const raw = jar.get(REFRESH_COOKIE)?.value;
   if (!raw) throw Errors.unauthorized("No refresh token");
@@ -96,7 +105,7 @@ export async function rotateSession(refreshClaimsProvider: () => Promise<AccessC
 
   // Revoke the presented jti, then mint a new pair in the same family.
   await redis.del(refreshKey(claims.jti));
-  const fresh = await refreshClaimsProvider();
+  const fresh = await refreshClaimsProvider(claims.sub);
   await createSession(fresh, { rememberMe: true, family: claims.family });
 }
 
