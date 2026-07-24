@@ -86,12 +86,14 @@ export async function makeProduct(
     trackInventory?: boolean;
     allowBackorder?: boolean;
     status?: "draft" | "active" | "archived";
+    /** A variable product prices through its Variants, not this row. */
+    type?: "simple" | "variable";
   } = {},
 ): Promise<ProductDoc> {
   const n = unique();
   return Product.create({
     vendor: vendorId,
-    type: "simple",
+    type: opts.type ?? "simple",
     title: opts.title ?? `Product ${n}`,
     slug: `product-${n}`,
     price: opts.price ?? 25,
