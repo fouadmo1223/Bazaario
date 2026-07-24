@@ -164,6 +164,85 @@ describe("sending", () => {
     ).rejects.toThrow();
   });
 
+  /**
+   * Attachments.
+   *
+   * A photo with no caption is a normal message, so an empty body is only empty
+   * when nothing is attached either. The stored URLs are also filtered: they end
+   * up as media sources in the *other* participant's browser, so anything not
+   * from our own chat folder is dropped rather than served.
+   */
+  describe("attachments", () => {
+    const ours = (name: string) =>
+      `https://res.cloudinary.com/test-cloud/image/upload/v1712345678/chat/sender/${name}`;
+
+    async function thread() {
+      const customer = await makeUser();
+      const vendor = await makeVendor();
+      const conversation = await conversationService.start(actor(customer), {
+        kind: "customer_vendor",
+        vendorId: String(vendor._id),
+        body: "Hello",
+      });
+      return { customer, conversation };
+    }
+
+    it("accepts a message that is an attachment with no text", async () => {
+      const { customer, conversation } = await thread();
+
+      const message = await conversationService.send(
+        actor(customer),
+        String(conversation._id),
+        "",
+        [{ url: ours("photo.png"), name: "photo.png", mime: "image/png" }],
+      );
+
+      expect(message.body).toBe("");
+      expect(message.attachments).toHaveLength(1);
+      expect(message.attachments[0]!.url).toBe(ours("photo.png"));
+    });
+
+    /** The inbox has to show something for a message with no words in it. */
+    it("gives an attachment-only message a preview", async () => {
+      const { customer, conversation } = await thread();
+
+      await conversationService.send(actor(customer), String(conversation._id), "", [
+        { url: ours("photo.png"), name: "photo.png", mime: "image/png" },
+      ]);
+
+      const updated = await Conversation.findById(conversation._id);
+      expect(updated!.lastMessagePreview).toContain("attachment");
+    });
+
+    it("drops attachment URLs that are not ours", async () => {
+      const { customer, conversation } = await thread();
+
+      const message = await conversationService.send(
+        actor(customer),
+        String(conversation._id),
+        "look at this",
+        [
+          { url: "https://evil.example.com/payload.png", name: "payload.png" },
+          { url: ours("keep.png"), name: "keep.png" },
+        ],
+      );
+
+      expect(message.attachments).toHaveLength(1);
+      expect(message.attachments[0]!.url).toBe(ours("keep.png"));
+    });
+
+    /** Nothing to say and nothing that survived filtering is still empty. */
+    it("rejects a message whose only attachment was rejected", async () => {
+      const { customer, conversation } = await thread();
+
+      await expect(
+        conversationService.send(actor(customer), String(conversation._id), "", [
+          { url: "https://evil.example.com/payload.png", name: "payload.png" },
+        ]),
+      ).rejects.toThrow();
+    });
+  });
+
   /** The inbox list renders from these denormalized fields, not from Message. */
   it("keeps the conversation preview in step with the newest message", async () => {
     const customer = await makeUser();
