@@ -25,12 +25,21 @@ const vendorSettingsSchema = new Schema(
   { _id: false },
 );
 
-/** Declared as a required sub-schema so `vendor.stats.x` types as present. */
+/**
+ * Declared as a required sub-schema so `vendor.stats.x` types as present.
+ *
+ * No `revenue` here on purpose. It used to be `$inc`-accumulated on every paid
+ * order, but nothing ever read it — the dashboard's revenue comes from
+ * `analyticsService`, which sums `totals.grandTotal` over orders — and `$inc`
+ * accumulates floats inside Mongo, so the field drifted by a fraction of a cent
+ * per order. A wrong number nobody reads is pure liability, so it is gone rather
+ * than displayed; if a fast denormalized total is ever wanted, store minor units
+ * and reconcile against the aggregation.
+ */
 const vendorStatsSchema = new Schema(
   {
     products: { type: Number, default: 0 },
     orders: { type: Number, default: 0 },
-    revenue: { type: Number, default: 0 },
   },
   { _id: false },
 );

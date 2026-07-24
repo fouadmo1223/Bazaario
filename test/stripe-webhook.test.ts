@@ -5,7 +5,6 @@ import { paymentService } from "@/server/services/payment.service";
 import { checkoutService } from "@/server/services/checkout.service";
 import { Order, type OrderDoc } from "@/server/database/models/order.model";
 import { Product } from "@/server/database/models/product.model";
-import { Vendor } from "@/server/database/models/vendor.model";
 import { makeUser, makeVendor, makeProduct, makeCart, testAddress } from "./factories";
 
 /**
@@ -141,38 +140,40 @@ describe("stripe webhook fulfillment", () => {
     expect(fresh!.timeline.map((t) => t.status)).toContain("paid");
   });
 
-  it("credits the vendor's revenue by the order total", async () => {
-    const { order, vendorId } = await pendingOrder();
+  it("marks the order paid once", async () => {
+    const { order } = await pendingOrder();
     const body = completedEvent(String(order._id), "cs_test_rev", 10000);
 
     await deliver(body, signature(body));
 
-    const vendor = await Vendor.findById(vendorId);
-    expect(vendor!.stats.revenue).toBeCloseTo(order.totals.grandTotal, 2);
+    const fresh = await Order.findById(order._id);
+    expect(fresh!.payment.status).toBe("paid");
+    expect(fresh!.timeline.filter((t) => t.status === "paid")).toHaveLength(1);
   });
 
   /**
    * The one that matters most. Stripe retries, so this *will* happen in
-   * production — and a second `$inc` on vendor revenue leaves no trace on the
-   * order to notice it by.
+   * production, and the capture must be idempotent. The signal is the order
+   * itself: capturing twice would push a second "paid" onto the timeline. (This
+   * used to also assert vendor revenue did not double, back when a `stats.revenue`
+   * counter was `$inc`'d here — that counter was removed for drifting unread, so
+   * the timeline is now the sole record, which is exactly why it must not grow.)
    */
   it("counts a duplicate delivery exactly once", async () => {
-    const { order, vendorId } = await pendingOrder();
+    const { order } = await pendingOrder();
     const body = completedEvent(String(order._id), "cs_test_dupe", 10000);
     const sig = signature(body);
 
     await deliver(body, sig);
-    const afterFirst = await Vendor.findById(vendorId);
     const timelineAfterFirst = (await Order.findById(order._id))!.timeline.length;
 
     await deliver(body, sig);
     await deliver(body, sig);
 
-    const afterReplays = await Vendor.findById(vendorId);
     const fresh = await Order.findById(order._id);
 
-    expect(afterReplays!.stats.revenue).toBeCloseTo(afterFirst!.stats.revenue, 2);
     expect(fresh!.timeline).toHaveLength(timelineAfterFirst);
+    expect(fresh!.timeline.filter((t) => t.status === "paid")).toHaveLength(1);
     expect(fresh!.payment.status).toBe("paid");
   });
 

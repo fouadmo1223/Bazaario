@@ -1,6 +1,5 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { Order, type OrderDoc } from "@/server/database/models/order.model";
-import { Vendor } from "@/server/database/models/vendor.model";
 import { Product } from "@/server/database/models/product.model";
 import { Variant } from "@/server/database/models/variant.model";
 import { getProvider } from "@/server/payments/registry";
@@ -64,24 +63,10 @@ export const paymentService = {
       order.payment.reference = outcome.providerReference;
       order.status = "paid";
       order.timeline.push({ status: "paid", note: "Payment captured", at: new Date() });
-      /**
-       * Denormalized running total. Two caveats before anyone relies on it:
-       *
-       * 1. It is currently **written but never read** — `analytics.service`
-       *    computes revenue by aggregating `totals.grandTotal` over orders,
-       *    which is the authoritative figure.
-       * 2. `$inc` accumulates floats *inside Mongo*, so this drifts by a
-       *    fraction of a cent per order and cannot be corrected from here the
-       *    way JS-side arithmetic can (see shared/lib/money.ts).
-       *
-       * Displaying this without first making it exact — storing minor units, or
-       * dropping it in favour of the aggregation — would show a number that
-       * slowly diverges from the orders it claims to summarize.
-       */
-      await Vendor.updateOne(
-        { _id: order.vendor },
-        { $inc: { "stats.revenue": order.totals.grandTotal } },
-      );
+      // No denormalized revenue counter is kept here. It used to `$inc`
+      // `stats.revenue`, but nothing read it and `$inc` drifts floats inside
+      // Mongo; the authoritative figure is `analyticsService` aggregating
+      // `totals.grandTotal` over orders. See the note on `vendorStatsSchema`.
     } else if (outcome.status === "failed") {
       order.payment.status = "failed";
       order.timeline.push({ status: "pending", note: "Payment failed", at: new Date() });

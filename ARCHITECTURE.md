@@ -529,10 +529,14 @@ Two known limits:
   cannot be rounded predictably — 1.005 rounds down, 8.115 rounds up — because
   the value lost the information before it arrived. The precondition holds while
   totals are rounded before storage.
-- `vendor.stats.revenue` accumulates with `$inc` *inside Mongo*, so it drifts
-  and JS-side exactness cannot reach it. It is currently written but never read
-  (analytics aggregates orders instead). Make it exact or drop it before
-  displaying it.
+- `vendor.stats.revenue` was **removed**. It accumulated with `$inc` *inside
+  Mongo*, so it drifted and JS-side exactness could not reach it, and nothing
+  read it — the dashboard's revenue comes from `analyticsService` aggregating
+  `totals.grandTotal` over paid orders, which is authoritative. A wrong number
+  nobody read was pure liability, so the field and its write are gone rather than
+  displayed. If a fast denormalized total is ever wanted, store minor units and
+  reconcile against the aggregation. (Old vendor documents may still carry the
+  field on disk; it is undeclared now, so Mongoose ignores it.)
 
 Storing minor units at rest would remove the conversion boundary entirely. That
 is a data migration across ~41 files and has not been done.
