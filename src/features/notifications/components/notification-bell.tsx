@@ -18,6 +18,12 @@ import { markAllNotificationsReadAction, markNotificationReadAction } from "../a
  * The list itself is fetched only when the bell is opened. Most page views never
  * open it, and carrying twenty titles and bodies through every navigation to
  * render a number would be paying for the whole panel to show a dot.
+ *
+ * Works with or without `StorefrontProvider`. The storefront header has one and
+ * the count rides along with the rest of its per-visitor state; the dashboard
+ * has no such provider, so that chrome resolves the count on the server and
+ * passes it as `initialUnread` instead. Either way the socket drives it from
+ * there.
  */
 
 type NotificationItem = {
@@ -40,12 +46,12 @@ type LiveNotification = {
   createdAt?: string;
 };
 
-export function NotificationBell() {
+export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number } = {}) {
   const router = useRouter();
   const storefront = useStorefront();
   const { socket } = useSocket();
 
-  const serverUnread = storefront?.notificationCount ?? 0;
+  const serverUnread = storefront?.notificationCount ?? initialUnread;
   const [unread, setUnread] = useState(serverUnread);
   const [syncedFrom, setSyncedFrom] = useState(serverUnread);
   const [items, setItems] = useState<NotificationItem[] | null>(null);
@@ -108,6 +114,17 @@ export function NotificationBell() {
     };
   }, [open]);
 
+  /**
+   * Re-read the authoritative count after a write. With the provider that means
+   * refetching the header's per-visitor state; without one (the dashboard) the
+   * count came from the server render, so re-rendering the route is what picks
+   * the new value up.
+   */
+  const refreshCount = useCallback(() => {
+    if (storefront) storefront.refresh();
+    else router.refresh();
+  }, [storefront, router]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -139,7 +156,7 @@ export function NotificationBell() {
         prev ? prev.map((i) => (i.id === item.id ? { ...i, readAt: new Date().toISOString() } : i)) : prev,
       );
       setUnread((n) => Math.max(0, n - 1));
-      void markNotificationReadAction(item.id).then(() => storefront?.refresh());
+      void markNotificationReadAction(item.id).then(refreshCount);
     }
     setOpen(false);
     if (item.link) router.push(item.link);
@@ -148,7 +165,7 @@ export function NotificationBell() {
   function markAll() {
     setItems((prev) => prev?.map((i) => ({ ...i, readAt: i.readAt ?? new Date().toISOString() })) ?? prev);
     setUnread(0);
-    void markAllNotificationsReadAction().then(() => storefront?.refresh());
+    void markAllNotificationsReadAction().then(refreshCount);
   }
 
   return (

@@ -313,7 +313,7 @@ export const conversationService = {
           type: "ticket_reply" as const,
           title: conversation.subject || "New message",
           body: preview.slice(0, 140),
-          link: `/messages/${String(conversation._id)}`,
+          link: `/account/messages/${String(conversation._id)}`,
         })),
       );
     } catch (err) {
