@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useStorefront } from "../storefront-provider";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
 
 /**
  * Marketplace header: search, wishlist, cart, account.
@@ -35,6 +36,9 @@ export function StorefrontHeader() {
         <SearchBox />
 
         <div className="flex shrink-0 items-center gap-1">
+          {/* Only for an account — a guest has nothing to be notified about. */}
+          {storefront?.signedIn ? <NotificationBell /> : null}
+
           <IconLink href="/wishlist" label="Wishlist" count={counts.wishlist}>
             {/* Heart */}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>

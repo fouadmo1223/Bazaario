@@ -3,11 +3,21 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
-type Snapshot = { cart: number; wishlist: number; wishlistIds: string[] };
+type Snapshot = {
+  cart: number;
+  wishlist: number;
+  wishlistIds: string[];
+  notifications: number;
+  signedIn: boolean;
+};
 
 type StorefrontState = {
   cartCount: number;
   wishlistCount: number;
+  /** Unread notifications at the last fetch; the bell adds live arrivals on top. */
+  notificationCount: number;
+  /** Whether there is an account behind this visitor, not just a guest cookie. */
+  signedIn: boolean;
   isSaved: (productId: string) => boolean;
   /** Reflect a toggle locally so every heart for that product agrees at once. */
   setSaved: (productId: string, saved: boolean) => void;
@@ -24,7 +34,13 @@ const StorefrontContext = createContext<StorefrontState | null>(null);
  * visitor and cheap to fetch; the catalogue around it is not.
  */
 export function StorefrontProvider({ children }: { children: React.ReactNode }) {
-  const [snapshot, setSnapshot] = useState<Snapshot>({ cart: 0, wishlist: 0, wishlistIds: [] });
+  const [snapshot, setSnapshot] = useState<Snapshot>({
+    cart: 0,
+    wishlist: 0,
+    wishlistIds: [],
+    notifications: 0,
+    signedIn: false,
+  });
   const [nonce, setNonce] = useState(0);
   const pathname = usePathname();
 
@@ -66,11 +82,13 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
     () => ({
       cartCount: snapshot.cart,
       wishlistCount: snapshot.wishlist,
+      notificationCount: snapshot.notifications,
+      signedIn: snapshot.signedIn,
       isSaved: (id: string) => savedIds.has(id),
       setSaved,
       refresh: () => setNonce((n) => n + 1),
     }),
-    [snapshot.cart, snapshot.wishlist, savedIds, setSaved],
+    [snapshot.cart, snapshot.wishlist, snapshot.notifications, snapshot.signedIn, savedIds, setSaved],
   );
 
   return <StorefrontContext.Provider value={value}>{children}</StorefrontContext.Provider>;
