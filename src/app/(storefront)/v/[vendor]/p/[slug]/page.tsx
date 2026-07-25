@@ -8,6 +8,8 @@ import {
   type ProductDetailData,
 } from "@/features/products/components/product-detail-view";
 import type { VariantView } from "@/features/products/components/variant-picker";
+import { ReviewsSection } from "@/features/reviews/components/reviews-section";
+import { getProductReviews } from "@/features/reviews/queries";
 import { isAppError } from "@/shared/lib/errors";
 
 type Params = { vendor: string; slug: string };
@@ -107,6 +109,8 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     faqs: product.faqs.map((f) => ({ question: f.question, answer: f.answer })),
   };
 
+  const reviews = await getProductReviews(String(product._id));
+
   // A variable product's offers are its variants, so expose the real range
   // rather than a single price a shopper may never actually be charged.
   const prices = variants.length ? variants.map((v) => v.price) : [product.price];
@@ -174,6 +178,13 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         vendorId={vendorId}
         vendorSlug={vendorSlug}
         currency={currency}
+      />
+
+      <ReviewsSection
+        productId={detail.id}
+        reviews={reviews}
+        productSlug={slug}
+        vendorSlug={vendorSlug}
       />
     </div>
   );
