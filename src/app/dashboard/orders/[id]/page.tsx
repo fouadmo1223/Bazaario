@@ -12,6 +12,7 @@ import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { StatusActions } from "@/features/orders/components/status-actions";
 import { RefundForm } from "@/features/orders/components/refund-form";
+import { ReturnReview } from "@/features/orders/components/return-review";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import { PERMISSIONS, roleHasPermission } from "@/shared/constants/rbac";
 import { formatMoney } from "@/shared/lib/format";
@@ -131,6 +132,44 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
                 currency={order.currency}
                 remaining={remaining}
               />
+            </section>
+          )}
+
+          {canRefund && order.returns.some((r) => r.status === "requested") && (
+            <section aria-label="Return requests">
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Return requests
+              </h2>
+              <div className="space-y-3">
+                {order.returns
+                  .filter((r) => r.status === "requested")
+                  .map((r) => (
+                    <ReturnReview key={r.id} vendorId={vendorId} orderId={order.id} request={r} />
+                  ))}
+              </div>
+            </section>
+          )}
+
+          {order.returns.some((r) => r.status !== "requested") && (
+            <section aria-label="Return history">
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Return history
+              </h2>
+              <ul className="space-y-2 text-sm">
+                {order.returns
+                  .filter((r) => r.status !== "requested")
+                  .map((r) => (
+                    <li key={r.id} className="flex justify-between gap-3 text-zinc-600 dark:text-zinc-400">
+                      <span>
+                        {r.reason} — <span className="capitalize">{r.status}</span>
+                        {r.resolutionNote ? ` (${r.resolutionNote})` : ""}
+                      </span>
+                      <time dateTime={r.resolvedAt ?? undefined} className="shrink-0 text-xs text-zinc-400">
+                        {r.resolvedAt ? new Date(r.resolvedAt).toLocaleDateString() : ""}
+                      </time>
+                    </li>
+                  ))}
+              </ul>
             </section>
           )}
 

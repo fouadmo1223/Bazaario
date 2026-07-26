@@ -57,6 +57,26 @@ export async function refundOrderAction(
   }
 }
 
+/** Vendor accepting or declining a customer's return request. Doesn't itself refund — see `refundOrderAction`. */
+export async function resolveReturnAction(
+  vendorId: string,
+  orderId: string,
+  returnId: string,
+  decision: "approved" | "rejected",
+  note?: string,
+): Promise<ApiResult<Record<string, unknown>>> {
+  try {
+    // Same right as issuing a refund: approving is a promise the money is
+    // coming back, so it needs the same trust level as actually sending it.
+    const { user } = await requireVendorPermission(vendorId, PERMISSIONS.ORDER_REFUND);
+    const order = await orderService.resolveReturn(vendorId, orderId, returnId, user.id, decision, note);
+    revalidatePath(`/dashboard/${vendorId}/orders/${orderId}`);
+    return ok(serialize(order), { message: `Return ${decision}.` });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
 export async function assignDriverAction(
   vendorId: string,
   orderId: string,
@@ -107,6 +127,26 @@ export async function driverUpdateStatusAction(
 
     const updated = await orderService.updateStatus(vendorId, orderId, status, user.id);
     return ok(serialize(updated), { message: `Marked ${status}.` });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+/** Customer requesting a return on a delivered order. */
+export async function requestReturnAction(
+  orderId: string,
+  reason: string,
+  note?: string,
+): Promise<ApiResult<Record<string, unknown>>> {
+  try {
+    const user = await requireUser();
+    if (!reason.trim()) throw Errors.badRequest("Please tell us why you're returning this");
+    const order = await orderService.requestReturn(user.id, orderId, {
+      reason: reason.trim(),
+      ...(note?.trim() ? { note: note.trim() } : {}),
+    });
+    revalidatePath(`/account/orders/${orderId}`);
+    return ok(serialize(order), { message: "Return requested — the store will review it." });
   } catch (err) {
     return toFailure(err);
   }

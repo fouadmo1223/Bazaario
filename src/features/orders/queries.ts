@@ -58,6 +58,15 @@ export type OrderDetailView = OrderListItem & {
   timeline: { status: string; note: string | null; at: string }[];
   refunds: { amount: number; reason: string | null; at: string }[];
   refundedTotal: number;
+  returns: {
+    id: string;
+    reason: string;
+    note: string | null;
+    status: "requested" | "approved" | "rejected";
+    requestedAt: string;
+    resolvedAt: string | null;
+    resolutionNote: string | null;
+  }[];
 };
 
 /** Vendor names for a set of orders, fetched in one query rather than per row. */
@@ -135,6 +144,15 @@ function toDetail(
       at: r.at.toISOString(),
     })),
     refundedTotal: order.refunds.reduce((s, r) => s + r.amount, 0),
+    returns: order.returns.map((r) => ({
+      id: String(r._id),
+      reason: r.reason,
+      note: r.note ?? null,
+      status: r.status as "requested" | "approved" | "rejected",
+      requestedAt: r.requestedAt.toISOString(),
+      resolvedAt: r.resolvedAt ? r.resolvedAt.toISOString() : null,
+      resolutionNote: r.resolutionNote ?? null,
+    })),
   };
 }
 

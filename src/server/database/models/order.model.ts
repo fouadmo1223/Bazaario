@@ -59,6 +59,24 @@ const refundSchema = new Schema(
   { _id: false },
 );
 
+export const RETURN_STATUSES = ["requested", "approved", "rejected"] as const;
+
+/**
+ * A request layered on top of the order, not a new order status: approving
+ * one doesn't move money by itself, it's a decision that clears the vendor to
+ * use the existing refund flow. Keeping `_id` (the schema default) so a
+ * specific request is addressable via `order.returns.id(returnId)`.
+ */
+const returnRequestSchema = new Schema({
+  reason: { type: String, required: true },
+  note: { type: String, default: null },
+  status: { type: String, enum: RETURN_STATUSES, default: "requested", index: true },
+  requestedAt: { type: Date, default: Date.now },
+  resolvedAt: { type: Date, default: null },
+  resolvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+  resolutionNote: { type: String, default: null },
+});
+
 /**
  * Nested groups are declared as explicit sub-schemas with `required: true` so
  * `InferSchemaType` types them as present rather than optional — otherwise every
@@ -117,6 +135,7 @@ const orderSchema = new Schema({
   billingAddress: { type: addressSnapshotSchema, default: null },
 
   refunds: { type: [refundSchema], default: [] },
+  returns: { type: [returnRequestSchema], default: [] },
   notes: { type: [{ text: String, at: { type: Date, default: Date.now }, by: { type: Schema.Types.ObjectId, ref: "User" } }], default: [] },
 
   placedAt: { type: Date, default: Date.now },

@@ -69,7 +69,7 @@ Wishlist        user?|guestToken, items[{product,vendor,addedAt}]
                  no price snapshot — prices read live when the list is viewed)
 Order           vendor, number, customer, items[snapshot], totals{sub,tax,ship,disc,grand},
                 status, timeline[], payment{provider,status,ref}, shipping{addr,method,slot},
-                fulfillment, refunds[]
+                fulfillment, refunds[], returns[{reason,status,requestedAt,resolvedAt,resolvedBy}]
 Address         user, label, recipient, phone, lines, city, region, country, geo
 Coupon          vendor, code, type, value, constraints{minSpend,usageLimit,perUser,window}
 Review          vendor, product, customer, rating, title, body, status, media[]
@@ -130,7 +130,7 @@ Cart      action: add/update/remove/clear/applyCoupon/removeCoupon
 Checkout  action: placeOrder → createOrder → payment initiate
 Payments  POST /api/webhooks/{stripe,paymob}   (signature-verified, idempotent)
 Uploads   POST /api/uploads (signed Cloudinary)  Sharp pre-process
-Orders    action: updateStatus, refund, cancel, addNote
+Orders    action: updateStatus, refund, cancel, addNote, requestReturn, resolveReturn, reorder
 Search    GET  /api/search?q=  (debounced client, Redis-cached facets)
 Realtime  socket events: notification, order:update, chat:message, presence
 Health    GET  /api/health  (db+redis probes)

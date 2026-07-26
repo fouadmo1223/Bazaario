@@ -191,6 +191,79 @@ export const orderService = {
     return order;
   },
 
+  /**
+   * Customer requests a return on a delivered order.
+   *
+   * A layer on top of the order, not a new order status: it doesn't move
+   * money by itself, and it doesn't need one open at a time to be exclusive
+   * with other order activity the way a status transition would.
+   */
+  async requestReturn(
+    customerId: string,
+    orderId: string,
+    input: { reason: string; note?: string },
+  ): Promise<OrderDoc> {
+    await connectToDatabase();
+    const order = await Order.findOne({ _id: orderId, customer: customerId });
+    if (!order) throw Errors.notFound("Order not found");
+    if (order.status !== "delivered") {
+      throw Errors.badRequest("Only a delivered order can be returned");
+    }
+    if (order.returns.some((r) => r.status === "requested")) {
+      throw Errors.conflict("A return request is already pending for this order");
+    }
+
+    order.returns.push({
+      reason: input.reason,
+      note: input.note ?? null,
+      status: "requested",
+      requestedAt: new Date(),
+    } as never);
+    order.timeline.push({
+      status: order.status,
+      note: `Return requested: ${input.reason}`,
+      at: new Date(),
+      by: customerId as never,
+    });
+    await order.save();
+    return order;
+  },
+
+  /** Vendor accepts or declines a pending return request. Approving does not itself refund — see `refund`. */
+  async resolveReturn(
+    vendorId: string,
+    orderId: string,
+    returnId: string,
+    actorId: string,
+    decision: "approved" | "rejected",
+    note?: string,
+  ): Promise<OrderDoc> {
+    await connectToDatabase();
+    const order = await this.getForVendor(vendorId, orderId);
+    const entry = order.returns.id(returnId);
+    if (!entry || entry.status !== "requested") {
+      throw Errors.notFound("No pending return request");
+    }
+
+    entry.status = decision;
+    entry.resolvedAt = new Date();
+    entry.resolvedBy = actorId as never;
+    entry.resolutionNote = note ?? null;
+    order.timeline.push({
+      status: order.status,
+      note: `Return ${decision}${note ? `: ${note}` : ""}`,
+      at: new Date(),
+      by: actorId as never,
+    });
+
+    await order.save();
+    await writeAudit({
+      actor: actorId, vendor: vendorId, action: `order.return_${decision}`,
+      entity: "Order", entityId: orderId, diff: { returnId, note: note ?? null },
+    });
+    return order;
+  },
+
   async addNote(vendorId: string, orderId: string, actorId: string, text: string): Promise<OrderDoc> {
     await connectToDatabase();
     const order = await this.getForVendor(vendorId, orderId);

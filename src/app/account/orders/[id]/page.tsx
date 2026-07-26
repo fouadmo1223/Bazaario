@@ -10,6 +10,7 @@ import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { CancelOrderButton } from "@/features/orders/components/cancel-order-button";
 import { ReorderButton } from "@/features/orders/components/reorder-button";
+import { ReturnRequestForm } from "@/features/orders/components/return-request-form";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
@@ -146,6 +147,13 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
         {order.status === "pending" && (
           <div className="mt-8">
             <CancelOrderButton orderId={order.id} />
+          </div>
+        )}
+
+        {/* Only a delivered order can be returned; the action re-checks server-side. */}
+        {order.status === "delivered" && (
+          <div className="mt-8">
+            <ReturnRequestForm orderId={order.id} returns={order.returns} />
           </div>
         )}
       </div>
