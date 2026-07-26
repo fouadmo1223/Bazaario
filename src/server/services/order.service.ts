@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/server/database/connection";
 import { Order, type OrderDoc, type OrderStatus } from "@/server/database/models/order.model";
+import { Vendor } from "@/server/database/models/vendor.model";
 import { paymentService } from "./payment.service";
+import { cartService } from "./cart.service";
 import { Errors } from "@/shared/lib/errors";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
@@ -50,6 +52,45 @@ export const orderService = {
     const order = await Order.findOne({ _id: orderId, customer: customerId });
     if (!order) throw Errors.notFound("Order not found");
     return order;
+  },
+
+  /**
+   * Re-add a past order's items to the customer's cart for that vendor.
+   *
+   * Best-effort per line: a product can be discontinued, deactivated, or sold
+   * out since the order shipped, and none of that should block the lines that
+   * are still buyable. `cartService.addItem` re-reads price and stock itself,
+   * so this never trusts the order's frozen snapshot for either.
+   */
+  async reorder(
+    customerId: string,
+    orderId: string,
+  ): Promise<{ added: number; skipped: { title: string; reason: string }[]; vendorSlug: string }> {
+    await connectToDatabase();
+    const order = await Order.findOne({ _id: orderId, customer: customerId });
+    if (!order) throw Errors.notFound("Order not found");
+
+    const vendor = await Vendor.findById(order.vendor).select("slug");
+    if (!vendor) throw Errors.notFound("Vendor not found");
+
+    const owner = { userId: customerId };
+    let added = 0;
+    const skipped: { title: string; reason: string }[] = [];
+
+    for (const item of order.items) {
+      try {
+        await cartService.addItem(String(order.vendor), owner, {
+          productId: String(item.product),
+          variantId: item.variant ? String(item.variant) : undefined,
+          quantity: item.quantity,
+        });
+        added++;
+      } catch (err) {
+        skipped.push({ title: item.title, reason: err instanceof Error ? err.message : "Not available" });
+      }
+    }
+
+    return { added, skipped, vendorSlug: vendor.slug };
   },
 
   async updateStatus(

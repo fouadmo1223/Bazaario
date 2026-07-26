@@ -9,6 +9,7 @@ import { OrderStatusBadge } from "@/features/orders/components/order-status-badg
 import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { CancelOrderButton } from "@/features/orders/components/cancel-order-button";
+import { ReorderButton } from "@/features/orders/components/reorder-button";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
@@ -80,6 +81,10 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
             </Link>
             <OrderStatusBadge status={order.status} />
           </div>
+        </div>
+
+        <div className="mt-4">
+          <ReorderButton orderId={order.id} />
         </div>
 
         {order.refundedTotal > 0 && (

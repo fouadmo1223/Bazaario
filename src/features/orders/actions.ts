@@ -112,6 +112,29 @@ export async function driverUpdateStatusAction(
   }
 }
 
+export type ReorderResult = {
+  added: number;
+  skipped: { title: string; reason: string }[];
+  vendorSlug: string;
+};
+
+/** Customer re-adding a past order's items to their cart. */
+export async function reorderAction(orderId: string): Promise<ApiResult<ReorderResult>> {
+  try {
+    const user = await requireUser();
+    const result = await orderService.reorder(user.id, orderId);
+    if (result.added > 0) revalidatePath(`/v/${result.vendorSlug}/cart`);
+    return ok(result, {
+      message:
+        result.added > 0
+          ? `Added ${result.added} item${result.added === 1 ? "" : "s"} to your cart.`
+          : "None of these items are available anymore.",
+    });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
 /** Customer cancelling their own order (only while still pending). */
 export async function customerCancelOrderAction(orderId: string): Promise<ApiResult<Record<string, unknown>>> {
   try {
