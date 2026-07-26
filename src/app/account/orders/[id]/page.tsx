@@ -83,8 +83,14 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <ReorderButton orderId={order.id} />
+          <Link
+            href={`/account/orders/${order.id}/invoice`}
+            className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+          >
+            Download invoice
+          </Link>
         </div>
 
         {order.refundedTotal > 0 && (

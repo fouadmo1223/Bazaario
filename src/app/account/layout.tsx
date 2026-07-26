@@ -27,7 +27,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
+      <header className="border-b border-zinc-200 print:hidden dark:border-zinc-800">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-6 px-6 py-4">
           <Link
             href="/"
