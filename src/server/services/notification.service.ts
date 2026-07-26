@@ -20,7 +20,13 @@ export type CreateNotificationInput = {
 export const REALTIME_CHANNEL = "realtime:events";
 
 export type RealtimeEvent =
-  | { kind: "notification"; userId: string; payload: Record<string, unknown> }
+  | {
+      kind: "notification";
+      userId: string;
+      payload: Record<string, unknown>;
+      /** Drives the email fallback: only sent if the recipient has no active socket. */
+      channels: ("in_app" | "email" | "push" | "sms")[];
+    }
   | { kind: "order:update"; vendor: string; orderId: string; status: string }
   | { kind: "chat:message"; conversationId: string; payload: Record<string, unknown> };
 
@@ -55,6 +61,7 @@ export const notificationService = {
     await publishRealtime({
       kind: "notification",
       userId: input.userId,
+      channels: input.channels ?? ["in_app"],
       payload: {
         id: String(notification._id),
         type: notification.type,
@@ -89,6 +96,7 @@ export const notificationService = {
         publishRealtime({
           kind: "notification",
           userId: i.userId,
+          channels: i.channels ?? ["in_app"],
           payload: { id: String(docs[idx]._id), type: i.type, title: i.title, link: i.link ?? null },
         }),
       ),

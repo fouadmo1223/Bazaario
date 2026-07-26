@@ -314,6 +314,8 @@ export const conversationService = {
           title: conversation.subject || "New message",
           body: preview.slice(0, 140),
           link: `/account/messages/${String(conversation._id)}`,
+          // A reply while the recipient has no open tab is easy to miss entirely.
+          channels: ["in_app", "email"],
         })),
       );
     } catch (err) {

@@ -7,6 +7,9 @@ import { canAccess } from "@/server/services/conversation.service";
 import { connectToDatabase } from "@/server/database/connection";
 import { Membership } from "@/server/database/models/membership.model";
 import { Order } from "@/server/database/models/order.model";
+import { User } from "@/server/database/models/user.model";
+import { mailer } from "@/server/mail/mailer";
+import { logger } from "@/shared/lib/logger";
 import { ROLES, type Role } from "@/shared/constants/rbac";
 
 /**
@@ -63,6 +66,27 @@ async function canReadOrder(user: SocketUser, orderId: string): Promise<boolean>
     return canReadVendor(user, String(order.vendor));
   } catch {
     return false;
+  }
+}
+
+/**
+ * Fallback for a recipient with no active socket. Best-effort: a missed
+ * notification email must never take down the relay loop, and `mailer`
+ * already throws when SMTP isn't configured (dev has no SMTP_PASSWORD), so
+ * that failure is expected and just logged like every other mailer call site.
+ */
+async function sendNotificationFallbackEmail(userId: string, payload: Record<string, unknown>): Promise<void> {
+  try {
+    await connectToDatabase();
+    const user = await User.findById(userId).select("email");
+    if (!user?.email) return;
+    await mailer.sendNotificationFallback(user.email, {
+      title: typeof payload.title === "string" ? payload.title : "New notification",
+      body: typeof payload.body === "string" ? payload.body : null,
+      link: typeof payload.link === "string" ? payload.link : null,
+    });
+  } catch (err) {
+    logger.error({ err, userId }, "Failed to send notification fallback email");
   }
 }
 
@@ -186,9 +210,17 @@ function start() {
     }
 
     switch (event.kind) {
-      case "notification":
+      case "notification": {
         io.to(rooms.user(event.userId)).emit("notification", event.payload);
+
+        // Email fallback: only for a recipient with no active socket right
+        // now, and only when the notification opted into the "email" channel.
+        const online = (io.sockets.adapter.rooms.get(rooms.user(event.userId))?.size ?? 0) > 0;
+        if (!online && event.channels.includes("email")) {
+          void sendNotificationFallbackEmail(event.userId, event.payload);
+        }
         break;
+      }
       case "order:update":
         io.to(rooms.order(event.orderId)).emit("order:update", event);
         io.to(rooms.vendor(event.vendor)).emit("order:update", event);

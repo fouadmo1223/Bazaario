@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { notificationService } from "@/server/services/notification.service";
+import { describe, it, expect, vi } from "vitest";
+import Redis from "ioredis";
+import { notificationService, REALTIME_CHANNEL, type RealtimeEvent } from "@/server/services/notification.service";
 import { conversationService } from "@/server/services/conversation.service";
 import { Notification } from "@/server/database/models/notification.model";
 import { ROLES } from "@/shared/constants/rbac";
@@ -128,5 +129,65 @@ describe("chat notification deep link", () => {
     // The shape that shipped broken: `/messages/{id}` has no route behind it.
     expect(link).not.toBe(`/messages/${conversationId}`);
     expect(link!.startsWith("/messages/")).toBe(false);
+  });
+});
+
+/**
+ * The realtime server decides whether to send the email fallback purely from
+ * `channels` on the event it relays — it never re-reads the stored
+ * notification. So the event `notificationService` publishes is the contract;
+ * a raw subscriber here (mirroring what the standalone realtime process does)
+ * is what pins it, since nothing else in this suite touches Redis pub/sub.
+ */
+describe("realtime event channels", () => {
+  /** `send()` also publishes a `chat:message` event before `notification` — filter for kind. */
+  async function collectNotification(
+    trigger: () => Promise<unknown>,
+  ): Promise<RealtimeEvent & { kind: "notification" }> {
+    const sub = new Redis(process.env.REDIS_URL!);
+    const events: RealtimeEvent[] = [];
+    await sub.subscribe(REALTIME_CHANNEL);
+    sub.on("message", (_channel, raw) => events.push(JSON.parse(raw) as RealtimeEvent));
+    try {
+      await trigger();
+      await vi.waitFor(() => {
+        if (!events.some((e) => e.kind === "notification")) throw new Error("no notification event received yet");
+      });
+      return events.find((e): e is RealtimeEvent & { kind: "notification" } => e.kind === "notification")!;
+    } finally {
+      await sub.quit();
+    }
+  }
+
+  it("defaults an in-app notification to no email fallback", async () => {
+    const user = await makeUser();
+    const event = await collectNotification(() => notify(String(user._id)));
+    expect(event.channels).toEqual(["in_app"]);
+  });
+
+  it("carries an explicit email channel through to the published event", async () => {
+    const user = await makeUser();
+    const event = await collectNotification(() =>
+      notificationService.create({ userId: String(user._id), type: "system", title: "Hi", channels: ["in_app", "email"] }),
+    );
+    expect(event.channels).toEqual(["in_app", "email"]);
+  });
+
+  it("opts a chat reply into the email fallback, for a recipient who might not have the tab open", async () => {
+    const customer = await makeUser();
+    const vendor = await makeVendor();
+    const staff = await makeUser();
+    await makeMembership(staff._id, vendor._id, ROLES.SUPPORT);
+
+    const conversation = await conversationService.start(actor(customer), {
+      kind: "customer_vendor",
+      vendorId: String(vendor._id),
+      body: "Is this in stock?",
+    });
+
+    const event = await collectNotification(() =>
+      conversationService.send(actor(staff), String(conversation._id), "Yes, it is."),
+    );
+    expect(event.channels).toContain("email");
   });
 });

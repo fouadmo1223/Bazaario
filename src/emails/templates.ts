@@ -74,3 +74,24 @@ export function passwordResetEmail({ link }: { link: string }): Rendered {
     text: `Reset your ${BRAND} password: ${link} (expires in 1 hour)`,
   };
 }
+
+/** Fallback for a notification the recipient wasn't online to see over the socket. */
+export function notificationEmail({
+  title,
+  body,
+  link,
+}: {
+  title: string;
+  body?: string | null;
+  link?: string | null;
+}): Rendered {
+  return {
+    subject: title,
+    html: layout(
+      title,
+      `${body ? `<p>${body}</p>` : ""}
+       ${link ? `<p style="margin:24px 0;">${button(link, "View")}</p>` : ""}`,
+    ),
+    text: `${title}${body ? `\n\n${body}` : ""}${link ? `\n\n${link}` : ""}`,
+  };
+}

@@ -6,6 +6,7 @@ import {
   verificationEmail,
   otpEmail,
   passwordResetEmail,
+  notificationEmail,
 } from "@/emails/templates";
 
 export type SendMailInput = {
@@ -41,6 +42,19 @@ export const mailer = {
   async sendPasswordReset(to: string, token: string): Promise<void> {
     const link = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
     const { subject, html, text } = passwordResetEmail({ link });
+    await sendMail({ to, subject, html, text });
+  },
+
+  /** Fallback for a notification sent while the recipient had no active socket. */
+  async sendNotificationFallback(
+    to: string,
+    input: { title: string; body?: string | null; link?: string | null },
+  ): Promise<void> {
+    const { subject, html, text } = notificationEmail({
+      title: input.title,
+      body: input.body,
+      link: input.link ? `${appUrl}${input.link}` : null,
+    });
     await sendMail({ to, subject, html, text });
   },
 };
