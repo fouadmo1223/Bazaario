@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
         ],
       },
+      {
+        // Browsers cache static /public files aggressively by default; a
+        // stale cached sw.js would keep serving an old service worker
+        // indefinitely; force a check on every load instead.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
     ];
   },
 };
