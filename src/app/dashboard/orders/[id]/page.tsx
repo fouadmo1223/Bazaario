@@ -5,12 +5,13 @@ import { notFound, redirect } from "next/navigation";
 import { Types } from "mongoose";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
-import { getVendorOrder } from "@/features/orders/queries";
+import { getVendorOrder, listVendorDrivers } from "@/features/orders/queries";
 import { allowedTransitions } from "@/server/services/order.service";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
 import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { StatusActions } from "@/features/orders/components/status-actions";
+import { DriverAssignForm } from "@/features/orders/components/driver-assign-form";
 import { RefundForm } from "@/features/orders/components/refund-form";
 import { ReturnReview } from "@/features/orders/components/return-review";
 import { OrderSummary } from "@/features/cart/components/order-summary";
@@ -60,6 +61,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
   const canRefund = roleHasPermission(role, PERMISSIONS.ORDER_REFUND);
   const transitions = allowedTransitions(order.status);
   const remaining = order.totals.grandTotal - order.refundedTotal;
+  const drivers = canFulfil ? await listVendorDrivers(vendorId) : [];
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -120,6 +122,18 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
                 Fulfilment
               </h2>
               <StatusActions vendorId={vendorId} orderId={order.id} allowed={transitions} />
+            </section>
+          )}
+
+          {canFulfil && (
+            <section aria-label="Driver">
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Driver</h2>
+              <DriverAssignForm
+                vendorId={vendorId}
+                orderId={order.id}
+                drivers={drivers}
+                currentDriverId={order.shipping.driverId}
+              />
             </section>
           )}
 

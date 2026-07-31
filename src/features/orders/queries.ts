@@ -1,9 +1,11 @@
 import { Vendor } from "@/server/database/models/vendor.model";
+import { Membership } from "@/server/database/models/membership.model";
 import { connectToDatabase } from "@/server/database/connection";
 import { orderService } from "@/server/services/order.service";
 import type { OrderDoc, OrderStatus } from "@/server/database/models/order.model";
 import type { Totals } from "@/server/services/pricing.service";
 import type { Paginated } from "@/shared/lib/pagination";
+import { ROLES } from "@/shared/constants/rbac";
 
 /**
  * Read-side models for orders. Server Components render these and hand them to
@@ -43,6 +45,7 @@ export type OrderDetailView = OrderListItem & {
   guestEmail: string | null;
   shipping: {
     method: string;
+    driverId: string | null;
     /** Every field is optional in the schema, so the view mirrors that honestly. */
     address: {
       recipient: string | null;
@@ -120,6 +123,7 @@ function toDetail(
     guestEmail: order.guestEmail ?? null,
     shipping: {
       method: order.shipping?.method ?? "standard",
+      driverId: order.shipping?.driver ? String(order.shipping.driver) : null,
       address: addr
         ? {
             recipient: addr.recipient ?? null,
@@ -196,4 +200,32 @@ export async function getVendorOrder(vendorId: string, orderId: string): Promise
   const order = await orderService.getForVendor(vendorId, orderId);
   const vendors = await vendorLookup([order]);
   return toDetail(order, vendors);
+}
+
+export type DriverOption = { userId: string; name: string; email: string };
+
+/** Vendor staff holding the delivery-driver role, for the assignment picker. */
+export async function listVendorDrivers(vendorId: string): Promise<DriverOption[]> {
+  await connectToDatabase();
+  const memberships = await Membership.find({ vendor: vendorId, role: ROLES.DELIVERY_DRIVER, status: "active" })
+    .populate<{ user: { _id: unknown; name: string; email: string } | null }>("user", "name email")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // A membership whose user was hard-deleted would populate to null; skip it.
+  return memberships
+    .filter((m) => m.user != null)
+    .map((m) => ({ userId: String(m.user!._id), name: m.user!.name, email: m.user!.email }));
+}
+
+/** Orders currently out for delivery with a given driver. */
+export async function listDriverOrders(
+  vendorId: string,
+  driverId: string,
+  query: { page?: string },
+): Promise<Paginated<OrderListItem>> {
+  await connectToDatabase();
+  const result = await orderService.listForDriver(vendorId, driverId, { page: query.page ?? "1", limit: 20 });
+  const vendors = await vendorLookup(result.items);
+  return { ...result, items: result.items.map((o) => toListItem(o, vendors)) };
 }
