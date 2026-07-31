@@ -75,7 +75,8 @@ Coupon          vendor, code, type, value, constraints{minSpend,usageLimit,perUs
 Review          vendor, product, customer, rating, title, body, status, media[]
 Ticket          vendor, customer, subject, status, priority, messages[]
 Notification    user, vendor?, type, channel, payload, readAt
-WalletTxn       user, vendor?, type(credit|debit), amount, reason, ref
+Wallet          user(unique), balance (minor units) — the fast-read authoritative balance
+WalletTxn       user, type(credit|debit), amount, balanceAfter, reason, reference?, issuedBy?
 LoyaltyLedger   user, vendor, points, reason, ref
 Banner          vendor, message, linkUrl?, linkLabel?, startsAt?, endsAt?, isActive
 CmsPage/Blog/Menu   vendor-scoped content (aspirational, not yet built)
@@ -134,6 +135,8 @@ Uploads   POST /api/uploads (signed Cloudinary)  Sharp pre-process
 Orders    action: updateStatus, refund, cancel, addNote, requestReturn, resolveReturn, reorder,
           assignDriver, driverUpdateStatus
 Banners   action: create/update/delete (vendor-scoped, CMS_WRITE)   read: RSC + repo
+Wallet    action: creditWallet (vendor/admin, ORDER_REFUND)   debit happens inline in
+          checkout.service.createOrder, not as an action   read: getWalletView (RSC)
 Search    GET  /api/search?q=  (debounced client, Redis-cached facets)
 Realtime  socket events: notification, order:update, chat:message, presence
 Health    GET  /api/health  (db+redis probes)
@@ -289,7 +292,7 @@ create path (`getOrCreateGuestToken`, actions only).
 - Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations).
 - The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, plus a **variant matrix editor**: a "Variants" action on a variable product opens a grid of every option combination (the cartesian product of the option values) where each cell can be switched on and given its own SKU, price, compare-at, stock, and active flag. Options and variants save together through `syncVariantsAction`, which also recomputes the denormalized `priceRange`/`from` price from the **active** variants only. A combination left off is simply not stocked — the storefront picker already disables the gaps — so a sparse matrix (a shoe in five sizes and three colours but only ten real SKUs) is expressed by leaving cells off rather than filling them all.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
-- Wallet payment provider is declared in the registry but unimplemented (`null`).
+- **Wallet payment provider — built.** Platform-wide store credit (one balance per customer, spendable at any vendor), funded only by vendor/admin-issued credit (`PERMISSIONS.ORDER_REFUND` — the same trust tier as an actual refund, from `/dashboard/orders/[id]`'s "Store credit" section) — no card top-up flow, since customers already have Stripe/COD for that and a second money-in path would need its own webhook reconciliation. `Wallet` (fast-read balance) + `WalletTxn` (append-only ledger) in `wallet.model.ts`; `wallet.service.ts`'s `debit` is an atomic conditional update (`balance: {$gte: amount}`, mirroring `checkout.service`'s stock-reservation guard) so concurrent debits can't overdraw it. The actual charge happens **inside `checkout.service.createOrder`**, atomically alongside inventory reservation — not in `WalletProvider.initiate()` (which runs *after* the order already exists, too late to participate in the same rollback). A wallet order is captured immediately (`payment.status`/`order.status: "paid"` at creation), unlike COD (captured on delivery) or Stripe/Paymob (captured via webhook). `/account/wallet` shows balance + history.
 - Chat attachments exist in the schema and the send path, but nothing uploads a
   file — there is no storage integration, so the field is unreachable from the UI.
 ### 6.2 Inventory reservation
