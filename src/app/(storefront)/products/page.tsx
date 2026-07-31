@@ -9,7 +9,7 @@ import { ProductFilters } from "@/features/storefront/components/product-filters
 type Search = Record<string, string | undefined>;
 
 export const metadata: Metadata = {
-  title: "Products · Commerce",
+  title: "Products · Bazaario",
   description: "Browse every product across the marketplace.",
   alternates: { canonical: "/products" },
 };

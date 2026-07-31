@@ -21,7 +21,7 @@ export async function GET() {
           fontWeight: 700,
         }}
       >
-        C
+        B
       </div>
     ),
     { width: 192, height: 192 },

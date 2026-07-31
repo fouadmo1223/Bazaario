@@ -8,7 +8,7 @@ import { AddressBook } from "@/features/profile/components/address-book";
 import { SignOutButton } from "@/features/profile/components/sign-out-button";
 
 export const metadata: Metadata = {
-  title: "Your profile · Commerce",
+  title: "Your profile · Bazaario",
   robots: { index: false, follow: false },
 };
 

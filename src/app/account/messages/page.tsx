@@ -8,7 +8,7 @@ import { ConversationList } from "@/features/messages/components/conversation-li
 type Search = { page?: string };
 
 export const metadata: Metadata = {
-  title: "Messages · Commerce",
+  title: "Messages · Bazaario",
   robots: { index: false, follow: false },
 };
 

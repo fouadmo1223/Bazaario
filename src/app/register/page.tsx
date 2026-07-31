@@ -4,7 +4,7 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { RegisterForm } from "@/features/auth/components/register-form";
 import { GoogleButton, OrDivider } from "@/features/auth/components/google-button";
 
-export const metadata: Metadata = { title: "Create account · Commerce" };
+export const metadata: Metadata = { title: "Create account · Bazaario" };
 
 export default function RegisterPage() {
   return (

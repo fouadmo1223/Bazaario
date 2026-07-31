@@ -11,7 +11,7 @@ import { isAppError } from "@/shared/lib/errors";
 type Params = { vendor: string };
 
 export const metadata: Metadata = {
-  title: "Your cart · Commerce",
+  title: "Your cart · Bazaario",
   // A cart is per-visitor and worthless to a crawler.
   robots: { index: false, follow: false },
 };

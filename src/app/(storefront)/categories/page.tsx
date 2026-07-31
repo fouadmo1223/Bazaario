@@ -5,7 +5,7 @@ import { catalogService } from "@/server/services/catalog.service";
 import { Reveal } from "@/shared/components/reveal";
 
 export const metadata: Metadata = {
-  title: "Categories · Commerce",
+  title: "Categories · Bazaario",
   description: "Browse the marketplace by category.",
   alternates: { canonical: "/categories" },
 };

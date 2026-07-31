@@ -25,7 +25,7 @@ export function StorefrontHeader() {
           href="/"
           className="shrink-0 text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
         >
-          Commerce
+          Bazaario
         </Link>
 
         <nav aria-label="Browse" className="hidden shrink-0 items-center gap-1 sm:flex">

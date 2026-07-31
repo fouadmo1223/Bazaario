@@ -19,7 +19,7 @@ import type { VendorDoc } from "@/server/database/models/vendor.model";
 type Params = { vendor: string };
 
 export const metadata: Metadata = {
-  title: "Checkout · Commerce",
+  title: "Checkout · Bazaario",
   robots: { index: false, follow: false },
 };
 

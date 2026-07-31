@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/server/security/current-user";
 import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
 
 export const metadata: Metadata = {
-  title: "Contact support · Commerce",
+  title: "Contact support · Bazaario",
   robots: { index: false, follow: false },
 };
 

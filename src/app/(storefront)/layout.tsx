@@ -25,7 +25,7 @@ export default function StorefrontLayout({ children }: { children: React.ReactNo
 
         <footer className="border-t border-zinc-200 dark:border-zinc-800">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-zinc-500">
-            <p>© {new Date().getFullYear()} Commerce</p>
+            <p>© {new Date().getFullYear()} Bazaario</p>
             <nav aria-label="Footer">
               <ul className="flex flex-wrap gap-4">
                 <li>

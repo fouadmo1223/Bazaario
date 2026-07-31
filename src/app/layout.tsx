@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Commerce",
+  title: "Bazaario",
   description: "Shop every store in one place.",
 };
 

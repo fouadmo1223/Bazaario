@@ -5,7 +5,7 @@ import { getWalletView } from "@/features/wallet/queries";
 import { formatMoney } from "@/shared/lib/format";
 
 export const metadata: Metadata = {
-  title: "Wallet · Commerce",
+  title: "Wallet · Bazaario",
   robots: { index: false, follow: false },
 };
 

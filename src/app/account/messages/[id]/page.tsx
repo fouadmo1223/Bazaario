@@ -7,7 +7,7 @@ import { ThreadView } from "@/features/messages/components/thread-view";
 import { isAppError } from "@/shared/lib/errors";
 
 export const metadata: Metadata = {
-  title: "Conversation · Commerce",
+  title: "Conversation · Bazaario",
   robots: { index: false, follow: false },
 };
 

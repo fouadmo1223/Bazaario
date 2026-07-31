@@ -362,7 +362,7 @@ async function seedProduct(
     ratingAvg: spec.rating?.[0] ?? 0,
     ratingCount: spec.rating?.[1] ?? 0,
     media: mediaFor(slug),
-    seo: { title: `${spec.title} · Commerce`, description: spec.description, keywords: spec.tags },
+    seo: { title: `${spec.title} · Bazaario`, description: spec.description, keywords: spec.tags },
   };
 
   if (spec.kind === "simple") {

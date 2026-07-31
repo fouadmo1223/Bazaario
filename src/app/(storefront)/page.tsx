@@ -6,10 +6,10 @@ import { CatalogProductCard } from "@/features/storefront/components/catalog-pro
 import { Reveal } from "@/shared/components/reveal";
 
 export const metadata: Metadata = {
-  title: "Commerce · Shop every store in one place",
+  title: "Bazaario · Shop every store in one place",
   description: "Browse products from independent vendors — one cart, one checkout per store.",
   openGraph: {
-    title: "Commerce",
+    title: "Bazaario",
     description: "Browse products from independent vendors.",
     type: "website",
   },
@@ -36,7 +36,7 @@ export default async function HomePage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Commerce",
+    name: "Bazaario",
     potentialAction: {
       "@type": "SearchAction",
       target: { "@type": "EntryPoint", urlTemplate: "/products?search={search_term_string}" },

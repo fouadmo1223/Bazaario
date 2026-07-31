@@ -6,7 +6,7 @@
 
 type Rendered = { subject: string; html: string; text: string };
 
-const BRAND = "Commerce";
+const BRAND = "Bazaario";
 const ACCENT = "#4f46e5";
 
 function layout(title: string, bodyHtml: string): string {

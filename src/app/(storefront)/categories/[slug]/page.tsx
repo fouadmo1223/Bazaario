@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   if (!category) return { title: "Category not found" };
 
   return {
-    title: `${category.name} · Commerce`,
+    title: `${category.name} · Bazaario`,
     description: `Browse ${category.name} across every store on the marketplace.`,
     alternates: { canonical: `/categories/${slug}` },
     openGraph: { title: category.name, type: "website" },

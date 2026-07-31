@@ -9,7 +9,7 @@ import { readGuestToken } from "@/server/security/guest-token";
 import { formatMoney } from "@/shared/lib/format";
 
 export const metadata: Metadata = {
-  title: "Your cart · Commerce",
+  title: "Your cart · Bazaario",
   robots: { index: false, follow: false },
 };
 

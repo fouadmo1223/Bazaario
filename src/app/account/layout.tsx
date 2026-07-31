@@ -33,7 +33,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
             href="/"
             className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
           >
-            Commerce
+            Bazaario
           </Link>
           {user ? <NotificationBell initialUnread={unread} /> : null}
         </div>

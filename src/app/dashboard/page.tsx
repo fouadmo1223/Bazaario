@@ -7,7 +7,7 @@ import { analyticsService } from "@/server/services/analytics.service";
 import { KpiCard } from "@/features/dashboard/components/kpi-card";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
 
-export const metadata: Metadata = { title: "Dashboard · Commerce" };
+export const metadata: Metadata = { title: "Dashboard · Bazaario" };
 
 // Always fresh — dashboards reflect live orders.
 export const dynamic = "force-dynamic";

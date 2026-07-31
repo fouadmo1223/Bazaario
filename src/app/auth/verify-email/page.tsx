@@ -4,7 +4,7 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authService } from "@/server/services/auth.service";
 import { isAppError } from "@/shared/lib/errors";
 
-export const metadata: Metadata = { title: "Verify email · Commerce" };
+export const metadata: Metadata = { title: "Verify email · Bazaario" };
 
 /**
  * Server Component: consumes the verification token on load. Because this runs

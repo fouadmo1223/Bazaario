@@ -18,7 +18,7 @@ import { isAppError } from "@/shared/lib/errors";
 type Params = { id: string };
 
 export const metadata: Metadata = {
-  title: "Order · Commerce",
+  title: "Order · Bazaario",
   robots: { index: false, follow: false },
 };
 

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const description =
       product.seo?.description ?? product.shortDescription ?? product.description.slice(0, 155);
     return {
-      title: product.seo?.title ?? `${product.title} · Commerce`,
+      title: product.seo?.title ?? `${product.title} · Bazaario`,
       description,
       openGraph: {
         title: product.title,

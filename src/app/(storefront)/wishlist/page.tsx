@@ -4,7 +4,7 @@ import { getWishlistView } from "@/features/wishlist/queries";
 import { WishlistItem } from "@/features/wishlist/components/wishlist-item";
 
 export const metadata: Metadata = {
-  title: "Your wishlist · Commerce",
+  title: "Your wishlist · Bazaario",
   // Personal to the visitor and worthless to a crawler.
   robots: { index: false, follow: false },
 };

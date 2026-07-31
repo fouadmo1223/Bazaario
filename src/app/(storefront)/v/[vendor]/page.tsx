@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   try {
     const vendor = await vendorService.getBySlug(slug);
     return {
-      title: `${vendor.name} · Commerce`,
+      title: `${vendor.name} · Bazaario`,
       description: vendor.description ?? `Shop ${vendor.name}`,
       openGraph: {
         title: vendor.name,

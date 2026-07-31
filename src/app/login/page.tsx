@@ -5,7 +5,7 @@ import { AuthShell } from "@/features/auth/components/auth-shell";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { GoogleButton, OrDivider } from "@/features/auth/components/google-button";
 
-export const metadata: Metadata = { title: "Sign in · Commerce" };
+export const metadata: Metadata = { title: "Sign in · Bazaario" };
 
 export default function LoginPage() {
   return (

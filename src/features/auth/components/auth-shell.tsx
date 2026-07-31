@@ -21,7 +21,7 @@ export function AuthShell({
             C
           </span>
           <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Commerce
+            Bazaario
           </span>
         </Link>
 

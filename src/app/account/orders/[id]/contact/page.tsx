@@ -7,7 +7,7 @@ import { NewConversationForm } from "@/features/messages/components/new-conversa
 import { isAppError } from "@/shared/lib/errors";
 
 export const metadata: Metadata = {
-  title: "Message store · Commerce",
+  title: "Message store · Bazaario",
   robots: { index: false, follow: false },
 };
 

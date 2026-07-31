@@ -10,7 +10,7 @@ import { formatMoney } from "@/shared/lib/format";
 type Search = { page?: string };
 
 export const metadata: Metadata = {
-  title: "Your orders · Commerce",
+  title: "Your orders · Bazaario",
   robots: { index: false, follow: false },
 };
 
