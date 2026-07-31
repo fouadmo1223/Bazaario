@@ -6,6 +6,8 @@ import { getCartView } from "@/features/cart/queries";
 import { getCurrentUser } from "@/server/security/current-user";
 import { quoteShippingMethods } from "@/server/services/shipping.service";
 import { enabledProviders } from "@/server/payments/registry";
+import { walletService } from "@/server/services/wallet.service";
+import { formatMoney } from "@/shared/lib/format";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import {
   CheckoutForm,
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const PAYMENT_COPY: Record<PaymentOption["id"], Omit<PaymentOption, "id">> = {
+const PAYMENT_COPY: Record<Exclude<PaymentOption["id"], "wallet">, Omit<PaymentOption, "id">> = {
   cod: { label: "Cash on delivery", description: "Pay the courier when your order arrives" },
   stripe: { label: "Card", description: "Pay securely by card" },
   paymob: { label: "Paymob", description: "Cards and wallets via Paymob" },
@@ -33,19 +35,35 @@ const PAYMENT_COPY: Record<PaymentOption["id"], Omit<PaymentOption, "id">> = {
  * A provider is offered only when the vendor has switched it on *and* the
  * deployment has credentials for it. Either alone would surface a method that
  * fails the moment the shopper picks it.
+ *
+ * Wallet is the exception to both: it's platform-wide (no vendor setting to
+ * flip on), and it's offered only when this specific customer actually has a
+ * balance — a `walletBalance` of 0 doesn't just disable it, it's left off the
+ * list entirely, since the form has no "disabled option" state to render.
  */
-function availablePayments(vendor: VendorDoc): PaymentOption[] {
+function availablePayments(vendor: VendorDoc, walletBalance: number, currency: string): PaymentOption[] {
   const configured = new Set(enabledProviders());
   const settings = vendor.settings;
 
-  const wanted: PaymentOption["id"][] = [];
+  const wanted: Exclude<PaymentOption["id"], "wallet">[] = [];
   if (settings.codEnabled) wanted.push("cod");
   if (settings.stripeEnabled) wanted.push("stripe");
   if (settings.paymobEnabled) wanted.push("paymob");
 
-  return wanted
+  const options: PaymentOption[] = wanted
     .filter((id) => configured.has(id))
     .map((id) => ({ id, ...PAYMENT_COPY[id] }));
+
+  if (configured.has("wallet") && walletBalance > 0) {
+    options.unshift({
+      id: "wallet",
+      label: "Wallet",
+      description: "Pay from your store credit balance",
+      trailing: formatMoney(walletBalance, currency),
+    });
+  }
+
+  return options;
 }
 
 export default async function CheckoutPage({ params }: { params: Promise<Params> }) {
@@ -64,8 +82,9 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
   if (cart.items.length === 0) redirect(`/v/${vendorSlug}/cart`);
 
   const user = await getCurrentUser();
+  const walletBalance = user ? await walletService.getBalance(user.id) : 0;
   const shippingOptions = quoteShippingMethods(cart.totals.subtotal);
-  const paymentOptions = availablePayments(vendor);
+  const paymentOptions = availablePayments(vendor, walletBalance, cart.currency);
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">

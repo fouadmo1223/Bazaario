@@ -14,6 +14,7 @@ import { StatusActions } from "@/features/orders/components/status-actions";
 import { DriverAssignForm } from "@/features/orders/components/driver-assign-form";
 import { RefundForm } from "@/features/orders/components/refund-form";
 import { ReturnReview } from "@/features/orders/components/return-review";
+import { WalletCreditForm } from "@/features/wallet/components/wallet-credit-form";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import { PERMISSIONS, roleHasPermission } from "@/shared/constants/rbac";
 import { formatMoney } from "@/shared/lib/format";
@@ -146,6 +147,15 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
                 currency={order.currency}
                 remaining={remaining}
               />
+            </section>
+          )}
+
+          {canRefund && order.customerId && (
+            <section aria-label="Store credit">
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Store credit
+              </h2>
+              <WalletCreditForm vendorId={vendorId} orderId={order.id} customerId={order.customerId} />
             </section>
           )}
 

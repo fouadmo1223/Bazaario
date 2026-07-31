@@ -21,7 +21,7 @@ export const addressSchema = z.object({
 export const checkoutSchema = z.object({
   address: addressSchema,
   shippingMethod: z.enum(["standard", "express"]),
-  paymentProvider: z.enum(["stripe", "paymob", "cod"]),
+  paymentProvider: z.enum(["stripe", "paymob", "cod", "wallet"]),
   /** Required for guests; ignored when signed in (the account's email is used). */
   guestEmail: z.string().trim().email("Enter a valid email").optional().or(z.literal("")),
 });

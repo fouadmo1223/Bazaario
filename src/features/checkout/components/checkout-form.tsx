@@ -13,9 +13,11 @@ export type ShippingOption = {
 };
 
 export type PaymentOption = {
-  id: "stripe" | "paymob" | "cod";
+  id: "stripe" | "paymob" | "cod" | "wallet";
   label: string;
   description: string;
+  /** Wallet's radio option carries the balance here, in the `trailing` slot. */
+  trailing?: string;
 };
 
 type FieldErrors = Record<string, string[] | undefined>;
@@ -148,6 +150,7 @@ export function CheckoutForm({
               onChange={() => setPaymentProvider(option.id)}
               label={option.label}
               description={option.description}
+              trailing={option.trailing}
             />
           ))}
         </fieldset>

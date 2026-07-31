@@ -29,6 +29,8 @@ export type OrderListItem = {
   vendorSlug: string;
   firstItemTitle: string;
   firstItemImage: string | null;
+  /** Null for a guest order — guests have no account to hold a wallet. */
+  customerId: string | null;
 };
 
 export type OrderDetailView = OrderListItem & {
@@ -100,6 +102,7 @@ function toListItem(
     vendorSlug: vendor?.slug ?? "",
     firstItemTitle: first?.title ?? "",
     firstItemImage: first?.image ?? null,
+    customerId: order.customer ? String(order.customer) : null,
   };
 }
 

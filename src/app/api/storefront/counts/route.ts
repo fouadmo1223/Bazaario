@@ -2,7 +2,8 @@ import { Cart } from "@/server/database/models/cart.model";
 import { Wishlist } from "@/server/database/models/wishlist.model";
 import { Notification } from "@/server/database/models/notification.model";
 import { connectToDatabase } from "@/server/database/connection";
-import { getCurrentUser } from "@/server/security/current-user";
+import { getCurrentUser, type CurrentUser } from "@/server/security/current-user";
+import { authService } from "@/server/services/auth.service";
 import { readGuestToken } from "@/server/security/guest-token";
 import { json, route } from "@/shared/lib/api-response";
 
@@ -25,7 +26,24 @@ import { json, route } from "@/shared/lib/api-response";
  * none: notifications belong to an account.
  */
 export const GET = route(async () => {
-  const user = await getCurrentUser();
+  let user: CurrentUser | null = await getCurrentUser();
+
+  // The access token can age out (15 min) while a visitor just sits on a
+  // storefront page — unlike a page navigation, this fetch never goes through
+  // the proxy's silent refresh (that only redirects GET *page* navigations,
+  // and `/` isn't even a protected prefix to begin with). Without this, the
+  // header would report "signed out" the moment the token expired mid-visit,
+  // and only recover once some other protected-page navigation happened to
+  // refresh it — see the account-vs-home discrepancy this was written for.
+  if (!user) {
+    try {
+      const refreshed = await authService.refresh();
+      user = { id: refreshed.id, email: refreshed.email, roles: refreshed.roles };
+    } catch {
+      // No valid refresh token either — genuinely signed out or a guest.
+    }
+  }
+
   const guestToken = user ? undefined : await readGuestToken();
 
   // Nothing identifies this visitor yet, so there is nothing to count.

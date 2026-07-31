@@ -8,6 +8,7 @@ import { Vendor } from "@/server/database/models/vendor.model";
 import { getRedis } from "@/server/cache/redis";
 import { Errors } from "@/shared/lib/errors";
 import { validateCoupon, computeTotals, subtotalOf, vendorTaxRate, type CartLine } from "./pricing.service";
+import { walletService } from "./wallet.service";
 import { writeAudit } from "./audit.service";
 import { logger } from "@/shared/lib/logger";
 import { toMinor, toMajor, timesQuantity } from "@/shared/lib/money";
@@ -131,8 +132,10 @@ async function reserveInventory(reservations: Reservation[]): Promise<void> {
 /**
  * Checkout orchestration: re-price the cart from source of truth, validate
  * stock, reserve inventory, create the order, and clear the cart. Payment
- * capture happens separately (COD is captured on delivery; Stripe/Paymob via
- * webhook). Returns the created order in `pending` state.
+ * capture happens separately for COD (on delivery) and Stripe/Paymob (via
+ * webhook) — those orders come back `pending`. Wallet is the exception: the
+ * debit is synchronous, so it's captured right here and the order comes back
+ * already `paid`.
  */
 export const checkoutService = {
   async createOrder(vendorId: string, owner: CheckoutOwner, input: CheckoutInput): Promise<OrderDoc> {
@@ -144,6 +147,9 @@ export const checkoutService = {
     const cart = await Cart.findOne(cartFilter);
     if (!cart || cart.items.length === 0) throw Errors.badRequest("Your cart is empty");
     if (!owner.userId && !input.guestEmail) throw Errors.badRequest("Email is required for guest checkout");
+    if (input.paymentProvider === "wallet" && !owner.userId) {
+      throw Errors.badRequest("Sign in to pay from your wallet");
+    }
 
     const vendor = await Vendor.findById(vendorId);
     if (!vendor || vendor.status !== "active") throw Errors.notFound("Vendor unavailable");
@@ -232,6 +238,25 @@ export const checkoutService = {
     // another checkout won the last unit in the meantime.
     await reserveInventory(reservations);
 
+    // Wallet is captured now, not later — the debit is the atomic conditional
+    // update wallet.service does, mirroring the stock guard above. A refusal
+    // (insufficient balance) must release the stock just claimed, same as any
+    // other failure between reservation and the order actually existing.
+    let walletDebited = false;
+    if (input.paymentProvider === "wallet") {
+      try {
+        await walletService.debit(owner.userId!, totals.grandTotal, `Order ${number}`, number);
+        walletDebited = true;
+      } catch (err) {
+        for (const r of reservations.reverse()) {
+          await restoreStock(r).catch((e) =>
+            logger.error({ err: e, product: String(r.product) }, "Failed to release stock after wallet debit was refused"),
+          );
+        }
+        throw err;
+      }
+    }
+
     let order: OrderDoc;
     try {
       order = await Order.create({
@@ -243,11 +268,17 @@ export const checkoutService = {
         totals,
         currency: vendor.settings.currency,
         coupon: cart.coupon ?? null,
-        status: "pending",
-        timeline: [{ status: "pending", note: "Order placed", at: new Date() }],
+        status: walletDebited ? "paid" : "pending",
+        timeline: [
+          { status: "pending", note: "Order placed", at: new Date() },
+          ...(walletDebited ? [{ status: "paid" as const, note: "Paid from wallet", at: new Date() }] : []),
+        ],
         payment: {
           provider: input.paymentProvider,
-          status: "pending", // captured later: COD on delivery, Stripe/Paymob via webhook
+          // COD captures on delivery, Stripe/Paymob via webhook; wallet is
+          // already captured above — nothing left to wait for.
+          status: walletDebited ? "paid" : "pending",
+          ...(walletDebited ? { paidAt: new Date() } : {}),
         },
         shipping: {
           address: input.address,
@@ -262,6 +293,13 @@ export const checkoutService = {
         await restoreStock(r).catch((e) =>
           logger.error({ err: e, product: String(r.product) }, "Failed to release stock after order insert failed"),
         );
+      }
+      // Same for a wallet debit that already succeeded — refund it, since the
+      // order it paid for doesn't exist.
+      if (walletDebited) {
+        await walletService
+          .credit(owner.userId!, totals.grandTotal, `Refund: order ${number} failed to create`, null)
+          .catch((e) => logger.error({ err: e, userId: owner.userId }, "Failed to refund wallet after order insert failed"));
       }
       throw err;
     }

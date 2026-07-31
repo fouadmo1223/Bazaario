@@ -37,6 +37,9 @@ export default async function ProfilePage() {
           <Link href="/account/messages" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
             Messages
           </Link>
+          <Link href="/account/wallet" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+            Wallet
+          </Link>
           <Link href="/wishlist" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
             Wishlist
           </Link>

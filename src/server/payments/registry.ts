@@ -2,6 +2,7 @@ import type { PaymentProvider, PaymentProviderId } from "./types";
 import { CodProvider } from "./providers/cod.provider";
 import { StripeProvider } from "./providers/stripe.provider";
 import { PaymobProvider } from "./providers/paymob.provider";
+import { WalletProvider } from "./providers/wallet.provider";
 import { Errors } from "@/shared/lib/errors";
 
 /** Strategy registry — add a provider here and the whole flow picks it up. */
@@ -9,7 +10,8 @@ const providers: Record<PaymentProviderId, PaymentProvider | null> = {
   cod: new CodProvider(),
   stripe: new StripeProvider(),
   paymob: new PaymobProvider(),
-  wallet: null, // implemented by the wallet service, not an external provider
+  // The actual debit happens in checkout.service, not here — see wallet.provider.ts.
+  wallet: new WalletProvider(),
 };
 
 export function getProvider(id: PaymentProviderId): PaymentProvider {

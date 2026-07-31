@@ -80,19 +80,25 @@ export async function placeOrderAction(
 
     // The order exists and stock is reserved. If starting payment fails, say so
     // without discarding the order — it is recoverable from the orders list.
+    //
+    // Wallet is already fully captured by this point (checkoutService debits
+    // it synchronously) — initiate() would just throw "already paid", so it's
+    // skipped rather than treated as a failure.
     let redirectUrl: string | undefined;
-    try {
-      const init = await paymentService.initiate(
-        orderId,
-        new URL(confirmationUrl, clientEnv.NEXT_PUBLIC_APP_URL).toString(),
-      );
-      redirectUrl = init.redirectUrl;
-    } catch (err) {
-      logger.error({ err, orderId }, "Order placed but payment initiation failed");
-      return ok(
-        { orderId, number: order.number, confirmationUrl },
-        { message: "Order placed, but payment could not be started. You can retry payment from the order." },
-      );
+    if (order.payment.status !== "paid") {
+      try {
+        const init = await paymentService.initiate(
+          orderId,
+          new URL(confirmationUrl, clientEnv.NEXT_PUBLIC_APP_URL).toString(),
+        );
+        redirectUrl = init.redirectUrl;
+      } catch (err) {
+        logger.error({ err, orderId }, "Order placed but payment initiation failed");
+        return ok(
+          { orderId, number: order.number, confirmationUrl },
+          { message: "Order placed, but payment could not be started. You can retry payment from the order." },
+        );
+      }
     }
 
     return ok({
