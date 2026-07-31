@@ -77,7 +77,8 @@ Ticket          vendor, customer, subject, status, priority, messages[]
 Notification    user, vendor?, type, channel, payload, readAt
 WalletTxn       user, vendor?, type(credit|debit), amount, reason, ref
 LoyaltyLedger   user, vendor, points, reason, ref
-CmsPage/Banner/Blog/Menu   vendor-scoped content
+Banner          vendor, message, linkUrl?, linkLabel?, startsAt?, endsAt?, isActive
+CmsPage/Blog/Menu   vendor-scoped content (aspirational, not yet built)
 AuditLog        actor, vendor?, action, entity, entityId, diff, ip, ua, at
 ```
 
@@ -132,6 +133,7 @@ Payments  POST /api/webhooks/{stripe,paymob}   (signature-verified, idempotent)
 Uploads   POST /api/uploads (signed Cloudinary)  Sharp pre-process
 Orders    action: updateStatus, refund, cancel, addNote, requestReturn, resolveReturn, reorder,
           assignDriver, driverUpdateStatus
+Banners   action: create/update/delete (vendor-scoped, CMS_WRITE)   read: RSC + repo
 Search    GET  /api/search?q=  (debounced client, Redis-cached facets)
 Realtime  socket events: notification, order:update, chat:message, presence
 Health    GET  /api/health  (db+redis probes)
@@ -277,7 +279,7 @@ create path (`getOrCreateGuestToken`, actions only).
 6. ✅ **Payments** — Stripe + Paymob + COD strategy adapters + webhooks + idempotency. *(Provider credentials still unset in `.env.local`; only COD is selectable until they are.)*
 7. ✅ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`) with reorder/invoice/returns, vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions, refunds, and driver assignment, driver-facing `/dashboard/deliveries`. *(Live map tracking UI still outstanding — Leaflet isn't installed yet.)*
 8. ✅ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes; notification bell UI; email fallback for a recipient with no active socket, gated per-notification by `channels` (only chat replies opt in today).
-9. ⏳ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal. *(CMS / marketing / reviews / support still outstanding.)*
+9. ✅ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal, reviews, chat/support, and a per-vendor announcement banner (`/dashboard/banners` → `Banner` model, shown at the top of `/v/[vendor]`). *(Full CMS pages/blog/menu — the aspirational `CmsPage/Blog/Menu` sketch below — still unbuilt; the banner is the one slice of it a marketplace storefront needs on day one.)*
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; i18n/RTL and PWA outstanding.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; vitest suite (§9) and GitHub Actions CI running typecheck, lint, tests, and build. *(Coverage is still narrow — see §9.1.)*
 

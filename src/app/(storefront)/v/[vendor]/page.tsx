@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
+import { getActiveBanner } from "@/features/cms/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
 
@@ -51,11 +52,14 @@ export default async function VendorPage({
     throw err;
   }
 
-  const result = await productService.listStorefront(String(vendor._id), {
-    page,
-    limit: 12,
-    ...(search ? { search } : {}),
-  });
+  const [result, banner] = await Promise.all([
+    productService.listStorefront(String(vendor._id), {
+      page,
+      limit: 12,
+      ...(search ? { search } : {}),
+    }),
+    getActiveBanner(String(vendor._id)),
+  ]);
 
   const products: ProductCardData[] = result.items.map((p) => ({
     id: p.id,
@@ -84,6 +88,17 @@ export default async function VendorPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      {banner && (
+        <div className="bg-indigo-600 px-6 py-2 text-center text-sm text-white">
+          {banner.message}
+          {banner.linkUrl && (
+            <a href={banner.linkUrl} className="ml-2 font-semibold underline underline-offset-2">
+              {banner.linkLabel || "Learn more"}
+            </a>
+          )}
+        </div>
+      )}
 
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
         <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4 px-6 py-8">
