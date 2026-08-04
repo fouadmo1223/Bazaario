@@ -60,10 +60,24 @@ async function canReadOrder(user: SocketUser, orderId: string): Promise<boolean>
   if (user.roles.includes(ROLES.SUPER_ADMIN)) return true;
   try {
     await connectToDatabase();
-    const order = await Order.findById(orderId).select("customer vendor");
+    const order = await Order.findById(orderId).select("customer vendor shipping.driver");
     if (!order) return false;
     if (order.customer && String(order.customer) === user.id) return true;
+    // The assigned driver needs the room to share their location, even if
+    // they aren't vendor staff (a contracted courier with no Membership).
+    if (order.shipping?.driver && String(order.shipping.driver) === user.id) return true;
     return canReadVendor(user, String(order.vendor));
+  } catch {
+    return false;
+  }
+}
+
+/** Stricter than room membership: only the order's actually-assigned driver may broadcast a position. */
+async function isAssignedDriver(user: SocketUser, orderId: string): Promise<boolean> {
+  try {
+    await connectToDatabase();
+    const order = await Order.findById(orderId).select("shipping.driver");
+    return Boolean(order?.shipping?.driver && String(order.shipping.driver) === user.id);
   } catch {
     return false;
   }
@@ -155,6 +169,19 @@ function start() {
       const room = rooms.order(orderId);
       authorized.add(room);
       socket.join(room);
+    });
+
+    // Room membership alone isn't enough here — the customer and vendor
+    // staff are in the same room and must not be able to spoof a position,
+    // so this re-checks that the caller is specifically the assigned driver
+    // on every emit, not just once at join time (a reassignment mid-delivery
+    // should stop the old driver from broadcasting immediately).
+    socket.on("driver:location", async ({ orderId, lat, lng }: { orderId: string; lat: number; lng: number }) => {
+      const room = rooms.order(orderId);
+      if (!authorized.has(room)) return;
+      if (typeof lat !== "number" || typeof lng !== "number") return;
+      if (!(await isAssignedDriver(user, orderId))) return;
+      socket.to(room).emit("order:location", { orderId, lat, lng, at: new Date().toISOString() });
     });
 
     // --- Chat ---

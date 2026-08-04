@@ -58,6 +58,7 @@ export type OrderDetailView = OrderListItem & {
       region: string | null;
       postalCode: string | null;
       country: string | null;
+      geo: { lat: number; lng: number } | null;
     } | null;
   };
   timeline: { status: string; note: string | null; at: string }[];
@@ -137,6 +138,7 @@ function toDetail(
             region: addr.region ?? null,
             postalCode: addr.postalCode ?? null,
             country: addr.country ?? null,
+            geo: addr.geo?.lat != null && addr.geo?.lng != null ? { lat: addr.geo.lat, lng: addr.geo.lng } : null,
           }
         : null,
     },

@@ -197,3 +197,44 @@ export function useConversation(
 
   return { messages, append, typingUsers, connected, setTyping, reads, emitRead };
 }
+
+export type DriverLocation = { lat: number; lng: number; at: string };
+
+/**
+ * Live driver position for one order, while it's out for delivery.
+ *
+ * Same join-on-mount shape as `useConversation`, but there is nothing to
+ * leave explicitly — the realtime server has no `order:leave` handler (order
+ * rooms are low-churn: one viewer joins once per page visit), and Socket.IO
+ * already drops a disconnected socket from every room it was in.
+ */
+export function useOrderTracking(orderId: string) {
+  const { socket, connected } = useSocket();
+  const [location, setLocation] = useState<DriverLocation | null>(null);
+
+  useEffect(() => {
+    if (!socket || !orderId) return;
+
+    socket.emit("order:subscribe", orderId);
+
+    const onLocation = (payload: DriverLocation & { orderId: string }) => {
+      if (payload.orderId !== orderId) return;
+      setLocation({ lat: payload.lat, lng: payload.lng, at: payload.at });
+    };
+    socket.on("order:location", onLocation);
+
+    return () => {
+      socket.off("order:location", onLocation);
+    };
+  }, [socket, orderId]);
+
+  /** Driver side only — the server re-checks that the caller is actually assigned. */
+  const shareLocation = useCallback(
+    (lat: number, lng: number) => {
+      socket?.emit("driver:location", { orderId, lat, lng });
+    },
+    [socket, orderId],
+  );
+
+  return { location, connected, shareLocation };
+}

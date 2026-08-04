@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/server/security/current-user";
 import { canViewOrder } from "@/server/security/order-access";
 import { OrderSummary } from "@/features/cart/components/order-summary";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
+import { DeliveryMap } from "@/features/orders/components/delivery-map-loader";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
 
@@ -124,6 +125,22 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             </p>
           </section>
         </div>
+
+        {order.status === "out_for_delivery" && (
+          <section className="mt-8" aria-label="Track your delivery">
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Track your delivery
+            </h2>
+            <DeliveryMap
+              orderId={String(order._id)}
+              destination={
+                order.shipping?.address?.geo?.lat != null && order.shipping?.address?.geo?.lng != null
+                  ? { lat: order.shipping.address.geo.lat, lng: order.shipping.address.geo.lng }
+                  : null
+              }
+            />
+          </section>
+        )}
 
         <div className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
           <OrderSummary totals={order.totals} currency={currency} shippingKnown />

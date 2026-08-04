@@ -8,6 +8,7 @@ import { getVendorOrder } from "@/features/orders/queries";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
 import { ShippingAddress } from "@/features/orders/components/shipping-address";
 import { DeliveryStatusActions } from "@/features/orders/components/delivery-status-actions";
+import { LocationSharing } from "@/features/orders/components/location-sharing";
 import { PERMISSIONS } from "@/shared/constants/rbac";
 import { formatMoney } from "@/shared/lib/format";
 import { isAppError } from "@/shared/lib/errors";
@@ -90,6 +91,12 @@ export default async function DriverDeliveryPage({ params }: { params: Promise<P
         <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
           Collect {formatMoney(order.grandTotal, order.currency)} on delivery (cash on delivery).
         </p>
+      )}
+
+      {order.status === "out_for_delivery" && (
+        <div className="mt-8">
+          <LocationSharing orderId={order.id} />
+        </div>
       )}
 
       <div className="mt-8">

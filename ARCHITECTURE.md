@@ -138,7 +138,8 @@ Banners   action: create/update/delete (vendor-scoped, CMS_WRITE)   read: RSC + 
 Wallet    action: creditWallet (vendor/admin, ORDER_REFUND)   debit happens inline in
           checkout.service.createOrder, not as an action   read: getWalletView (RSC)
 Search    GET  /api/search?q=  (debounced client, Redis-cached facets)
-Realtime  socket events: notification, order:update, chat:message, presence
+Realtime  socket events: notification, order:update, chat:message, presence,
+          driver:location (in) / order:location (out) — live delivery tracking
 Health    GET  /api/health  (db+redis probes)
 ```
 
@@ -280,7 +281,7 @@ create path (`getOrCreateGuestToken`, actions only).
 4. ✅ **Catalog** — Category/Brand/Product/Variant/Inventory + repositories + storefront reads.
 5. ✅ **Cart & Checkout** — cart service + actions + UI, guest/user/merge, coupons, taxes, server-resolved shipping, order creation, confirmation.
 6. ✅ **Payments** — Stripe + Paymob + COD strategy adapters + webhooks + idempotency. *(Provider credentials still unset in `.env.local`; only COD is selectable until they are.)*
-7. ✅ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`) with reorder/invoice/returns, vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions, refunds, and driver assignment, driver-facing `/dashboard/deliveries`. *(Live map tracking UI still outstanding — Leaflet isn't installed yet.)*
+7. ✅ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`) with reorder/invoice/returns, vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions, refunds, and driver assignment, driver-facing `/dashboard/deliveries` with live location sharing and a customer-facing Leaflet tracking map while an order is `out_for_delivery` (see §6.5).
 8. ✅ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes; notification bell UI; email fallback for a recipient with no active socket, gated per-notification by `channels` (only chat replies opt in today).
 9. ✅ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal, reviews, chat/support, and a per-vendor announcement banner (`/dashboard/banners` → `Banner` model, shown at the top of `/v/[vendor]`). *(Full CMS pages/blog/menu — the aspirational `CmsPage/Blog/Menu` sketch below — still unbuilt; the banner is the one slice of it a marketplace storefront needs on day one.)*
 10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; PWA landed (installable — `app/manifest.ts`, generated icons via `next/og`, a minimal `public/sw.js` that only makes navigation resilient to a dropped connection, no offline app functionality since cart/order data is too live/personal to cache safely). i18n/RTL still outstanding.
@@ -289,7 +290,7 @@ create path (`getOrCreateGuestToken`, actions only).
 ### 6.1 Known gaps
 - **Test coverage is narrow.** A suite exists (§9) and covers the two invariants most likely to be broken silently — conversation access control and the oversell guard — but auth, payments, refunds, cart merging, and the order status machine are still unprotected.
 - Customers can now reorder ("Buy again" on `/account/orders/[id]` re-adds a past order's lines to the cart, best-effort per line via `orderService.reorder` — a discontinued or sold-out item is reported, not blocking the rest), download an invoice (`/account/orders/[id]/invoice`, a print-styled page — "Save as PDF" in the browser print dialog covers the PDF case without a rendering dependency), and request a return (reviewed by the vendor at `/dashboard/orders/[id]`, approving doesn't itself refund — see §6 step 7). Drivers now have a UI: `/dashboard/deliveries` lists a driver's own assigned orders (`orderService.listForDriver`, which existed unused before this), `/dashboard/deliveries/[id]` shows the delivery address and a two-step status control (shipped → out for delivery → delivered) scoped to `driverUpdateStatusAction`'s existing ownership check; `/dashboard/orders/[id]` gained a driver-assignment dropdown that was previously wired to nothing (`assignDriverAction` existed with no UI calling it).
-- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes, Leaflet. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations).
+- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations; Leaflet + react-leaflet landed for live delivery tracking, §6.5).
 - The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, plus a **variant matrix editor**: a "Variants" action on a variable product opens a grid of every option combination (the cartesian product of the option values) where each cell can be switched on and given its own SKU, price, compare-at, stock, and active flag. Options and variants save together through `syncVariantsAction`, which also recomputes the denormalized `priceRange`/`from` price from the **active** variants only. A combination left off is simply not stocked — the storefront picker already disables the gaps — so a sparse matrix (a shoe in five sizes and three colours but only ten real SKUs) is expressed by leaving cells off rather than filling them all.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
 - **Wallet payment provider — built.** Platform-wide store credit (one balance per customer, spendable at any vendor), funded only by vendor/admin-issued credit (`PERMISSIONS.ORDER_REFUND` — the same trust tier as an actual refund, from `/dashboard/orders/[id]`'s "Store credit" section) — no card top-up flow, since customers already have Stripe/COD for that and a second money-in path would need its own webhook reconciliation. `Wallet` (fast-read balance) + `WalletTxn` (append-only ledger) in `wallet.model.ts`; `wallet.service.ts`'s `debit` is an atomic conditional update (`balance: {$gte: amount}`, mirroring `checkout.service`'s stock-reservation guard) so concurrent debits can't overdraw it. The actual charge happens **inside `checkout.service.createOrder`**, atomically alongside inventory reservation — not in `WalletProvider.initiate()` (which runs *after* the order already exists, too late to participate in the same rollback). A wallet order is captured immediately (`payment.status`/`order.status: "paid"` at creation), unlike COD (captured on delivery) or Stripe/Paymob (captured via webhook). `/account/wallet` shows balance + history.
@@ -321,6 +322,35 @@ The Market→Vendor rename left artifacts Mongoose does not clean up on its own:
 Run `db:sync-indexes` after any index change.
 
 Each step ships compiling, typechecked code with real logic — no stubs.
+
+### 6.5 Live delivery tracking
+Leaflet + OpenStreetMap, per the maps decision above — no API key, no new
+build-time asset (marker icons load from the `leaflet` package's own unpkg
+CDN copy rather than being vendored into `public/`).
+
+- Reuses the `order:<id>` socket room that already existed for `order:update`
+  — `canReadOrder` in `realtime/server.ts` gained a branch for the order's
+  assigned driver (`shipping.driver`), since a courier with no vendor
+  Membership couldn't otherwise join the room at all.
+- The driver emits `driver:location`; the server **re-verifies the sender is
+  specifically the assigned driver on every single emit** (a fresh DB read,
+  not just "is this socket in the authorized room" — the customer and vendor
+  staff are in the same room and must not be able to spoof a position), then
+  relays `order:location` to everyone else in the room.
+- The customer's map only ever shows what the socket sends — nothing is
+  persisted. A page reload with no live driver connected shows "Waiting for
+  the driver's location…", not a stale last-known pin.
+- `leaflet` executes browser-only code (`window`) at import time, so the map
+  component is behind `next/dynamic(..., { ssr: false })`, which itself
+  cannot be called from a Server Component — the actual map lives in
+  `delivery-map.tsx`, loaded through a one-line client wrapper,
+  `delivery-map-loader.tsx`, that the server page imports instead.
+- Not unit-tested — realtime UI, verified live instead (a fake
+  `navigator.geolocation.watchPosition` firing manually from a script,
+  matching how chat typing/read-receipts were verified in an earlier
+  session): watched a driver's simulated position land on the customer's map
+  in real time, twice, confirming continuous updates work, not just the
+  first one.
 
 ---
 
