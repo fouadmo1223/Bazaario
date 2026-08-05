@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getWalletView } from "@/features/wallet/queries";
+import { TopUpForm } from "@/features/wallet/components/top-up-form";
 import { formatMoney } from "@/shared/lib/format";
 
 export const metadata: Metadata = {
@@ -11,12 +12,15 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+type Search = { status?: string };
+
 /**
  * Store credit is platform-wide (USD; there's no per-customer currency to
  * read it back in — same assumption `formatMoney`'s callers make elsewhere
  * when there's no order/cart currency to hand it).
  */
-export default async function WalletPage() {
+export default async function WalletPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const { status } = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent("/account/wallet")}`);
 
@@ -29,6 +33,18 @@ export default async function WalletPage() {
           Wallet
         </h1>
 
+        {status === "success" && (
+          <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            Payment received — your balance updates as soon as it&apos;s confirmed, usually
+            within a few seconds.
+          </p>
+        )}
+        {status === "cancelled" && (
+          <p className="mt-4 rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+            Checkout was cancelled — nothing was charged.
+          </p>
+        )}
+
         <div className="mt-6 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800">
           <p className="text-sm text-zinc-500">Balance</p>
           <p className="mt-1 text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
@@ -37,6 +53,9 @@ export default async function WalletPage() {
           <p className="mt-2 text-xs text-zinc-500">
             Store credit, usable at checkout with any store.
           </p>
+          <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+            <TopUpForm />
+          </div>
         </div>
 
         <section className="mt-8">

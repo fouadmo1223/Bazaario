@@ -7,28 +7,58 @@ import { logger } from "@/shared/lib/logger";
 import { toMinor, toMajor, cents } from "@/shared/lib/money";
 
 /**
+ * Shared singleton, module-level rather than per-`StripeProvider` instance:
+ * a wallet top-up (no `Order`, so it doesn't go through this class at all)
+ * needs the same client to create its own Checkout session.
+ */
+let sharedClient: Stripe | null = null;
+
+export function getStripeClient(): Stripe {
+  if (sharedClient) return sharedClient;
+  const key = getServerEnv().STRIPE_SECRET_KEY;
+  if (!key) throw Errors.badRequest("Stripe is not configured");
+  sharedClient = new Stripe(key);
+  return sharedClient;
+}
+
+/**
+ * Verify a Stripe webhook's signature and return the parsed event.
+ *
+ * Exported (not just used inline in `parseWebhook` below) so the webhook
+ * route can verify once, inspect `event.data.object.metadata.kind`, and
+ * branch to either order fulfillment or a wallet top-up *before* committing
+ * to which normalizer runs — `parseWebhook` below only ever produces an
+ * order-shaped `WebhookOutcome`.
+ */
+export function verifyStripeWebhookEvent(rawBody: string, headers: Record<string, string>): Stripe.Event {
+  const secret = getServerEnv().STRIPE_WEBHOOK_SECRET;
+  if (!secret) throw Errors.badRequest("Stripe webhook secret is not configured");
+
+  const signature = headers["stripe-signature"];
+  if (!signature) throw Errors.unauthorized("Missing Stripe signature");
+
+  try {
+    return getStripeClient().webhooks.constructEvent(rawBody, signature, secret);
+  } catch (err) {
+    logger.warn({ err }, "Stripe webhook signature verification failed");
+    throw Errors.unauthorized("Invalid webhook signature");
+  }
+}
+
+/**
  * Stripe Checkout Session flow: we create a hosted session and redirect the
  * customer. Fulfillment is driven by the `checkout.session.completed` webhook,
  * never by the browser return (which is spoofable).
  */
 export class StripeProvider implements PaymentProvider {
   readonly id = "stripe" as const;
-  private client: Stripe | null = null;
-
-  private getClient(): Stripe {
-    if (this.client) return this.client;
-    const key = getServerEnv().STRIPE_SECRET_KEY;
-    if (!key) throw Errors.badRequest("Stripe is not configured");
-    this.client = new Stripe(key);
-    return this.client;
-  }
 
   isEnabled(): boolean {
     return Boolean(getServerEnv().STRIPE_SECRET_KEY);
   }
 
   async initiate(order: OrderDoc, opts: { returnUrl: string }): Promise<PaymentInitResult> {
-    const stripe = this.getClient();
+    const stripe = getStripeClient();
     const currency = order.currency.toLowerCase();
 
     const session = await stripe.checkout.sessions.create({
@@ -72,19 +102,7 @@ export class StripeProvider implements PaymentProvider {
   }
 
   async parseWebhook(rawBody: string, headers: Record<string, string>): Promise<WebhookOutcome | null> {
-    const secret = getServerEnv().STRIPE_WEBHOOK_SECRET;
-    if (!secret) throw Errors.badRequest("Stripe webhook secret is not configured");
-
-    const signature = headers["stripe-signature"];
-    if (!signature) throw Errors.unauthorized("Missing Stripe signature");
-
-    let event: Stripe.Event;
-    try {
-      event = this.getClient().webhooks.constructEvent(rawBody, signature, secret);
-    } catch (err) {
-      logger.warn({ err }, "Stripe webhook signature verification failed");
-      throw Errors.unauthorized("Invalid webhook signature");
-    }
+    const event = verifyStripeWebhookEvent(rawBody, headers);
 
     switch (event.type) {
       case "checkout.session.completed": {
