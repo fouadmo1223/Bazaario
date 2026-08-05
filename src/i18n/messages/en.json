@@ -1,0 +1,35 @@
+{
+  "StorefrontHeader": {
+    "products": "Products",
+    "categories": "Categories",
+    "searchLabel": "Search products",
+    "searchPlaceholder": "Search products…",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "account": "Account"
+  },
+  "Footer": {
+    "copyright": "© {year} Bazaario",
+    "products": "Products",
+    "categories": "Categories",
+    "orders": "Orders"
+  },
+  "Home": {
+    "heroTitle": "Every store, one place.",
+    "heroSubtitle": "Browse independent vendors, save what you love, and check out securely — card, wallet, or cash on delivery.",
+    "browseProducts": "Browse products",
+    "shopByCategory": "Shop by category",
+    "categories": "Categories",
+    "allCategories": "All categories",
+    "featured": "Featured",
+    "noFeatured": "No featured products yet.",
+    "bestSellers": "Best sellers",
+    "stores": "Stores",
+    "seeAll": "See all"
+  },
+  "Language": {
+    "label": "Language",
+    "en": "English",
+    "ar": "العربية"
+  }
+}

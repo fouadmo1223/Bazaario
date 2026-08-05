@@ -25,6 +25,7 @@
     "leaflet": "^1.9.4",
     "mongoose": "^9.7.4",
     "next": "16.2.10",
+    "next-intl": "^4.13.5",
     "nodemailer": "^9.0.3",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",

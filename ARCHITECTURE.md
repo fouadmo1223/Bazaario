@@ -284,7 +284,7 @@ create path (`getOrCreateGuestToken`, actions only).
 7. ✅ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`) with reorder/invoice/returns, vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions, refunds, and driver assignment, driver-facing `/dashboard/deliveries` with live location sharing and a customer-facing Leaflet tracking map while an order is `out_for_delivery` (see §6.5).
 8. ✅ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes; notification bell UI; email fallback for a recipient with no active socket, gated per-notification by `channels` (only chat replies opt in today).
 9. ✅ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal, reviews, chat/support, and a per-vendor announcement banner (`/dashboard/banners` → `Banner` model, shown at the top of `/v/[vendor]`). *(Full CMS pages/blog/menu — the aspirational `CmsPage/Blog/Menu` sketch below — still unbuilt; the banner is the one slice of it a marketplace storefront needs on day one.)*
-10. ⏳ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; PWA landed (installable — `app/manifest.ts`, generated icons via `next/og`, a minimal `public/sw.js` that only makes navigation resilient to a dropped connection, no offline app functionality since cart/order data is too live/personal to cache safely). i18n/RTL still outstanding.
+10. ✅ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; PWA landed (installable — `app/manifest.ts`, generated icons via `next/og`, a minimal `public/sw.js` that only makes navigation resilient to a dropped connection, no offline app functionality since cart/order data is too live/personal to cache safely). i18n/RTL landed for the storefront shell (see §6.6) — a scoped slice (header, footer, home page), not every page in the app.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; vitest suite (§9) and GitHub Actions CI running typecheck, lint, tests, and build. *(Coverage is still narrow — see §9.1.)*
 
 ### 6.1 Known gaps
@@ -351,6 +351,44 @@ CDN copy rather than being vendored into `public/`).
   session): watched a driver's simulated position land on the customer's map
   in real time, twice, confirming continuous updates work, not just the
   first one.
+
+### 6.6 i18n / RTL — scoped, and a real trade-off taken knowingly
+`next-intl`, configured **without a `[locale]` URL segment**: no
+`app/[locale]/` restructuring, no middleware, every route keeps the exact
+path it already had. The locale is just a cookie (`src/i18n/request.ts`
+reads it, defaults to `en`), and `<html lang dir>` is set from it in the
+root layout. `LanguageSwitcher` sets the cookie and calls `router.refresh()`
+— there's no locale-prefixed `Link` to point at.
+
+**The cost of that simplicity, taken deliberately, not by accident:** reading
+a cookie in the root layout (which wraps every route) forces the **entire
+app dynamic** — every page that was previously ISR-cached (`/`, `/categories`,
+`/login`, …) is now server-rendered per request. This directly conflicts with
+this codebase's repeated, explicit ISR-caching principle elsewhere in this
+doc. The alternatives were: (a) client-only locale switching, which keeps
+ISR but means non-English content is never in the server-rendered HTML
+(worse for SEO, a flash of English on load) or (b) the full `[locale]`
+segment migration, which preserves per-locale static generation properly but
+touches essentially every route file and every internal `<Link>` in the app.
+Asked the user to pick; got no response, so went with the option already
+built and explicitly flagged as the trade-off being made — **not** silently
+absorbed. If ISR on the storefront becomes a measured problem, (b) is the
+correct fix, not a patch on top of this.
+
+**Scope, deliberately bounded**: only the storefront shell is translated —
+header (nav, search, wishlist/cart/account labels), footer, and the home
+page (hero, section headings). Product/category/vendor names are data, not
+UI strings, and are not translated. Every other route (dashboard, account,
+auth, checkout, …) renders in whatever the cookie says but has no Arabic
+message keys yet — `useTranslations`/`getTranslations` calls elsewhere would
+need their own namespaces added to `src/i18n/messages/{en,ar}.json` first.
+
+RTL is proven, not just declared: `dir="rtl"` flows from `<html>` through
+Tailwind's automatic `rtl:`/logical-property support; the notification-badge
+position in the header uses `-end-0.5` (logical) instead of `-right-0.5`
+(physical) as the one concrete example of a component that actually flips
+correctly, rather than just rendering right-to-left text in a still-LTR
+layout.
 
 ---
 

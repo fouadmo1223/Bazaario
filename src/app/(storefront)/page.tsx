@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
+  const t = await getTranslations("Home");
   const [featured, bestSellers, categories, vendors] = await Promise.all([
     catalogService.featured(8),
     catalogService.bestSellers(4),
@@ -53,14 +55,13 @@ export default async function HomePage() {
           {/* Slide only, no fade: this heading is the LCP candidate. */}
           <Reveal immediate fade={false}>
             <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
-              Every store, one place.
+              {t("heroTitle")}
             </h1>
           </Reveal>
 
           <Reveal immediate delay={0.1}>
             <p className="mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              Browse independent vendors, save what you love, and check out securely — card, wallet,
-              or cash on delivery.
+              {t("heroSubtitle")}
             </p>
           </Reveal>
 
@@ -69,13 +70,13 @@ export default async function HomePage() {
               href="/products"
               className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
-              Browse products
+              {t("browseProducts")}
             </Link>
             <Link
               href="/categories"
               className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-white dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
-              Shop by category
+              {t("shopByCategory")}
             </Link>
           </Reveal>
         </div>
@@ -85,10 +86,10 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-6 py-12" aria-labelledby="home-categories">
           <div className="mb-5 flex items-baseline justify-between">
             <h2 id="home-categories" className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Categories
+              {t("categories")}
             </h2>
             <Link href="/categories" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
-              All categories
+              {t("allCategories")}
             </Link>
           </div>
           <Reveal as="ul" stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -108,19 +109,20 @@ export default async function HomePage() {
 
       <ProductRail
         id="home-featured"
-        title="Featured"
+        title={t("featured")}
+        seeAllLabel={t("seeAll")}
         products={featured}
-        emptyNote="No featured products yet."
+        emptyNote={t("noFeatured")}
       />
 
       {bestSellers.length > 0 && (
-        <ProductRail id="home-best" title="Best sellers" products={bestSellers} />
+        <ProductRail id="home-best" title={t("bestSellers")} seeAllLabel={t("seeAll")} products={bestSellers} />
       )}
 
       {vendors.length > 0 && (
         <section className="mx-auto max-w-6xl px-6 py-12" aria-labelledby="home-vendors">
           <h2 id="home-vendors" className="mb-5 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Stores
+            {t("stores")}
           </h2>
           <Reveal as="ul" stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {vendors.map((v) => (
@@ -159,11 +161,13 @@ export default async function HomePage() {
 function ProductRail({
   id,
   title,
+  seeAllLabel,
   products,
   emptyNote,
 }: {
   id: string;
   title: string;
+  seeAllLabel: string;
   products: CatalogProduct[];
   emptyNote?: string;
 }) {
@@ -174,7 +178,7 @@ function ProductRail({
           {title}
         </h2>
         <Link href="/products" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
-          See all
+          {seeAllLabel}
         </Link>
       </div>
 

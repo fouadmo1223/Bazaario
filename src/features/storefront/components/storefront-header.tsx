@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useStorefront } from "../storefront-provider";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import { LanguageSwitcher } from "./language-switcher";
 
 /**
  * Marketplace header: search, wishlist, cart, account.
@@ -12,6 +14,7 @@ import { NotificationBell } from "@/features/notifications/components/notificati
  * the ISR-cached pages underneath stay shared between visitors.
  */
 export function StorefrontHeader() {
+  const t = useTranslations("StorefrontHeader");
   const storefront = useStorefront();
   const counts = {
     cart: storefront?.cartCount ?? 0,
@@ -29,24 +32,26 @@ export function StorefrontHeader() {
         </Link>
 
         <nav aria-label="Browse" className="hidden shrink-0 items-center gap-1 sm:flex">
-          <HeaderLink href="/products">Products</HeaderLink>
-          <HeaderLink href="/categories">Categories</HeaderLink>
+          <HeaderLink href="/products">{t("products")}</HeaderLink>
+          <HeaderLink href="/categories">{t("categories")}</HeaderLink>
         </nav>
 
         <SearchBox />
 
         <div className="flex shrink-0 items-center gap-1">
+          <LanguageSwitcher />
+
           {/* Only for an account — a guest has nothing to be notified about. */}
           {storefront?.signedIn ? <NotificationBell /> : null}
 
-          <IconLink href="/wishlist" label="Wishlist" count={counts.wishlist}>
+          <IconLink href="/wishlist" label={t("wishlist")} count={counts.wishlist}>
             {/* Heart */}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
               <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8Z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </IconLink>
 
-          <IconLink href="/cart" label="Cart" count={counts.cart}>
+          <IconLink href="/cart" label={t("cart")} count={counts.cart}>
             {/* Bag */}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
               <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6ZM3 6h18M16 10a4 4 0 0 1-8 0" strokeLinecap="round" strokeLinejoin="round" />
@@ -59,7 +64,7 @@ export function StorefrontHeader() {
             href="/account/profile"
             className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
           >
-            Account
+            {t("account")}
           </Link>
         </div>
       </div>
@@ -94,6 +99,7 @@ function HeaderLink({ href, children }: { href: string; children: React.ReactNod
  * and then overwrite it — a wasted pass, and the reason the lint rule exists.
  */
 function SearchBox() {
+  const t = useTranslations("StorefrontHeader");
   const router = useRouter();
   const params = useSearchParams();
   const urlSearch = params.get("search") ?? "";
@@ -107,7 +113,7 @@ function SearchBox() {
   return (
     <form onSubmit={submit} role="search" className="min-w-0 flex-1">
       <label htmlFor="storefront-search" className="sr-only">
-        Search products
+        {t("searchLabel")}
       </label>
       <input
         key={urlSearch}
@@ -115,7 +121,7 @@ function SearchBox() {
         name="search"
         type="search"
         defaultValue={urlSearch}
-        placeholder="Search products…"
+        placeholder={t("searchPlaceholder")}
         className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:bg-zinc-950"
       />
     </form>
@@ -141,7 +147,7 @@ function IconLink({
     >
       {children}
       {count > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+        <span className="absolute -end-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold tabular-nums text-white">
           {count > 99 ? "99+" : count}
         </span>
       )}

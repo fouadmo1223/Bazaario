@@ -1,0 +1,35 @@
+{
+  "StorefrontHeader": {
+    "products": "المنتجات",
+    "categories": "الفئات",
+    "searchLabel": "بحث عن المنتجات",
+    "searchPlaceholder": "ابحث عن المنتجات…",
+    "wishlist": "المفضلة",
+    "cart": "السلة",
+    "account": "الحساب"
+  },
+  "Footer": {
+    "copyright": "© {year} Bazaario",
+    "products": "المنتجات",
+    "categories": "الفئات",
+    "orders": "الطلبات"
+  },
+  "Home": {
+    "heroTitle": "كل المتاجر في مكان واحد.",
+    "heroSubtitle": "تصفح متاجر مستقلة، احفظ ما يعجبك، وأكمل الشراء بأمان — بطاقة، محفظة، أو الدفع عند الاستلام.",
+    "browseProducts": "تصفح المنتجات",
+    "shopByCategory": "تسوق حسب الفئة",
+    "categories": "الفئات",
+    "allCategories": "كل الفئات",
+    "featured": "منتجات مميزة",
+    "noFeatured": "لا توجد منتجات مميزة بعد.",
+    "bestSellers": "الأكثر مبيعًا",
+    "stores": "المتاجر",
+    "seeAll": "عرض الكل"
+  },
+  "Language": {
+    "label": "اللغة",
+    "en": "English",
+    "ar": "العربية"
+  }
+}
