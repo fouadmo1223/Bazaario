@@ -1,6 +1,13 @@
-import { Link } from "@/i18n/navigation";
+import Link from "next/link";
 
-/** Kicks off the OAuth flow by navigating to the /auth/google route handler. */
+/**
+ * Kicks off the OAuth flow by navigating to the /auth/google route handler.
+ *
+ * Plain `next/link`, not next-intl's locale-aware `Link` — `/auth/google` is
+ * one of the routes `proxy.ts` deliberately keeps unprefixed (it's a route
+ * handler, not a page, and Google's registered callback URL is fixed), so a
+ * locale-aware Link would 404 by sending the browser to `/ar/auth/google`.
+ */
 export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {
   return (
     <Link

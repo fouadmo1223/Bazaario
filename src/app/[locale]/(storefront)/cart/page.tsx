@@ -7,6 +7,7 @@ import { connectToDatabase } from "@/server/database/connection";
 import { getCurrentUser } from "@/server/security/current-user";
 import { readGuestToken } from "@/server/security/guest-token";
 import { formatMoney } from "@/shared/lib/format";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Your cart · Bazaario",
@@ -70,29 +71,29 @@ async function loadCarts(): Promise<VendorCart[]> {
 }
 
 export default async function GlobalCartPage() {
+  const t = await getTranslations("Cart");
   const carts = await loadCarts();
   const total = carts.reduce((n, c) => n + c.itemCount, 0);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Your cart
+        {t("title")}
       </h1>
       {carts.length > 0 && (
         <p className="mt-1 text-sm text-zinc-500">
-          {total} {total === 1 ? "item" : "items"} across {carts.length}{" "}
-          {carts.length === 1 ? "store" : "stores"} · each store checks out separately
+          {t("summary", { items: total, stores: carts.length })}
         </p>
       )}
 
       {carts.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">Your cart is empty.</p>
+          <p className="text-sm text-zinc-500">{t("empty")}</p>
           <Link
             href="/products"
             className="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
-            Browse products
+            {t("browseProducts")}
           </Link>
         </div>
       ) : (
@@ -100,7 +101,7 @@ export default async function GlobalCartPage() {
           {carts.map((cart) => (
             <section
               key={cart.vendorSlug}
-              aria-label={`Cart at ${cart.vendorName}`}
+              aria-label={t("cartAt", { vendor: cart.vendorName })}
               className="rounded-2xl border border-zinc-200 dark:border-zinc-800"
             >
               <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
@@ -110,9 +111,7 @@ export default async function GlobalCartPage() {
                 >
                   {cart.vendorName}
                 </Link>
-                <span className="text-sm text-zinc-500">
-                  {cart.itemCount} {cart.itemCount === 1 ? "item" : "items"}
-                </span>
+                <span className="text-sm text-zinc-500">{t("items", { count: cart.itemCount })}</span>
               </header>
 
               <ul className="divide-y divide-zinc-100 px-5 dark:divide-zinc-900">
@@ -133,14 +132,14 @@ export default async function GlobalCartPage() {
                 ))}
                 {cart.items.length > 3 && (
                   <li className="py-3 text-xs text-zinc-500">
-                    + {cart.items.length - 3} more
+                    {t("more", { count: cart.items.length - 3 })}
                   </li>
                 )}
               </ul>
 
               <footer className="flex items-center justify-between gap-4 border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
                 <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Subtotal{" "}
+                  {t("subtotal")}{" "}
                   <span className="font-semibold text-zinc-900 tabular-nums dark:text-zinc-50">
                     {formatMoney(cart.subtotal, cart.currency)}
                   </span>
@@ -150,13 +149,13 @@ export default async function GlobalCartPage() {
                     href={`/v/${cart.vendorSlug}/cart`}
                     className="text-sm text-zinc-500 hover:underline"
                   >
-                    Edit
+                    {t("edit")}
                   </Link>
                   <Link
                     href={`/v/${cart.vendorSlug}/checkout`}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
                   >
-                    Checkout
+                    {t("checkout")}
                   </Link>
                 </div>
               </footer>

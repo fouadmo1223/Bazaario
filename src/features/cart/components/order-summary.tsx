@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { formatMoney } from "@/shared/lib/format";
 import type { Totals } from "@/server/services/pricing.service";
 
@@ -6,7 +7,7 @@ import type { Totals } from "@/server/services/pricing.service";
  * figures in both places. Server component — it only renders numbers the server
  * already computed.
  */
-export function OrderSummary({
+export async function OrderSummary({
   totals,
   currency,
   shippingKnown = false,
@@ -16,36 +17,37 @@ export function OrderSummary({
   /** Before a delivery method is chosen, shipping reads "calculated at checkout". */
   shippingKnown?: boolean;
 }) {
+  const t = await getTranslations("Checkout");
   const money = (n: number) => formatMoney(n, currency);
 
   return (
     <dl className="space-y-2 text-sm">
-      <Row label="Subtotal" value={money(totals.subtotal)} />
+      <Row label={t("subtotal")} value={money(totals.subtotal)} />
 
       {totals.discount > 0 && (
         <Row
-          label="Discount"
+          label={t("discount")}
           value={`−${money(totals.discount)}`}
           className="text-emerald-600 dark:text-emerald-400"
         />
       )}
 
-      {totals.tax > 0 && <Row label="Tax" value={money(totals.tax)} />}
+      {totals.tax > 0 && <Row label={t("tax")} value={money(totals.tax)} />}
 
       <Row
-        label="Shipping"
+        label={t("shipping")}
         value={
           shippingKnown
             ? totals.shipping > 0
               ? money(totals.shipping)
-              : "Free"
-            : "Calculated at checkout"
+              : t("free")
+            : t("calculatedAtCheckout")
         }
         className={shippingKnown ? undefined : "text-zinc-500"}
       />
 
       <div className="flex justify-between border-t border-zinc-200 pt-3 text-base font-semibold text-zinc-900 dark:border-zinc-800 dark:text-zinc-50">
-        <dt>Total</dt>
+        <dt>{t("total")}</dt>
         <dd className="tabular-nums">{money(totals.grandTotal)}</dd>
       </div>
     </dl>

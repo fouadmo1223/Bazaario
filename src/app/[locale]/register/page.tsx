@@ -1,26 +1,29 @@
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { RegisterForm } from "@/features/auth/components/register-form";
 import { GoogleButton, OrDivider } from "@/features/auth/components/google-button";
 
 export const metadata: Metadata = { title: "Create account · Bazaario" };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const t = await getTranslations("Auth");
+
   return (
     <AuthShell
-      title="Create your account"
-      subtitle="Start shopping across every vendor"
+      title={t("createAccount")}
+      subtitle={t("startShopping")}
       footer={
         <>
-          Already have an account?{" "}
+          {t("haveAccount")}{" "}
           <Link href="/login" className="font-medium text-indigo-600 hover:underline">
-            Sign in
+            {t("signIn")}
           </Link>
         </>
       }
     >
-      <GoogleButton label="Sign up with Google" />
+      <GoogleButton label={t("signUpWithGoogle")} />
       <OrDivider />
       <RegisterForm />
     </AuthShell>

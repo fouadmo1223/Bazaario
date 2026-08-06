@@ -1,18 +1,21 @@
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { ForgotPasswordForm } from "@/features/auth/components/forgot-password-form";
 
 export const metadata: Metadata = { title: "Forgot password · Bazaario" };
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const t = await getTranslations("Auth");
+
   return (
     <AuthShell
-      title="Reset your password"
-      subtitle="We'll email you a secure reset link"
+      title={t("resetPassword")}
+      subtitle={t("resetPasswordHint")}
       footer={
         <Link href="/login" className="font-medium text-indigo-600 hover:underline">
-          Back to sign in
+          {t("backToSignIn")}
         </Link>
       }
     >

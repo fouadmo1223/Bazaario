@@ -1,34 +1,37 @@
 import { Suspense } from "react";
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { GoogleButton, OrDivider } from "@/features/auth/components/google-button";
 
 export const metadata: Metadata = { title: "Sign in · Bazaario" };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const t = await getTranslations("Auth");
+
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to your account"
+      title={t("welcomeBack")}
+      subtitle={t("signInToAccount")}
       footer={
         <>
-          Don&apos;t have an account?{" "}
+          {t("noAccount")}{" "}
           <Link href="/register" className="font-medium text-indigo-600 hover:underline">
-            Create one
+            {t("createOne")}
           </Link>
         </>
       }
     >
-      <GoogleButton />
+      <GoogleButton label={t("continueWithGoogle")} />
       <OrDivider />
       <Suspense>
         <LoginForm />
       </Suspense>
       <div className="mt-4 text-center">
         <Link href="/forgot-password" className="text-sm text-zinc-500 hover:text-indigo-600">
-          Forgot your password?
+          {t("forgotPassword")}
         </Link>
       </div>
     </AuthShell>

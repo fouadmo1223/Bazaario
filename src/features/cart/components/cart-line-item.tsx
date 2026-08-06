@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { updateCartItemAction, removeCartItemAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
@@ -25,6 +26,7 @@ export function CartLineItem({
   vendorSlug: string;
   currency: string;
 }) {
+  const t = useTranslations("Checkout");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function CartLineItem({
           <Image src={line.image} alt={line.title} fill sizes="96px" className="object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-            No image
+            {t("noImage")}
           </div>
         )}
       </div>
@@ -77,9 +79,9 @@ export function CartLineItem({
             <h3 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
               {line.title}
             </h3>
-            {line.sku && <p className="mt-0.5 text-xs text-zinc-500">SKU: {line.sku}</p>}
+            {line.sku && <p className="mt-0.5 text-xs text-zinc-500">{t("sku", { sku: line.sku })}</p>}
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {formatMoney(line.unitPrice, currency)} each
+              {t("each", { price: formatMoney(line.unitPrice, currency) })}
             </p>
           </div>
 
@@ -94,7 +96,7 @@ export function CartLineItem({
               type="button"
               onClick={() => setQuantity(line.quantity - 1)}
               disabled={pending || line.quantity <= 1}
-              aria-label={`Decrease quantity of ${line.title}`}
+              aria-label={t("decreaseQty", { title: line.title })}
               className="px-3 py-1.5 text-sm text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               −
@@ -109,7 +111,7 @@ export function CartLineItem({
               type="button"
               onClick={() => setQuantity(line.quantity + 1)}
               disabled={pending}
-              aria-label={`Increase quantity of ${line.title}`}
+              aria-label={t("increaseQty", { title: line.title })}
               className="px-3 py-1.5 text-sm text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               +
@@ -122,7 +124,7 @@ export function CartLineItem({
             disabled={pending}
             className="text-sm text-zinc-500 underline-offset-4 transition hover:text-red-600 hover:underline disabled:opacity-40"
           >
-            Remove
+            {t("remove")}
           </button>
         </div>
 
