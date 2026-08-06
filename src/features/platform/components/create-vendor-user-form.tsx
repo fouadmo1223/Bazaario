@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState, useId } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
 import { createVendorUserAction } from "../actions";
 import type { VendorOption } from "../queries";
+import { Select } from "@/shared/components/select";
 
 /**
  * Add a person to a vendor's team.
@@ -73,14 +74,17 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
           <label htmlFor={`${formId}-vendor`} className={label}>
             Vendor
           </label>
-          <select id={`${formId}-vendor`} name="vendorId" required className={field}>
-            {vendors.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-                {v.status === "active" ? "" : ` (${v.status})`}
-              </option>
-            ))}
-          </select>
+          <Select
+            id={`${formId}-vendor`}
+            name="vendorId"
+            required
+            defaultValue={vendors[0]?.id}
+            className="mt-1"
+            options={vendors.map((v) => ({
+              value: v.id,
+              label: v.name + (v.status === "active" ? "" : ` (${v.status})`),
+            }))}
+          />
           {fieldErrors.vendorId ? <p className={errorText}>{fieldErrors.vendorId[0]}</p> : null}
         </div>
 
@@ -88,13 +92,14 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
           <label htmlFor={`${formId}-role`} className={label}>
             Role on this vendor
           </label>
-          <select id={`${formId}-role`} name="role" required defaultValue="support" className={field}>
-            {ROLE_OPTIONS.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label} — {r.hint}
-              </option>
-            ))}
-          </select>
+          <Select
+            id={`${formId}-role`}
+            name="role"
+            required
+            defaultValue="support"
+            className="mt-1"
+            options={ROLE_OPTIONS.map((r) => ({ value: r.value, label: `${r.label} — ${r.hint}` }))}
+          />
           {fieldErrors.role ? <p className={errorText}>{fieldErrors.role[0]}</p> : null}
         </div>
 

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { assignDriverAction } from "../actions";
+import { Select } from "@/shared/components/select";
 
 export function DriverAssignForm({
   vendorId,
@@ -40,24 +41,15 @@ export function DriverAssignForm({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="driver-select" className="sr-only">
-          Driver
-        </label>
-        <select
+        <Select
           id="driver-select"
+          aria-label="Driver"
           value={driverId}
-          onChange={(e) => setDriverId(e.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
-        >
-          <option value="" disabled>
-            Choose a driver…
-          </option>
-          {drivers.map((d) => (
-            <option key={d.userId} value={d.userId}>
-              {d.name} ({d.email})
-            </option>
-          ))}
-        </select>
+          onChange={setDriverId}
+          placeholder="Choose a driver…"
+          className="w-64"
+          options={drivers.map((d) => ({ value: d.userId, label: `${d.name} (${d.email})` }))}
+        />
         <button
           type="button"
           onClick={assign}

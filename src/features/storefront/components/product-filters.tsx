@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Select } from "@/shared/components/select";
 
 export type FilterFacets = {
   categories: { slug: string; name: string }[];
@@ -75,53 +77,39 @@ export function ProductFilters({
       </div>
 
       <Group label="Sort">
-        <select
+        <Select
           value={params.get("sort") ?? "newest"}
-          onChange={(e) => apply({ sort: e.target.value })}
+          onChange={(v) => apply({ sort: v })}
           aria-label="Sort products"
-          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
-        >
-          {SORTS.map((s) => (
-            <option key={s.value} value={s.value}>
-              {s.label}
-            </option>
-          ))}
-        </select>
+          options={SORTS}
+        />
       </Group>
 
       {!hideCategory && facets.categories.length > 0 && (
         <Group label="Category">
-          <select
+          <Select
             value={params.get("category") ?? ""}
-            onChange={(e) => apply({ category: e.target.value || null })}
+            onChange={(v) => apply({ category: v || null })}
             aria-label="Filter by category"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <option value="">All categories</option>
-            {facets.categories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "All categories" },
+              ...facets.categories.map((c) => ({ value: c.slug, label: c.name })),
+            ]}
+          />
         </Group>
       )}
 
       {facets.brands.length > 0 && (
         <Group label="Brand">
-          <select
+          <Select
             value={params.get("brand") ?? ""}
-            onChange={(e) => apply({ brand: e.target.value || null })}
+            onChange={(v) => apply({ brand: v || null })}
             aria-label="Filter by brand"
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <option value="">All brands</option>
-            {facets.brands.map((b) => (
-              <option key={b.slug} value={b.slug}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "All brands" },
+              ...facets.brands.map((b) => ({ value: b.slug, label: b.name })),
+            ]}
+          />
         </Group>
       )}
 

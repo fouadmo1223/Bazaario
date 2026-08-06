@@ -1,43 +1,37 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { LOCALES, LOCALE_COOKIE, type Locale } from "@/i18n/locales";
+import { LOCALES, type Locale } from "@/i18n/locales";
+import { Select } from "@/shared/components/select";
 
 /**
- * Sets the locale cookie and asks the server to re-render with it — there's
- * no `[locale]` route segment for a `Link` to point at, so this is the
- * entire mechanism.
+ * Switches the URL's `[locale]` segment in place — `usePathname()` here is
+ * next-intl's locale-stripped version, so `router.replace(pathname, {locale})`
+ * lands on the same page under the new locale rather than needing a manual
+ * cookie + full refresh.
  */
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
   const t = useTranslations("Language");
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
 
   function change(next: Locale) {
     if (next === locale) return;
-    document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=${60 * 60 * 24 * 365}`;
-    startTransition(() => router.refresh());
+    startTransition(() => router.replace(pathname, { locale: next }));
   }
 
   return (
-    <label>
-      <span className="sr-only">{t("label")}</span>
-      <select
-        value={locale}
-        disabled={pending}
-        onChange={(e) => change(e.target.value as Locale)}
-        aria-label={t("label")}
-        className="rounded-lg border border-zinc-200 bg-transparent px-2 py-1.5 text-sm text-zinc-600 focus:border-indigo-500 focus:outline-none disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-400"
-      >
-        {LOCALES.map((l) => (
-          <option key={l} value={l}>
-            {t(l)}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Select
+      value={locale}
+      disabled={pending}
+      onChange={(v) => change(v as Locale)}
+      aria-label={t("label")}
+      options={LOCALES.map((l) => ({ value: l, label: t(l) }))}
+      className="w-32"
+    />
   );
 }

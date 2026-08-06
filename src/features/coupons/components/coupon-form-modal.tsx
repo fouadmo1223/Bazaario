@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
+import { Select as StyledSelect } from "@/shared/components/select";
 import { createCouponAction, updateCouponAction } from "../actions";
 import type { CouponView, Option } from "../queries";
 
@@ -371,19 +372,7 @@ function Select({
       <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
         {label}
       </label>
-      <select
-        id={id}
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+      <StyledSelect id={id} name={name} value={value} onChange={onChange} options={options} className="mt-1" />
     </div>
   );
 }
