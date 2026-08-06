@@ -5,7 +5,7 @@ import { catalogService, type CatalogSort } from "@/server/services/catalog.serv
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 
 type Search = Record<string, string | undefined>;
 
@@ -31,6 +31,7 @@ export default async function ProductsPage({
 }) {
   const { locale } = await routeParams;
   setRequestLocale(locale);
+  const t = await getTranslations("Products");
   const params = await searchParams;
 
   const [result, categories, brands, priceBounds] = await Promise.all([
@@ -49,11 +50,9 @@ export default async function ProductsPage({
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {search ? `Results for “${search}”` : "All products"}
+          {search ? t("resultsFor", { search }) : t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {result.total} {result.total === 1 ? "product" : "products"}
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: result.total })}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
@@ -72,12 +71,12 @@ export default async function ProductsPage({
         <div className="lg:col-span-3">
           {result.items.length === 0 ? (
             <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
-              <p className="text-sm text-zinc-500">No products match these filters.</p>
+              <p className="text-sm text-zinc-500">{t("empty")}</p>
               <Link
                 href="/products"
                 className="mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                Clear filters
+                {t("clearFilters")}
               </Link>
             </div>
           ) : (
@@ -98,13 +97,13 @@ export default async function ProductsPage({
               {result.totalPages > 1 && (
                 <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">
                   <PageLink params={params} page={result.page - 1} disabled={!result.hasPrev}>
-                    ← Previous
+                    {t("prev")}
                   </PageLink>
                   <span className="text-sm text-zinc-500">
-                    Page {result.page} of {result.totalPages}
+                    {t("pageOf", { page: result.page, totalPages: result.totalPages })}
                   </span>
                   <PageLink params={params} page={result.page + 1} disabled={!result.hasNext}>
-                    Next →
+                    {t("next")}
                   </PageLink>
                 </nav>
               )}

@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { catalogService } from "@/server/services/catalog.service";
 import { Reveal } from "@/shared/components/reveal";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Categories · Bazaario",
@@ -16,23 +16,21 @@ export const revalidate = 300;
 export default async function CategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Categories");
   const categories = await catalogService.categories();
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Categories
+          {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {categories.length} {categories.length === 1 ? "category" : "categories"} across the
-          marketplace
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: categories.length })}</p>
       </header>
 
       {categories.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">No categories yet.</p>
+          <p className="text-sm text-zinc-500">{t("empty")}</p>
         </div>
       ) : (
         <Reveal as="ul" stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -60,7 +58,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
                 <div className="p-3">
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{c.name}</p>
                   <p className="mt-0.5 text-xs text-zinc-500">
-                    {c.ids.length} {c.ids.length === 1 ? "store" : "stores"}
+                    {t("storeCount", { count: c.ids.length })}
                   </p>
                 </div>
               </Link>

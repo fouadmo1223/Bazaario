@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { addToCartAction } from "../actions";
 import { useLoginRedirect } from "@/shared/hooks/use-login-redirect";
@@ -18,8 +19,8 @@ export function AddToCartButton({
   productId,
   variantId,
   disabled = false,
-  label = "Add to cart",
-  soldOutLabel = "Sold out",
+  label,
+  soldOutLabel,
   className,
 }: {
   vendorId: string;
@@ -31,6 +32,7 @@ export function AddToCartButton({
   soldOutLabel?: string;
   className?: string;
 }) {
+  const t = useTranslations("ProductDetail");
   const router = useRouter();
   const redirectToLogin = useLoginRedirect();
   const [pending, startTransition] = useTransition();
@@ -70,7 +72,13 @@ export function AddToCartButton({
         aria-busy={pending}
         className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {disabled ? soldOutLabel : pending ? "Adding…" : added ? "Added ✓" : label}
+        {disabled
+          ? (soldOutLabel ?? t("soldOut"))
+          : pending
+            ? t("adding")
+            : added
+              ? t("added")
+              : (label ?? t("addToCart"))}
       </button>
 
       {error && (

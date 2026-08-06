@@ -26,8 +26,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Home");
-  const [featured, bestSellers, categories, vendors] = await Promise.all([
+  const [featured, newArrivals, onSale, bestSellers, categories, vendors] = await Promise.all([
     catalogService.featured(8),
+    catalogService.newArrivals(8),
+    catalogService.onSale(4),
     catalogService.bestSellers(4),
     catalogService.categories(),
     catalogService.vendors(6),
@@ -116,6 +118,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         products={featured}
         emptyNote={t("noFeatured")}
       />
+
+      {onSale.length > 0 && (
+        <ProductRail id="home-deals" title={t("deals")} seeAllLabel={t("seeAll")} products={onSale} />
+      )}
+
+      {newArrivals.length > 0 && (
+        <ProductRail id="home-new" title={t("newArrivals")} seeAllLabel={t("seeAll")} products={newArrivals} />
+      )}
 
       {bestSellers.length > 0 && (
         <ProductRail id="home-best" title={t("bestSellers")} seeAllLabel={t("seeAll")} products={bestSellers} />

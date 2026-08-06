@@ -27,6 +27,7 @@ export function ProductFormModal({
   categories,
   brands,
   initial,
+  standalone = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -35,6 +36,8 @@ export function ProductFormModal({
   brands: Option[];
   /** Absent for a new product. */
   initial?: ProductFormValues;
+  /** Renders the form inline on its own page instead of inside a `<Modal>` overlay. */
+  standalone?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -99,14 +102,7 @@ export function ProductFormModal({
     });
   }
 
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={editing ? "Edit product" : "New product"}
-      description={editing ? initial.title : "Add a product to your catalogue"}
-      size="lg"
-    >
+  const form = (
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <Field
           name="title"
@@ -287,6 +283,19 @@ export function ProductFormModal({
           </button>
         </div>
       </form>
+  );
+
+  if (standalone) return form;
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={editing ? "Edit product" : "New product"}
+      description={editing ? initial.title : "Add a product to your catalogue"}
+      size="lg"
+    >
+      {form}
     </Modal>
   );
 }

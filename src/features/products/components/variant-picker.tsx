@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
 import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
 import { formatMoney } from "@/shared/lib/format";
@@ -46,6 +47,7 @@ export function VariantPicker({
   /** Lets the gallery follow the chosen variant's image. */
   onImageChange?: (url: string | null) => void;
 }) {
+  const t = useTranslations("ProductDetail");
   // Preselect the first in-stock variant so the page opens on something buyable.
   const initial = useMemo(() => {
     const preferred = variants.find((v) => v.stock > 0) ?? variants[0];
@@ -118,19 +120,20 @@ export function VariantPicker({
             )}
           </>
         ) : (
-          <span className="text-sm text-zinc-500">Select options to see the price</span>
+          <span className="text-sm text-zinc-500">{t("selectOptionsToSeePrice")}</span>
         )}
       </div>
 
       <p className="mt-2 text-sm">
         {!selected ? (
-          <span className="text-zinc-500">Choose an option</span>
+          <span className="text-zinc-500">{t("chooseOption")}</span>
         ) : inStock ? (
           <span className="text-emerald-600 dark:text-emerald-400">
-            In stock{selected.stock <= 5 ? ` — only ${selected.stock} left` : ""}
+            {t("inStock")}
+            {selected.stock <= 5 ? t("onlyLeft", { count: selected.stock }) : ""}
           </span>
         ) : (
-          <span className="text-red-600 dark:text-red-400">Out of stock</span>
+          <span className="text-red-600 dark:text-red-400">{t("outOfStock")}</span>
         )}
       </p>
 
@@ -157,9 +160,9 @@ export function VariantPicker({
                     aria-pressed={active}
                     title={
                       state === "none"
-                        ? "Not available with your other choices"
+                        ? t("notAvailable")
                         : state === "oos"
-                          ? "Out of stock"
+                          ? t("outOfStock")
                           : undefined
                     }
                     className={`rounded-lg border px-3 py-1.5 text-sm transition ${
@@ -181,7 +184,7 @@ export function VariantPicker({
         ))}
       </div>
 
-      {selected?.sku && <p className="mt-4 text-xs text-zinc-500">SKU: {selected.sku}</p>}
+      {selected?.sku && <p className="mt-4 text-xs text-zinc-500">{t("sku", { sku: selected.sku })}</p>}
 
       <div className="mt-8 flex items-center gap-3">
         <AddToCartButton
@@ -192,7 +195,7 @@ export function VariantPicker({
           variantId={selected?.id}
           // No resolved variant means nothing to add — the service would refuse.
           disabled={!selected || !inStock}
-          soldOutLabel={selected ? "Sold out" : "Select options"}
+          soldOutLabel={selected ? t("soldOut") : t("selectOptions")}
         />
         <WishlistButton productId={productId} />
       </div>

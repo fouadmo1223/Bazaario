@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorProducts, getProductFormOptions } from "@/features/products/queries";
@@ -25,6 +25,7 @@ export default async function DashboardProductsPage({
   searchParams: Promise<Search>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardProducts");
   const { page, search, status } = await searchParams;
 
   // Auth resolves here, before anything streams — see the note on the dashboard
@@ -53,24 +54,24 @@ export default async function DashboardProductsPage({
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Products
+          {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {products.total} {products.total === 1 ? "product" : "products"} in {vendor.name}
+          {t("count", { count: products.total, vendor: vendor.name })}
         </p>
       </header>
 
       <div className="mb-5 flex flex-wrap items-center gap-4">
         <form action="/dashboard/products" className="flex gap-2">
           <label htmlFor="product-search" className="sr-only">
-            Search products
+            {t("searchLabel")}
           </label>
           <input
             id="product-search"
             name="search"
             type="search"
             defaultValue={search ?? ""}
-            placeholder="Search…"
+            placeholder={t("searchPlaceholder")}
             className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
           {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
@@ -78,16 +79,16 @@ export default async function DashboardProductsPage({
             type="submit"
             className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            Search
+            {t("search")}
           </button>
         </form>
 
-        <nav aria-label="Filter by status" className="flex flex-wrap gap-2">
-          <Chip label="All" href="/dashboard/products" active={!activeStatus} />
+        <nav aria-label={t("filterByStatus")} className="flex flex-wrap gap-2">
+          <Chip label={t("all")} href="/dashboard/products" active={!activeStatus} />
           {STATUSES.map((s) => (
             <Chip
               key={s}
-              label={s}
+              label={t(s)}
               href={`/dashboard/products?status=${s}`}
               active={activeStatus === s}
             />
@@ -107,13 +108,13 @@ export default async function DashboardProductsPage({
       {products.totalPages > 1 && (
         <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
           <PageLink page={products.page - 1} status={activeStatus} search={search} disabled={!products.hasPrev}>
-            ← Previous
+            {t("prev")}
           </PageLink>
           <span className="text-sm text-zinc-500">
-            Page {products.page} of {products.totalPages}
+            {t("pageOf", { page: products.page, totalPages: products.totalPages })}
           </span>
           <PageLink page={products.page + 1} status={activeStatus} search={search} disabled={!products.hasNext}>
-            Next →
+            {t("next")}
           </PageLink>
         </nav>
       )}

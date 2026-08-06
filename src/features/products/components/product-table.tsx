@@ -1,15 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/shared/components/modal";
 import { ProductFormModal } from "./product-form-modal";
 import { VariantMatrixModal } from "./variant-matrix-modal";
 import { deleteProductAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
-import type { Option, ProductRow, ProductFormValues, VariantEditorData } from "../queries";
+import type { Option, ProductRow, VariantEditorData } from "../queries";
 
 const STATUS_STYLE: Record<ProductRow["status"], string> = {
   active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
@@ -38,38 +38,14 @@ export function ProductTable({
   categories: Option[];
   brands: Option[];
 }) {
+  const t = useTranslations("DashboardProducts");
   const router = useRouter();
   const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<ProductFormValues | null>(null);
   const [variants, setVariants] = useState<VariantEditorData | null>(null);
   const [deleting, setDeleting] = useState<ProductRow | null>(null);
-  const [loadingEdit, setLoadingEdit] = useState<string | null>(null);
   const [loadingVariants, setLoadingVariants] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  /**
-   * The table row carries only what the table shows. Fetch the full record
-   * before opening the editor, rather than shipping every field for every row
-   * on the chance one gets edited.
-   */
-  async function openEdit(row: ProductRow) {
-    setError(null);
-    setLoadingEdit(row.id);
-    try {
-      const res = await fetch(`/api/dashboard/products/${row.id}`, { cache: "no-store" });
-      const body = (await res.json()) as { ok: boolean; data?: ProductFormValues; error?: { message: string } };
-      if (!body.ok || !body.data) {
-        setError(body.error?.message ?? "Could not load that product.");
-        return;
-      }
-      setEditing(body.data);
-    } catch {
-      setError("Could not load that product.");
-    } finally {
-      setLoadingEdit(null);
-    }
-  }
 
   /** Load the option definitions and variant grid, then open the matrix editor. */
   async function openVariants(row: ProductRow) {
@@ -107,15 +83,13 @@ export function ProductTable({
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">
-          {products.length} shown
-        </p>
+        <p className="text-sm text-zinc-500">{t("shown", { count: products.length })}</p>
         <button
           type="button"
           onClick={() => setAdding(true)}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
         >
-          New product
+          {t("newProduct")}
         </button>
       </div>
 
@@ -130,13 +104,13 @@ export function ProductTable({
 
       {products.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">No products yet.</p>
+          <p className="text-sm text-zinc-500">{t("noProducts")}</p>
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
-            Add your first product
+            {t("addFirst")}
           </button>
         </div>
       ) : (
@@ -144,11 +118,11 @@ export function ProductTable({
           <table className="w-full min-w-[720px] text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
               <tr>
-                <Th>Product</Th>
-                <Th>Status</Th>
-                <Th>Price</Th>
-                <Th>Stock</Th>
-                <Th className="text-right">Actions</Th>
+                <Th>{t("colProduct")}</Th>
+                <Th>{t("colStatus")}</Th>
+                <Th>{t("colPrice")}</Th>
+                <Th>{t("colStock")}</Th>
+                <Th className="text-right">{t("colActions")}</Th>
               </tr>
             </thead>
             <tbody>
@@ -170,8 +144,8 @@ export function ProductTable({
                         </p>
                         <p className="text-xs text-zinc-500">
                           {p.type === "variable"
-                            ? `${p.variantCount} variant${p.variantCount === 1 ? "" : "s"}`
-                            : (p.sku ?? "No SKU")}
+                            ? t("variantCount", { count: p.variantCount })
+                            : (p.sku ?? t("noSku"))}
                         </p>
                       </div>
                     </div>
@@ -180,12 +154,14 @@ export function ProductTable({
                     <span
                       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[p.status]}`}
                     >
-                      {p.status}
+                      {t(p.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
                     {p.type === "variable" ? (
-                      <span className="text-zinc-500">from {formatMoney(p.price, currency)}</span>
+                      <span className="text-zinc-500">
+                        {t("priceFrom", { price: formatMoney(p.price, currency) })}
+                      </span>
                     ) : (
                       formatMoney(p.price, currency)
                     )}
@@ -202,7 +178,7 @@ export function ProductTable({
                           href={`/v/${vendorSlug}/p/${p.slug}`}
                           className="text-xs text-zinc-500 hover:text-indigo-600 hover:underline"
                         >
-                          View
+                          {t("view")}
                         </Link>
                       )}
                       {p.type === "variable" && (
@@ -212,23 +188,21 @@ export function ProductTable({
                           disabled={loadingVariants === p.id}
                           className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50 dark:text-indigo-400"
                         >
-                          {loadingVariants === p.id ? "Loading…" : "Variants"}
+                          {loadingVariants === p.id ? t("loading") : t("variants")}
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => openEdit(p)}
-                        disabled={loadingEdit === p.id}
-                        className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50 dark:text-indigo-400"
+                      <Link
+                        href={`/dashboard/products/${p.id}`}
+                        className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
                       >
-                        {loadingEdit === p.id ? "Loading…" : "Edit"}
-                      </button>
+                        {t("edit")}
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setDeleting(p)}
                         className="text-xs text-zinc-500 hover:text-red-600 hover:underline"
                       >
-                        Delete
+                        {t("delete")}
                       </button>
                     </div>
                   </td>
@@ -249,17 +223,6 @@ export function ProductTable({
         />
       )}
 
-      {editing && (
-        <ProductFormModal
-          open
-          onClose={() => setEditing(null)}
-          vendorId={vendorId}
-          categories={categories}
-          brands={brands}
-          initial={editing}
-        />
-      )}
-
       {variants && (
         <VariantMatrixModal
           open
@@ -272,14 +235,11 @@ export function ProductTable({
       <Modal
         open={deleting !== null}
         onClose={() => setDeleting(null)}
-        title="Delete product"
+        title={t("deleteProduct")}
         description={deleting?.title}
         size="sm"
       >
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          This removes the product from your catalogue. Existing orders keep their own copy of the
-          item, so their history is unaffected.
-        </p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("deleteConfirm")}</p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
@@ -287,7 +247,7 @@ export function ProductTable({
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -295,7 +255,7 @@ export function ProductTable({
             disabled={pending}
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
           >
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? t("deleting") : t("delete")}
           </button>
         </div>
       </Modal>

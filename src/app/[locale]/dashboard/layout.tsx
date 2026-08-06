@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { getCurrentUser } from "@/server/security/current-user";
@@ -17,6 +18,7 @@ import { notificationService } from "@/server/services/notification.service";
  * proxy has already kept unauthenticated visitors out of `/dashboard`.
  */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations("Dashboard");
   const user = await getCurrentUser();
   const unread = user ? await notificationService.unreadCount(user.id) : 0;
 
@@ -28,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             href="/dashboard"
             className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
           >
-            Dashboard
+            {t("title")}
           </Link>
           <div className="flex items-center gap-3">
             <DashboardNav />

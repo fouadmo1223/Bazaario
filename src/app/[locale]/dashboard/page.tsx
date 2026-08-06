@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { isAppError } from "@/shared/lib/errors";
 import { analyticsService } from "@/server/services/analytics.service";
@@ -30,6 +30,7 @@ async function DashboardPanels({
   currency: string;
   productCount: number;
 }) {
+  const t = await getTranslations("DashboardOverview");
   // Reading the clock is intentional here: this is an async Server Component
   // rendered per-request (`force-dynamic`), so the window must track real time.
   // eslint-disable-next-line react-hooks/purity
@@ -48,30 +49,44 @@ async function DashboardPanels({
   return (
     <>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Revenue" value={money(kpis.revenue, currency)} hint={`${kpis.orders} orders`} />
-        <KpiCard label="Average order" value={money(kpis.averageOrderValue, currency)} />
-        <KpiCard label="Customers" value={kpis.customers} hint={`${retention.repeatRate}% repeat`} />
-        <KpiCard label="Products" value={productCount} />
+        <KpiCard
+          label={t("revenue")}
+          value={money(kpis.revenue, currency)}
+          hint={t("orders", { count: kpis.orders })}
+        />
+        <KpiCard label={t("averageOrder")} value={money(kpis.averageOrderValue, currency)} />
+        <KpiCard
+          label={t("customers")}
+          value={kpis.customers}
+          hint={t("repeat", { percent: retention.repeatRate })}
+        />
+        <KpiCard label={t("products")} value={productCount} />
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Revenue over time</h2>
+        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+          {t("revenueOverTime")}
+        </h2>
         <RevenueChart data={series} currency={currency} />
       </section>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Top products</h2>
+          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("topProducts")}
+          </h2>
           <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
             {top.length === 0 ? (
-              <p className="p-5 text-sm text-zinc-500">No sales yet.</p>
+              <p className="p-5 text-sm text-zinc-500">{t("noSales")}</p>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
                   {top.map((p) => (
                     <tr key={p.productId} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
                       <td className="px-4 py-3 text-zinc-800 dark:text-zinc-200">{p.title}</td>
-                      <td className="px-4 py-3 text-right text-zinc-500 tabular-nums">{p.units} sold</td>
+                      <td className="px-4 py-3 text-right text-zinc-500 tabular-nums">
+                        {t("unitsSold", { count: p.units })}
+                      </td>
                       <td className="px-4 py-3 text-right font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
                         {money(p.revenue, currency)}
                       </td>
@@ -84,10 +99,12 @@ async function DashboardPanels({
         </section>
 
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Low stock</h2>
+          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            {t("lowStock")}
+          </h2>
           <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
             {lowStock.length === 0 ? (
-              <p className="p-5 text-sm text-zinc-500">Everything is well stocked.</p>
+              <p className="p-5 text-sm text-zinc-500">{t("wellStocked")}</p>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
@@ -96,7 +113,7 @@ async function DashboardPanels({
                       <td className="px-4 py-3 text-zinc-800 dark:text-zinc-200">{p.title}</td>
                       <td className="px-4 py-3 text-right">
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                          {p.stock} left
+                          {t("left", { count: p.stock })}
                         </span>
                       </td>
                     </tr>
@@ -125,6 +142,7 @@ async function DashboardPanels({
  */
 export default async function DashboardPage() {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardOverview");
   let vendor;
   let role;
   try {
@@ -143,10 +161,10 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {vendor.name}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Last 30 days</p>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("last30Days")}</p>
       </header>
 
-      <Suspense fallback={<div className="py-10 text-sm text-zinc-500">Loading analytics…</div>}>
+      <Suspense fallback={<div className="py-10 text-sm text-zinc-500">{t("loadingAnalytics")}</div>}>
         <DashboardPanels
           vendorId={String(vendor._id)}
           currency={vendor.settings.currency}

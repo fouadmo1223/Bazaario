@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { catalogService, type CatalogSort } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 
 type Params = { locale: string; slug: string };
 type Search = Record<string, string | undefined>;
@@ -38,6 +38,7 @@ export default async function CategoryPage({
 }) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Categories");
   const query = await searchParams;
 
   const category = await catalogService.categoryBySlug(slug);
@@ -67,7 +68,7 @@ export default async function CategoryPage({
 
       <nav className="mb-6 text-sm text-zinc-500">
         <Link href="/categories" className="hover:text-indigo-600">
-          Categories
+          {t("title")}
         </Link>
         <span className="mx-2">/</span>
         <span className="text-zinc-700 dark:text-zinc-300">{category.name}</span>
@@ -77,9 +78,7 @@ export default async function CategoryPage({
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {category.name}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {result.total} {result.total === 1 ? "product" : "products"}
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">{t("productCount", { count: result.total })}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
@@ -99,12 +98,12 @@ export default async function CategoryPage({
         <div className="lg:col-span-3">
           {result.items.length === 0 ? (
             <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
-              <p className="text-sm text-zinc-500">Nothing in this category yet.</p>
+              <p className="text-sm text-zinc-500">{t("emptyCategory")}</p>
               <Link
                 href="/products"
                 className="mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                Browse all products
+                {t("browseAll")}
               </Link>
             </div>
           ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toggleWishlistAction } from "../actions";
 import { useStorefront } from "@/features/storefront/storefront-provider";
 import { useLoginRedirect } from "@/shared/hooks/use-login-redirect";
@@ -28,6 +29,7 @@ export function WishlistButton({
   size?: "sm" | "md";
   className?: string;
 }) {
+  const t = useTranslations("ProductDetail");
   const storefront = useStorefront();
   const redirectToLogin = useLoginRedirect();
   const [pending, startTransition] = useTransition();
@@ -73,8 +75,8 @@ export function WishlistButton({
       onClick={toggle}
       disabled={pending}
       aria-pressed={saved}
-      aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
-      title={error ?? (saved ? "Remove from wishlist" : "Save to wishlist")}
+      aria-label={saved ? t("removeFromWishlist") : t("saveToWishlist")}
+      title={error ?? (saved ? t("removeFromWishlist") : t("saveToWishlist"))}
       className={`inline-flex ${box} items-center justify-center rounded-full border transition disabled:opacity-60 ${
         saved
           ? "border-red-200 bg-red-50 text-red-600 dark:border-red-900 dark:bg-red-950/60"

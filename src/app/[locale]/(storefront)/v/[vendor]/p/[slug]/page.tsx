@@ -10,8 +10,9 @@ import {
 import type { VariantView } from "@/features/products/components/variant-picker";
 import { ReviewsSection } from "@/features/reviews/components/reviews-section";
 import { getProductReviews } from "@/features/reviews/queries";
+import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 
 type Params = { locale: string; vendor: string; slug: string };
 
@@ -49,6 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function ProductPage({ params }: { params: Promise<Params> }) {
   const { locale, vendor: vendorSlug, slug } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("ProductDetail");
 
   let data;
   try {
@@ -111,7 +113,25 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
     faqs: product.faqs.map((f) => ({ question: f.question, answer: f.answer })),
   };
 
-  const reviews = await getProductReviews(String(product._id));
+  const [reviews, moreFromStoreResult] = await Promise.all([
+    getProductReviews(String(product._id)),
+    productService.listStorefront(vendorId, { limit: 5 }),
+  ]);
+
+  const moreFromStore: ProductCardData[] = moreFromStoreResult.items
+    .filter((p) => p.id !== String(product._id))
+    .slice(0, 4)
+    .map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      price: p.price,
+      compareAtPrice: p.compareAtPrice,
+      image: p.image,
+      ratingAvg: p.ratingAvg,
+      ratingCount: p.ratingCount,
+      stock: p.stock,
+    }));
 
   // A variable product's offers are its variants, so expose the real range
   // rather than a single price a shopper may never actually be charged.
@@ -181,6 +201,19 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         vendorSlug={vendorSlug}
         currency={currency}
       />
+
+      {moreFromStore.length > 0 && (
+        <section className="mt-14 border-t border-zinc-200 pt-10 dark:border-zinc-800" aria-labelledby="more-from-store">
+          <h2 id="more-from-store" className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            {t("moreFromStore")}
+          </h2>
+          <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+            {moreFromStore.map((p) => (
+              <ProductCard key={p.id} product={p} vendorSlug={vendorSlug} currency={currency} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <ReviewsSection
         productId={detail.id}

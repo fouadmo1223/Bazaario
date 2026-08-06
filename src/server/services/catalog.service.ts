@@ -7,7 +7,7 @@ import { cached } from "@/server/cache/redis";
 import { productRepository } from "@/server/repositories/product.repository";
 import { storefrontFilterSchema, type StorefrontFilterInput } from "@/features/products/schemas";
 import { paginationSchema, buildPaginated, toSortObject, type Paginated } from "@/shared/lib/pagination";
-import type { QueryFilter } from "mongoose";
+import { Types, type QueryFilter } from "mongoose";
 import type { ProductRaw } from "@/server/database/models/product.model";
 
 /**
@@ -228,6 +228,47 @@ export const catalogService = {
       .exec();
 
     return decorate(items);
+  },
+
+  /**
+   * Newest listings, marketplace-wide — distinct from `featured`, which is
+   * gated on the `featured` flag a vendor sets explicitly. This is every
+   * active product, newest first, regardless of that flag.
+   */
+  async newArrivals(limit = 8): Promise<CatalogProduct[]> {
+    await connectToDatabase();
+    const allowed = await activeVendorIds();
+    if (allowed.length === 0) return [];
+
+    const items = await Product.find({ vendor: { $in: allowed }, status: "active" })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
+
+    return decorate(items);
+  },
+
+  /** Active products currently discounted, biggest cut first. */
+  async onSale(limit = 8): Promise<CatalogProduct[]> {
+    await connectToDatabase();
+    const allowed = await activeVendorIds();
+    if (allowed.length === 0) return [];
+
+    const items = await Product.aggregate([
+      {
+        $match: {
+          vendor: { $in: allowed.map((id) => new Types.ObjectId(id)) },
+          status: "active",
+          compareAtPrice: { $ne: null },
+          $expr: { $gt: ["$compareAtPrice", "$price"] },
+        },
+      },
+      { $addFields: { discountPct: { $divide: [{ $subtract: ["$compareAtPrice", "$price"] }, "$compareAtPrice"] } } },
+      { $sort: { discountPct: -1 } },
+      { $limit: limit },
+    ]);
+
+    return decorate(items as ProductDoc[]);
   },
 
   /**

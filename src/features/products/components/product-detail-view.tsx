@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ProductGallery, type GalleryMedia } from "./product-gallery";
 import { VariantPicker, type VariantOption, type VariantView } from "./variant-picker";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
@@ -44,6 +45,7 @@ export function ProductDetailView({
   vendorSlug: string;
   currency: string;
 }) {
+  const t = useTranslations("ProductDetail");
   const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const isVariable = product.type === "variable" && product.variants.length > 0;
@@ -60,7 +62,7 @@ export function ProductDetailView({
 
         {product.ratingCount > 0 && (
           <p className="mt-2 text-sm text-zinc-500">
-            ★ {product.ratingAvg.toFixed(1)} · {product.ratingCount} reviews
+            ★ {product.ratingAvg.toFixed(1)} · {t("reviews", { count: product.ratingCount })}
           </p>
         )}
 
@@ -90,15 +92,15 @@ export function ProductDetailView({
             <p className="mt-2 text-sm">
               {product.inStock ? (
                 <span className="text-emerald-600 dark:text-emerald-400">
-                  In stock
-                  {product.stock > 0 && product.stock <= 5 ? ` — only ${product.stock} left` : ""}
+                  {t("inStock")}
+                  {product.stock > 0 && product.stock <= 5 ? t("onlyLeft", { count: product.stock }) : ""}
                 </span>
               ) : (
-                <span className="text-red-600 dark:text-red-400">Out of stock</span>
+                <span className="text-red-600 dark:text-red-400">{t("outOfStock")}</span>
               )}
             </p>
 
-            {product.sku && <p className="mt-4 text-xs text-zinc-500">SKU: {product.sku}</p>}
+            {product.sku && <p className="mt-4 text-xs text-zinc-500">{t("sku", { sku: product.sku })}</p>}
 
             <div className="mt-8 flex items-center gap-3">
               <AddToCartButton
@@ -120,7 +122,7 @@ export function ProductDetailView({
             role="alert"
             className="mt-8 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300"
           >
-            This product has no options available right now.
+            {t("noOptions")}
           </p>
         )}
 
@@ -132,7 +134,7 @@ export function ProductDetailView({
 
         {product.description && (
           <div className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Description</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("description")}</h2>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               {product.description}
             </p>
@@ -141,7 +143,7 @@ export function ProductDetailView({
 
         {product.faqs.length > 0 && (
           <div className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">FAQs</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("faqs")}</h2>
             <dl className="mt-3 space-y-3">
               {product.faqs.map((f, i) => (
                 <div key={i}>
