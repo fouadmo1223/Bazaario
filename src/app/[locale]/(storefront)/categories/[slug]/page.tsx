@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { catalogService, type CatalogSort } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
+import { setRequestLocale } from "next-intl/server";
 
-type Params = { slug: string };
+type Params = { locale: string; slug: string };
 type Search = Record<string, string | undefined>;
 
 export const revalidate = 60;
@@ -35,7 +36,8 @@ export default async function CategoryPage({
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
   const query = await searchParams;
 
   const category = await catalogService.categoryBySlug(slug);

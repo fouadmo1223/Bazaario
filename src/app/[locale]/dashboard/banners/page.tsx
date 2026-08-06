@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorBanners } from "@/features/cms/queries";
@@ -15,13 +16,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardBannersPage() {
+  const locale = await getLocale();
   let vendor;
   try {
     ({ vendor } = await resolveActiveVendor());
     await requireVendorPermission(String(vendor._id), PERMISSIONS.CMS_WRITE);
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard/banners")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard/banners")}`, locale });
     }
     throw err;
   }

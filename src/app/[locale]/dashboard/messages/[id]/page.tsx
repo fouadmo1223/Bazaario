@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { requireUser } from "@/server/security/current-user";
 import { getThread } from "@/features/messages/queries";
 import { ThreadView } from "@/features/messages/components/thread-view";
@@ -22,10 +23,11 @@ export const dynamic = "force-dynamic";
  * definitions and eventually two answers.
  */
 export default async function DashboardThreadPage({ params }: { params: Promise<{ id: string }> }) {
+  const locale = await getLocale();
   const { id } = await params;
 
   const user = await requireUser().catch(() => null);
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/dashboard/messages/${id}`)}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/dashboard/messages/${id}`)}`, locale });
 
   let thread;
   try {

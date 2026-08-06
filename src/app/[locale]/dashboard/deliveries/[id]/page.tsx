@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DriverDeliveryPage({ params }: { params: Promise<Params> }) {
+  const locale = await getLocale();
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
@@ -33,7 +35,7 @@ export default async function DriverDeliveryPage({ params }: { params: Promise<P
     ({ user } = await requireVendorPermission(String(vendor._id), PERMISSIONS.DELIVERY_UPDATE));
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent(`/dashboard/deliveries/${id}`)}`);
+      redirect({ href: `/login?next=${encodeURIComponent(`/dashboard/deliveries/${id}`)}`, locale });
     }
     throw err;
   }

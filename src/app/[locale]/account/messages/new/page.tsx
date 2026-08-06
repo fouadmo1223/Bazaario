@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
 
@@ -19,8 +20,9 @@ export const dynamic = "force-dynamic";
  * around whoever is actually on duty.
  */
 export default async function NewSupportThreadPage() {
+  const locale = await getLocale();
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/account/messages/new")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/messages/new")}`, locale });
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">

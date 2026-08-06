@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { getCurrentUser } from "@/server/security/current-user";
 import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
@@ -30,6 +32,7 @@ export default async function ContactStorePage({
 }: {
   params: Promise<{ vendor: string }>;
 }) {
+  const locale = await getLocale();
   const { vendor: slug } = await params;
 
   let vendor;
@@ -42,7 +45,7 @@ export default async function ContactStorePage({
   if (vendor.status !== "active") notFound();
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/v/${slug}/contact`)}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/v/${slug}/contact`)}`, locale });
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">

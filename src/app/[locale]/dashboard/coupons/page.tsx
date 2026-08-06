@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorCoupons, getCouponFormOptions } from "@/features/coupons/queries";
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardCouponsPage() {
+  const locale = await getLocale();
   // Auth resolves here, before anything streams — a redirect thrown after a
   // Suspense shell flushes cannot set a status line, stranding the visitor.
   let vendor;
@@ -23,7 +25,7 @@ export default async function DashboardCouponsPage() {
     await requireVendorPermission(String(vendor._id), PERMISSIONS.COUPON_WRITE);
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard/coupons")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard/coupons")}`, locale });
     }
     throw err;
   }

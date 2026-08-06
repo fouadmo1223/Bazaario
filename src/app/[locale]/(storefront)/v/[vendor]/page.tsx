@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import { getActiveBanner } from "@/features/cms/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
+import { setRequestLocale } from "next-intl/server";
 
-type Params = { vendor: string };
+type Params = { locale: string; vendor: string };
 type Search = { page?: string; search?: string; sort?: string };
 
 // Storefront listings are ISR-cached; mutations revalidate via Redis + tags.
@@ -41,7 +42,8 @@ export default async function VendorPage({
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  const { vendor: slug } = await params;
+  const { locale, vendor: slug } = await params;
+  setRequestLocale(locale);
   const { page = "1", search } = await searchParams;
 
   let vendor;

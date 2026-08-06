@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useSocket } from "@/shared/hooks/use-socket";
 import { useStorefront } from "@/features/storefront/storefront-provider";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "../actions";

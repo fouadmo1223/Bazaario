@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorOrders } from "@/features/orders/queries";
@@ -30,6 +31,7 @@ export default async function DashboardOrdersPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const { page, status } = await searchParams;
 
   let vendor;
@@ -39,7 +41,7 @@ export default async function DashboardOrdersPage({
     await requireVendorPermission(String(vendor._id), PERMISSIONS.ORDER_READ_VENDOR);
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard/orders")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard/orders")}`, locale });
     }
     throw err;
   }

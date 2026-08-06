@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link, redirect } from "@/i18n/navigation";
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardOrderPage({ params }: { params: Promise<Params> }) {
+  const locale = await getLocale();
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
@@ -40,7 +42,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
     await requireVendorPermission(String(vendor._id), PERMISSIONS.ORDER_READ_VENDOR);
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent(`/dashboard/orders/${id}`)}`);
+      redirect({ href: `/login?next=${encodeURIComponent(`/dashboard/orders/${id}`)}`, locale });
     }
     throw err;
   }

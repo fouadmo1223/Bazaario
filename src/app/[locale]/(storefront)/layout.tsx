@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { StorefrontHeader } from "@/features/storefront/components/storefront-header";
 import { StorefrontProvider } from "@/features/storefront/storefront-provider";
 
@@ -14,7 +14,15 @@ import { StorefrontProvider } from "@/features/storefront/storefront-provider";
  * The header reads `useSearchParams`, which needs a Suspense boundary or it opts
  * every page below into client-side rendering.
  */
-export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
+export default async function StorefrontLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations("Footer");
 
   return (

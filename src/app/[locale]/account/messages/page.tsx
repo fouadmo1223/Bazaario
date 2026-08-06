@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { listInbox } from "@/features/messages/queries";
 import { ConversationList } from "@/features/messages/components/conversation-list";
@@ -20,8 +21,9 @@ export default async function AccountMessagesPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/account/messages")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/messages")}`, locale });
 
   const { page } = await searchParams;
   const inbox = await listInbox(user, { page });

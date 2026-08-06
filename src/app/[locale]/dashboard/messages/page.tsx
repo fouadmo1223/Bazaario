@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission, requireUser } from "@/server/security/current-user";
 import { listInbox } from "@/features/messages/queries";
@@ -33,10 +34,11 @@ export default async function DashboardMessagesPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const { page, status, scope } = await searchParams;
 
   const user = await requireUser().catch(() => null);
-  if (!user) redirect(`/login?next=${encodeURIComponent("/dashboard/messages")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/dashboard/messages")}`, locale });
 
   const isSuperAdmin = user.roles.includes(ROLES.SUPER_ADMIN);
   const platformScope = isSuperAdmin && scope === "platform";
@@ -59,7 +61,7 @@ export default async function DashboardMessagesPage({
       vendorName = vendor.name;
     } catch (err) {
       if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-        redirect(`/login?next=${encodeURIComponent("/dashboard/messages")}`);
+        redirect({ href: `/login?next=${encodeURIComponent("/dashboard/messages")}`, locale });
       }
       throw err;
     }

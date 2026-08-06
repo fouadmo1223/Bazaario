@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { createBannerAction, updateBannerAction, deleteBannerAction } from "../actions";
 import type { BannerView } from "../queries";
 

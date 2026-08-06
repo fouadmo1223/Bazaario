@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { updateOrderStatusAction } from "../actions";
 import { orderStatusLabel } from "./order-status-badge";
 import type { OrderStatus } from "@/server/database/models/order.model";

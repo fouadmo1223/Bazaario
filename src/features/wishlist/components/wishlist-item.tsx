@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { moveToCartAction, removeFromWishlistAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
 import type { WishlistItemView } from "../queries";

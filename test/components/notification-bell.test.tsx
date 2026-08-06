@@ -34,7 +34,7 @@ const { fakeSocket, pushMock, refreshMock, markReadMock, markAllReadMock } = vi.
   };
 });
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }));
 

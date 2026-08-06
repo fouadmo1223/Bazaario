@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getCustomerOrder } from "@/features/orders/queries";
@@ -19,11 +20,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function OrderInvoicePage({ params }: { params: Promise<Params> }) {
+  const locale = await getLocale();
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/account/orders/${id}/invoice`)}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/account/orders/${id}/invoice`)}`, locale });
 
   // getCustomerOrder filters on `customer`, so another user's order is a 404
   // rather than a 403 — existence isn't disclosed.

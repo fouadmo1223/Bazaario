@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listDriverOrders } from "@/features/orders/queries";
@@ -24,6 +25,7 @@ export default async function DriverDeliveriesPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const { page } = await searchParams;
 
   let vendor;
@@ -33,7 +35,7 @@ export default async function DriverDeliveriesPage({
     ({ user } = await requireVendorPermission(String(vendor._id), PERMISSIONS.DELIVERY_UPDATE));
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard/deliveries")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard/deliveries")}`, locale });
     }
     throw err;
   }

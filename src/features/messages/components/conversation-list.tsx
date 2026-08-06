@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { ConversationRow } from "../queries";
 
 const STATUS_STYLES: Record<string, string> = {

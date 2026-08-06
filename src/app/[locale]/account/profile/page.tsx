@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getProfile, getAddresses } from "@/features/profile/queries";
 import { ProfileForm } from "@/features/profile/components/profile-form";
@@ -15,8 +16,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
+  const locale = await getLocale();
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/account/profile")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/profile")}`, locale });
 
   const [profile, addresses] = await Promise.all([getProfile(user.id), getAddresses(user.id)]);
 

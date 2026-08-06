@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { loginAction } from "../actions";
 import { Field, SubmitButton, ResultBanner, fieldError } from "./form-controls";
 import { safeRedirectPath } from "@/shared/lib/safe-redirect";

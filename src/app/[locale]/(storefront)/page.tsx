@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
@@ -22,7 +22,9 @@ export const metadata: Metadata = {
 // background rather than rebuilt per request.
 export const revalidate = 60;
 
-export default async function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations("Home");
   const [featured, bestSellers, categories, vendors] = await Promise.all([
     catalogService.featured(8),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { resetPasswordAction } from "../actions";
 import { Field, SubmitButton, ResultBanner, fieldError } from "./form-controls";
 import type { ApiResult } from "@/shared/lib/api-response";

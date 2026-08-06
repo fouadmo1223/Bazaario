@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { applyCouponAction, removeCouponAction } from "../actions";
 
 /** Apply or clear a coupon. The discount itself is always computed server-side. */

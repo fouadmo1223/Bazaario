@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 import { Modal } from "@/shared/components/modal";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";

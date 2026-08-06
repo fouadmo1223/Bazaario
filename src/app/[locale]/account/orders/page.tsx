@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { listCustomerOrders } from "@/features/orders/queries";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
@@ -21,9 +22,10 @@ export default async function AccountOrdersPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const user = await getCurrentUser();
   // Send them back here after signing in rather than dropping them on the home page.
-  if (!user) redirect(`/login?next=${encodeURIComponent("/account/orders")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/orders")}`, locale });
 
   const { page } = await searchParams;
   const orders = await listCustomerOrders(user.id, { page });

@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { ProductFormModal } from "./product-form-modal";
 import { VariantMatrixModal } from "./variant-matrix-modal";

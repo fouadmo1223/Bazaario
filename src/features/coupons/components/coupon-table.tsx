@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { CouponFormModal } from "./coupon-form-modal";
 import { deleteCouponAction } from "../actions";

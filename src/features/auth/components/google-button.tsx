@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 /** Kicks off the OAuth flow by navigating to the /auth/google route handler. */
 export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {

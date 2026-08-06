@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
 import { Geist, Geist_Mono } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { ServiceWorkerRegister } from "@/shared/components/service-worker-register";
 import { dirOf, type Locale } from "@/i18n/locales";
-import "./globals.css";
+import { routing } from "@/i18n/routing";
+import "../globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,13 +27,22 @@ export const viewport: Viewport = {
   themeColor: "#4f46e5",
 };
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
-  const locale = (await getLocale()) as Locale;
-  const messages = await getMessages();
+  const { locale: requested } = await params;
+  if (!hasLocale(routing.locales, requested)) notFound();
+  const locale = requested as Locale;
+  setRequestLocale(locale);
+  const messages = await getMessages({ locale });
 
   return (
     <html

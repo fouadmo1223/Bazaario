@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { getCartView } from "@/features/cart/queries";
 import { getCurrentUser } from "@/server/security/current-user";
@@ -67,6 +68,7 @@ function availablePayments(vendor: VendorDoc, walletBalance: number, currency: s
 }
 
 export default async function CheckoutPage({ params }: { params: Promise<Params> }) {
+  const locale = await getLocale();
   const { vendor: vendorSlug } = await params;
 
   let vendor;
@@ -79,7 +81,7 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
 
   const cart = await getCartView(vendor);
   // Nothing to check out — send them back rather than showing an empty form.
-  if (cart.items.length === 0) redirect(`/v/${vendorSlug}/cart`);
+  if (cart.items.length === 0) redirect({ href: `/v/${vendorSlug}/cart`, locale });
 
   const user = await getCurrentUser();
   const walletBalance = user ? await walletService.getBalance(user.id) : 0;

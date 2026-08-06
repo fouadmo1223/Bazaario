@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { catalogService } from "@/server/services/catalog.service";
 import { Reveal } from "@/shared/components/reveal";
+import { setRequestLocale } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Categories · Bazaario",
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const categories = await catalogService.categories();
 
   return (

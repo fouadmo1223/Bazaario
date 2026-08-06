@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getCustomerOrder } from "@/features/orders/queries";
 import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
@@ -21,9 +22,10 @@ export const dynamic = "force-dynamic";
  * order id and start a thread carrying a vendor and order they have no claim to.
  */
 export default async function ContactVendorPage({ params }: { params: Promise<{ id: string }> }) {
+  const locale = await getLocale();
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/account/orders/${id}/contact`)}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/account/orders/${id}/contact`)}`, locale });
 
   let order;
   try {

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { getCurrentUser } from "@/server/security/current-user";

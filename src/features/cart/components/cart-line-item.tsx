@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { updateCartItemAction, removeCartItemAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
 import type { CartLineView } from "../queries";

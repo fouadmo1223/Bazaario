@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getWalletView } from "@/features/wallet/queries";
 import { TopUpForm } from "@/features/wallet/components/top-up-form";
@@ -20,9 +21,10 @@ type Search = { status?: string };
  * when there's no order/cart currency to hand it).
  */
 export default async function WalletPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const locale = await getLocale();
   const { status } = await searchParams;
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/account/wallet")}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/wallet")}`, locale });
 
   const { balance, history } = await getWalletView(user.id);
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import {
@@ -11,8 +11,9 @@ import type { VariantView } from "@/features/products/components/variant-picker"
 import { ReviewsSection } from "@/features/reviews/components/reviews-section";
 import { getProductReviews } from "@/features/reviews/queries";
 import { isAppError } from "@/shared/lib/errors";
+import { setRequestLocale } from "next-intl/server";
 
-type Params = { vendor: string; slug: string };
+type Params = { locale: string; vendor: string; slug: string };
 
 export const revalidate = 60;
 
@@ -46,7 +47,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ProductPage({ params }: { params: Promise<Params> }) {
-  const { vendor: vendorSlug, slug } = await params;
+  const { locale, vendor: vendorSlug, slug } = await params;
+  setRequestLocale(locale);
 
   let data;
   try {

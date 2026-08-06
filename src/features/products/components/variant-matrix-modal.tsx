@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { syncVariantsAction } from "../actions";
 import type { VariantEditorData, VariantEditorRow } from "../queries";

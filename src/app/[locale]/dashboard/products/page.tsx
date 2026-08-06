@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorProducts, getProductFormOptions } from "@/features/products/queries";
@@ -24,6 +24,7 @@ export default async function DashboardProductsPage({
 }: {
   searchParams: Promise<Search>;
 }) {
+  const locale = await getLocale();
   const { page, search, status } = await searchParams;
 
   // Auth resolves here, before anything streams — see the note on the dashboard
@@ -35,7 +36,7 @@ export default async function DashboardProductsPage({
     await requireVendorPermission(String(vendor._id), PERMISSIONS.PRODUCT_WRITE);
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard/products")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard/products")}`, locale });
     }
     throw err;
   }

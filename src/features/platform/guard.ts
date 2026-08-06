@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser, type CurrentUser } from "@/server/security/current-user";
 import { ROLES } from "@/shared/constants/rbac";
 
@@ -15,8 +16,9 @@ import { ROLES } from "@/shared/constants/rbac";
  * its layout had run would be one refactor away from being reachable alone.
  */
 export async function requireSuperAdminPage(next = "/platform/vendors"): Promise<CurrentUser> {
+  const locale = await getLocale();
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
-  if (!user.roles.includes(ROLES.SUPER_ADMIN)) redirect("/");
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(next)}`, locale });
+  if (!user.roles.includes(ROLES.SUPER_ADMIN)) redirect({ href: "/", locale });
   return user;
 }

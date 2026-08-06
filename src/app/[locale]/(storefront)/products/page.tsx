@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Suspense } from "react";
 import { catalogService, type CatalogSort } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
+import { setRequestLocale } from "next-intl/server";
 
 type Search = Record<string, string | undefined>;
 
@@ -21,7 +22,15 @@ const SORTS = new Set<CatalogSort>(["newest", "price_asc", "price_desc", "rating
 const parseSort = (v: string | undefined): CatalogSort =>
   v && SORTS.has(v as CatalogSort) ? (v as CatalogSort) : "newest";
 
-export default async function ProductsPage({ searchParams }: { searchParams: Promise<Search> }) {
+export default async function ProductsPage({
+  params: routeParams,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Search>;
+}) {
+  const { locale } = await routeParams;
+  setRequestLocale(locale);
   const params = await searchParams;
 
   const [result, categories, brands, priceBounds] = await Promise.all([

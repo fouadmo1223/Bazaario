@@ -1,15 +1,16 @@
 import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from "./locales";
+import { hasLocale } from "next-intl";
+import { routing } from "./routing";
 
 /**
- * No `[locale]` route segment, no middleware — URLs stay exactly as they are
- * for every locale. The locale is just a cookie, read here per request; the
- * request's own routing is completely untouched by internationalization.
+ * Locale comes from the `[locale]` route segment now (via `requestLocale`,
+ * populated by the proxy's locale-detection redirect), not a cookie — that's
+ * what lets static pages render per-locale at build time instead of forcing
+ * every request dynamic.
  */
-export default getRequestConfig(async () => {
-  const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
-  const locale = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
+export default getRequestConfig(async ({ requestLocale }) => {
+  const requested = await requestLocale;
+  const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
 
   return {
     locale,

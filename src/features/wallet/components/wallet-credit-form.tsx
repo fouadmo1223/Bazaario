@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { creditWalletAction } from "../actions";
 
 /** Vendor staff issuing store credit to the customer on this order. */

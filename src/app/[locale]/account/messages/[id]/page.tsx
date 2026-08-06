@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getThread } from "@/features/messages/queries";
 import { ThreadView } from "@/features/messages/components/thread-view";
@@ -14,9 +15,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AccountThreadPage({ params }: { params: Promise<{ id: string }> }) {
+  const locale = await getLocale();
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/account/messages/${id}`)}`);
+  if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/account/messages/${id}`)}`, locale });
 
   let thread;
   try {

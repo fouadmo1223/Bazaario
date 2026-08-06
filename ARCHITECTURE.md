@@ -285,13 +285,13 @@ create path (`getOrCreateGuestToken`, actions only).
 7. ✅ **Orders & Delivery** — lifecycle + refunds wired end-to-end: customer history (`/account/orders`) with reorder/invoice/returns, vendor dashboard (`/dashboard/orders`) with status-machine-driven transitions, refunds, and driver assignment, driver-facing `/dashboard/deliveries` with live location sharing and a customer-facing Leaflet tracking map while an order is `out_for_delivery` (see §6.5).
 8. ✅ **Realtime & Notifications** — Socket.IO server with database-checked room authorization; chat (Conversation/Message) wired end-to-end across shopper, vendor, and admin inboxes; notification bell UI; email fallback for a recipient with no active socket, gated per-notification by `channels` (only chat replies opt in today).
 9. ✅ **Storefront UI** — marketplace home, `/products` with URL-driven filters (category, brand, price, rating, stock, sort), category browse, wishlist (model + service + actions + UI, guest-capable and merged on login), per-store cart overview, quick-view modal, reviews, chat/support, and a per-vendor announcement banner (`/dashboard/banners` → `Banner` model, shown at the top of `/v/[vendor]`). *(Full CMS pages/blog/menu — the aspirational `CmsPage/Blog/Menu` sketch below — still unbuilt; the banner is the one slice of it a marketplace storefront needs on day one.)*
-10. ✅ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; PWA landed (installable — `app/manifest.ts`, generated icons via `next/og`, a minimal `public/sw.js` that only makes navigation resilient to a dropped connection, no offline app functionality since cart/order data is too live/personal to cache safely). i18n/RTL landed for the storefront shell (see §6.6) — a scoped slice (header, footer, home page), not every page in the app.
+10. ✅ **Dashboards & Analytics** — vendor dashboard + Recharts exist; product management UI (`/dashboard/products`: list, create, edit, delete) landed; SEO done for storefront; PWA landed (installable — `app/manifest.ts`, generated icons via `next/og`, a minimal `public/sw.js` that only makes navigation resilient to a dropped connection, no offline app functionality since cart/order data is too live/personal to cache safely). i18n/RTL landed for the storefront shell on a proper `[locale]` URL segment (see §6.6) — a scoped slice (header, footer, home page), not every page in the app, but the routing/ISR foundation is correct for extending it.
 11. ⏳ **Hardening** — rate limiting + audit logs + sanitize in place; vitest suite (§9) and GitHub Actions CI running typecheck, lint, tests, and build. *(Coverage is still narrow — see §9.1.)*
 
 ### 6.1 Known gaps
 - **Test coverage is narrow.** A suite exists (§9) and covers the two invariants most likely to be broken silently — conversation access control and the oversell guard — but auth, payments, refunds, cart merging, and the order status machine are still unprotected.
 - Customers can now reorder ("Buy again" on `/account/orders/[id]` re-adds a past order's lines to the cart, best-effort per line via `orderService.reorder` — a discontinued or sold-out item is reported, not blocking the rest), download an invoice (`/account/orders/[id]/invoice`, a print-styled page — "Save as PDF" in the browser print dialog covers the PDF case without a rendering dependency), and request a return (reviewed by the vendor at `/dashboard/orders/[id]`, approving doesn't itself refund — see §6 step 7). Drivers now have a UI: `/dashboard/deliveries` lists a driver's own assigned orders (`orderService.listForDriver`, which existed unused before this), `/dashboard/deliveries/[id]` shows the delivery address and a two-step status control (shipped → out for delivery → delivered) scoped to `driverUpdateStatusAction`'s existing ownership check; `/dashboard/orders/[id]` gained a driver-assignment dropdown that was previously wired to nothing (`assignDriverAction` existed with no UI calling it).
-- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations; Leaflet + react-leaflet landed for live delivery tracking, §6.5).
+- Stack items from the brief not yet installed: shadcn/ui, TanStack Query, React Hook Form, Zustand, Lenis, Cloudinary/Sharp, next-intl, next-themes. Current UI is hand-rolled Tailwind v4 (GSAP is installed and drives the storefront reveal animations; Leaflet + react-leaflet landed for live delivery tracking, §6.5). With no component library installed, dropdowns are a hand-rolled `Select` (`src/shared/components/select.tsx`) — a real `<button>` trigger plus a `role="listbox"`/`role="option"` popup, replacing every native `<select>` in the app (native option lists can't be styled consistently across browsers/OSes). It supports both controlled (`value`/`onChange`) and plain-form (`name`, submitted via a hidden input so it still works inside a `<form action={...}>` built on `useActionState`, e.g. `CreateVendorUserForm`) usage, and implements the standard listbox keyboard pattern (Arrow keys, Home/End, Enter/Space, Escape, Tab-to-close) rather than only being mouse-operable.
 - The vendor product editor (`/dashboard/products`) covers create, edit, and delete for simple and variable products, plus a **variant matrix editor**: a "Variants" action on a variable product opens a grid of every option combination (the cartesian product of the option values) where each cell can be switched on and given its own SKU, price, compare-at, stock, and active flag. Options and variants save together through `syncVariantsAction`, which also recomputes the denormalized `priceRange`/`from` price from the **active** variants only. A combination left off is simply not stocked — the storefront picker already disables the gaps — so a sparse matrix (a shoe in five sizes and three colours but only ten real SKUs) is expressed by leaving cells off rather than filling them all.
 - `catalog.service` resolves active vendors to an id list and matches with `$in`. Fine at this size; becomes a problem at thousands of vendors, where it should be an aggregation `$lookup`.
 - **Wallet payment provider — built.** Platform-wide store credit (one balance per customer, spendable at any vendor), funded by vendor/admin-issued credit (`PERMISSIONS.ORDER_REFUND` — the same trust tier as an actual refund, from `/dashboard/orders/[id]`'s "Store credit" section) **and** by customer self-serve card top-up. `Wallet` (fast-read balance) + `WalletTxn` (append-only ledger) in `wallet.model.ts`; `wallet.service.ts`'s `debit` is an atomic conditional update (`balance: {$gte: amount}`, mirroring `checkout.service`'s stock-reservation guard) so concurrent debits can't overdraw it. The actual charge happens **inside `checkout.service.createOrder`**, atomically alongside inventory reservation — not in `WalletProvider.initiate()` (which runs *after* the order already exists, too late to participate in the same rollback). A wallet order is captured immediately (`payment.status`/`order.status: "paid"` at creation), unlike COD (captured on delivery) or Stripe/Paymob (captured via webhook). `/account/wallet` shows balance + history, plus an "Add funds" form (`TopUpForm`) that calls `initiateTopUpAction` → `walletService.initiateTopUp`, which creates a Stripe Checkout Session tagged `metadata.kind: "wallet_topup"` (no `Order` involved). The shared Stripe webhook (`/api/webhooks/stripe`) reads that metadata to branch between `walletService.applyTopUpWebhook` (credits the wallet, idempotent via the same Redis `SET NX` pattern used for order webhooks) and the existing order-payment path — one Stripe account, two independently-idempotent money-in flows on the same endpoint.
@@ -353,43 +353,84 @@ CDN copy rather than being vendored into `public/`).
   in real time, twice, confirming continuous updates work, not just the
   first one.
 
-### 6.6 i18n / RTL — scoped, and a real trade-off taken knowingly
-`next-intl`, configured **without a `[locale]` URL segment**: no
-`app/[locale]/` restructuring, no middleware, every route keeps the exact
-path it already had. The locale is just a cookie (`src/i18n/request.ts`
-reads it, defaults to `en`), and `<html lang dir>` is set from it in the
-root layout. `LanguageSwitcher` sets the cookie and calls `router.refresh()`
-— there's no locale-prefixed `Link` to point at.
+### 6.6 i18n / RTL — proper `[locale]` URL segment, ISR restored
+`next-intl`, now on a real `app/[locale]/` segment (`/en/...`, `/ar/...`,
+`localePrefix: "always"` so the default locale isn't left bare) — the fix
+for the ISR regression an earlier, deliberately scoped cookie-only version of
+this feature accepted and documented right here. That version is gone; this
+section describes the current, corrected setup.
 
-**The cost of that simplicity, taken deliberately, not by accident:** reading
-a cookie in the root layout (which wraps every route) forces the **entire
-app dynamic** — every page that was previously ISR-cached (`/`, `/categories`,
-`/login`, …) is now server-rendered per request. This directly conflicts with
-this codebase's repeated, explicit ISR-caching principle elsewhere in this
-doc. The alternatives were: (a) client-only locale switching, which keeps
-ISR but means non-English content is never in the server-rendered HTML
-(worse for SEO, a flash of English on load) or (b) the full `[locale]`
-segment migration, which preserves per-locale static generation properly but
-touches essentially every route file and every internal `<Link>` in the app.
-Asked the user to pick; got no response, so went with the option already
-built and explicitly flagged as the trade-off being made — **not** silently
-absorbed. If ISR on the storefront becomes a measured problem, (b) is the
-correct fix, not a patch on top of this.
+- `src/i18n/routing.ts` — `defineRouting({ locales, defaultLocale,
+  localePrefix: "always", localeCookie: { name: "locale" } })`, keeping the
+  pre-migration cookie name so an existing visitor's saved preference still
+  applies after the rollout.
+- `src/i18n/navigation.ts` — `createNavigation(routing)`'s `Link`,
+  `useRouter`, `usePathname` (all locale-aware: `usePathname()` returns the
+  locale-*stripped* path, `Link`/`router.push` auto-prefix the current
+  locale). Every internal `next/link`/`next/navigation` import in the app was
+  swapped for these — `notFound` and `useSearchParams` are the two exceptions
+  next-intl doesn't wrap, so those still come from `next/navigation` directly.
+  Exports a `redirect` wrapper with an explicit `: never` return annotation:
+  next-intl's own `redirect` type is `never` by declaration but doesn't
+  reliably narrow at `if (!x) redirect(...)` call sites (confirmed via an
+  isolated repro), so every one of the ~20 auth-redirect call sites across
+  `page.tsx` files was left treating `x` as possibly null afterward until this
+  wrapper fixed it in one place.
+- `src/i18n/request.ts` — locale now comes from the resolved route segment
+  (`requestLocale`, populated by the proxy), not a cookie. This is the actual
+  mechanism that restores static generation: a cookie is per-request and
+  uncacheable, a path segment is not.
+- **`src/proxy.ts`** composes next-intl's `createMiddleware(routing)` with
+  this app's pre-existing auth-refresh/protected-route logic in one function
+  — Next.js only supports one proxy per project. next-intl's middleware
+  resolves/redirects the locale prefix first; the auth checks then run
+  against the locale-stripped pathname and re-attach whatever locale was
+  resolved to any redirect they build (so `/ar/dashboard` unauthenticated
+  bounces to `/ar/login`, not `/en/login`). A fixed prefix list
+  (`/auth/google`, `/icons`, `/apple-icon`, `/icon`, `/favicon.ico`,
+  `/manifest.webmanifest`, `/sw.js`) is exempted from locale prefixing
+  entirely — OAuth callback URLs and PWA icon/manifest routes are referenced
+  by fixed, unprefixed URLs and must never move.
+- **Static generation needed one more piece beyond the `[locale]` segment
+  itself**: `generateStaticParams` on the root `[locale]` layout is necessary
+  but not sufficient — next-intl's `requestLocale` still falls back to a
+  dynamic per-request signal unless each statically-rendered page (and every
+  ancestor layout) calls `setRequestLocale(locale)` before any translation
+  call. Without it, every route still showed `ƒ` (dynamic) in the build
+  output despite the segment migration. Added to the two root layouts and
+  the six storefront leaf pages that carry `revalidate` (home, categories
+  list/detail, products, vendor storefront, product detail) — confirmed by
+  build output: home and the categories list now show `●` (prerendered per
+  locale, `/en` and `/ar` both listed). The catalog pages with their own
+  dynamic segment (`[slug]`, `[vendor]`) still show `ƒ` in the listing since
+  they were never build-time prerendered even before any of this (no
+  `generateStaticParams` for seeded product/vendor slugs) — they still get
+  on-demand ISR via `revalidate` at runtime, same as always; that's not a
+  regression, just how the build-output table represents "cacheable but not
+  pre-built."
+- Every page under `dashboard`/`account`/`platform`/`checkout` stays
+  `force-dynamic` as before — that was never about locale, it's inherent to
+  reading the session cookie.
 
-**Scope, deliberately bounded**: only the storefront shell is translated —
-header (nav, search, wishlist/cart/account labels), footer, and the home
-page (hero, section headings). Product/category/vendor names are data, not
-UI strings, and are not translated. Every other route (dashboard, account,
-auth, checkout, …) renders in whatever the cookie says but has no Arabic
-message keys yet — `useTranslations`/`getTranslations` calls elsewhere would
-need their own namespaces added to `src/i18n/messages/{en,ar}.json` first.
+**Scope is still bounded** to the storefront shell (header, footer, home
+page) — the same intentional limit as before. Every other route renders in
+whatever locale its URL segment says but has no Arabic message keys yet;
+`useTranslations`/`getTranslations` calls elsewhere need their own
+namespaces added to `src/i18n/messages/{en,ar}.json` first. Extending
+translation coverage is a separate, additive piece of work from the routing
+fix this section describes.
 
 RTL is proven, not just declared: `dir="rtl"` flows from `<html>` through
 Tailwind's automatic `rtl:`/logical-property support; the notification-badge
 position in the header uses `-end-0.5` (logical) instead of `-right-0.5`
 (physical) as the one concrete example of a component that actually flips
 correctly, rather than just rendering right-to-left text in a still-LTR
-layout.
+layout. Verified live at `/ar` (and via clean `curl` requests with no
+cookies, to rule out any client-side state) that `<html lang="ar" dir="rtl">`
+renders, translated header/hero text is present, every internal link on the
+page carries the `/ar/` prefix, and `/ar/account/profile` unauthenticated
+redirects to `/ar/login?next=%2Far%2Faccount%2Fprofile` — the locale survives
+the round trip through the login redirect.
 
 ---
 

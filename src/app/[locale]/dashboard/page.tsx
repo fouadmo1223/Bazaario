@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { isAppError } from "@/shared/lib/errors";
 import { analyticsService } from "@/server/services/analytics.service";
@@ -115,7 +116,7 @@ async function DashboardPanels({
  *
  * It cannot move inside the Suspense boundary below. Next flushes the shell —
  * including the fallback — as soon as it hits `<Suspense>`, and the response is
- * committed with a 200 at that moment. A `redirect()` thrown after that has no
+ * committed with a 200 at that moment. A `redirect(...)` thrown after that has no
  * status line or `Location` header left to set, so the visitor is stranded on
  * "Loading dashboard…" forever instead of being sent to sign in.
  *
@@ -123,13 +124,14 @@ async function DashboardPanels({
  * and those are what the boundary is actually for.
  */
 export default async function DashboardPage() {
+  const locale = await getLocale();
   let vendor;
   let role;
   try {
     ({ vendor, role } = await resolveActiveVendor());
   } catch (err) {
     if (isAppError(err) && (err.code === "UNAUTHORIZED" || err.code === "FORBIDDEN")) {
-      redirect(`/login?next=${encodeURIComponent("/dashboard")}`);
+      redirect({ href: `/login?next=${encodeURIComponent("/dashboard")}`, locale });
     }
     throw err;
   }
