@@ -12,9 +12,14 @@
   },
   "Footer": {
     "copyright": "© {year} Bazaario",
+    "tagline": "كل متجر مستقل، في سلة واحدة — تصفح، احفظ، وأتمم الدفع بأمان مع أي بائع.",
+    "shop": "التسوق",
+    "account": "الحساب",
     "products": "المنتجات",
     "categories": "الفئات",
-    "orders": "الطلبات"
+    "orders": "الطلبات",
+    "messages": "الرسائل",
+    "wallet": "المحفظة"
   },
   "Home": {
     "heroTitle": "كل المتاجر في مكان واحد.",
@@ -99,6 +104,7 @@
     "saveToWishlist": "أضف إلى المفضلة",
     "removeFromWishlist": "إزالة من المفضلة",
     "noImageShort": "بدون صورة",
+    "from": "من",
     "quickView": "عرض سريع",
     "chooseOptions": "اختر الخيارات",
     "viewFullDetails": "عرض كل التفاصيل",

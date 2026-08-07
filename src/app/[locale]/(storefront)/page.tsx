@@ -56,31 +56,37 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <section className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+      <section className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-800">
+        {/* A single soft glow anchored top-start, not a scattered blob field —
+            it reads as one deliberate light source instead of decoration. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 start-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl dark:bg-brand/15"
+        />
+        <div className="relative mx-auto max-w-6xl px-6 py-20 sm:py-28">
           {/* Slide only, no fade: this heading is the LCP candidate. */}
           <Reveal immediate fade={false}>
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance text-zinc-900 dark:text-zinc-50 sm:text-6xl">
               {t("heroTitle")}
             </h1>
           </Reveal>
 
           <Reveal immediate delay={0.1}>
-            <p className="mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
               {t("heroSubtitle")}
             </p>
           </Reveal>
 
-          <Reveal immediate delay={0.2} className="mt-8 flex flex-wrap gap-3">
+          <Reveal immediate delay={0.2} className="mt-9 flex flex-wrap gap-3">
             <Link
               href="/products"
-              className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md"
             >
               {t("browseProducts")}
             </Link>
             <Link
               href="/categories"
-              className="rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-white dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-xl border border-zinc-300 bg-white/60 px-5 py-3 text-sm font-medium text-zinc-700 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               {t("shopByCategory")}
             </Link>

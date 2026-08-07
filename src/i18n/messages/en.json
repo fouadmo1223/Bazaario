@@ -12,9 +12,14 @@
   },
   "Footer": {
     "copyright": "© {year} Bazaario",
+    "tagline": "Every independent store, one cart at a time — browse, save, and check out securely with any vendor.",
+    "shop": "Shop",
+    "account": "Account",
     "products": "Products",
     "categories": "Categories",
-    "orders": "Orders"
+    "orders": "Orders",
+    "messages": "Messages",
+    "wallet": "Wallet"
   },
   "Home": {
     "heroTitle": "Every store, one place.",
@@ -99,6 +104,7 @@
     "saveToWishlist": "Save to wishlist",
     "removeFromWishlist": "Remove from wishlist",
     "noImageShort": "No image",
+    "from": "from",
     "quickView": "Quick view",
     "chooseOptions": "Choose options",
     "viewFullDetails": "View full details",

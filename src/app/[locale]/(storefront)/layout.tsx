@@ -35,27 +35,59 @@ export default async function StorefrontLayout({
         <main className="flex-1">{children}</main>
 
         <footer className="border-t border-zinc-200 dark:border-zinc-800">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-zinc-500">
-            <p>{t("copyright", { year: new Date().getFullYear() })}</p>
-            <nav aria-label="Footer">
-              <ul className="flex flex-wrap gap-4">
-                <li>
-                  <Link href="/products" className="hover:text-zinc-900 dark:hover:text-zinc-200">
-                    {t("products")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/categories" className="hover:text-zinc-900 dark:hover:text-zinc-200">
-                    {t("categories")}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/account/orders" className="hover:text-zinc-900 dark:hover:text-zinc-200">
-                    {t("orders")}
-                  </Link>
-                </li>
-              </ul>
-            </nav>
+          <div className="mx-auto max-w-6xl px-6 py-12">
+            <div className="flex flex-wrap justify-between gap-10">
+              <div className="max-w-xs">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand text-xs font-bold text-white">
+                    B
+                  </span>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Bazaario</span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-zinc-500">{t("tagline")}</p>
+              </div>
+
+              <nav aria-label="Footer">
+                <h3 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">{t("shop")}</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  <li>
+                    <Link href="/products" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">
+                      {t("products")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/categories" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">
+                      {t("categories")}
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+
+              <nav aria-label="Account footer">
+                <h3 className="text-xs font-semibold tracking-wide text-zinc-400 uppercase">{t("account")}</h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  <li>
+                    <Link href="/account/orders" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">
+                      {t("orders")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/account/messages" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">
+                      {t("messages")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/account/wallet" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200">
+                      {t("wallet")}
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+
+            <div className="mt-10 border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800">
+              {t("copyright", { year: new Date().getFullYear() })}
+            </div>
           </div>
         </footer>
       </div>

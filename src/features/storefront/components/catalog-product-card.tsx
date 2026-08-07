@@ -108,7 +108,7 @@ export function CatalogProductCard({
 
           <div className="mt-2 flex items-baseline gap-2">
             {spansRange && (
-              <span className="text-xs text-zinc-500">from</span>
+              <span className="text-xs text-zinc-500">{t("from")}</span>
             )}
             <span className="font-semibold text-zinc-900 dark:text-zinc-50">
               {formatMoney(spansRange ? product.priceRange!.min : product.price, currency)}
