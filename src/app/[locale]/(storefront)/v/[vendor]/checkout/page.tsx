@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { getCartView } from "@/features/cart/queries";
@@ -26,12 +26,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const PAYMENT_COPY: Record<Exclude<PaymentOption["id"], "wallet">, Omit<PaymentOption, "id">> = {
-  cod: { label: "Cash on delivery", description: "Pay the courier when your order arrives" },
-  stripe: { label: "Card", description: "Pay securely by card" },
-  paymob: { label: "Paymob", description: "Cards and wallets via Paymob" },
-};
-
 /**
  * A provider is offered only when the vendor has switched it on *and* the
  * deployment has credentials for it. Either alone would surface a method that
@@ -42,9 +36,19 @@ const PAYMENT_COPY: Record<Exclude<PaymentOption["id"], "wallet">, Omit<PaymentO
  * balance — a `walletBalance` of 0 doesn't just disable it, it's left off the
  * list entirely, since the form has no "disabled option" state to render.
  */
-function availablePayments(vendor: VendorDoc, walletBalance: number, currency: string): PaymentOption[] {
+function availablePayments(
+  vendor: VendorDoc,
+  walletBalance: number,
+  currency: string,
+  t: (key: string) => string,
+): PaymentOption[] {
   const configured = new Set(enabledProviders());
   const settings = vendor.settings;
+  const paymentCopy: Record<Exclude<PaymentOption["id"], "wallet">, Omit<PaymentOption, "id">> = {
+    cod: { label: t("codLabel"), description: t("codDescription") },
+    stripe: { label: t("cardLabel"), description: t("cardDescription") },
+    paymob: { label: t("paymobLabel"), description: t("paymobDescription") },
+  };
 
   const wanted: Exclude<PaymentOption["id"], "wallet">[] = [];
   if (settings.codEnabled) wanted.push("cod");
@@ -53,13 +57,13 @@ function availablePayments(vendor: VendorDoc, walletBalance: number, currency: s
 
   const options: PaymentOption[] = wanted
     .filter((id) => configured.has(id))
-    .map((id) => ({ id, ...PAYMENT_COPY[id] }));
+    .map((id) => ({ id, ...paymentCopy[id] }));
 
   if (configured.has("wallet") && walletBalance > 0) {
     options.unshift({
       id: "wallet",
-      label: "Wallet",
-      description: "Pay from your store credit balance",
+      label: t("walletLabel"),
+      description: t("walletDescription"),
       trailing: formatMoney(walletBalance, currency),
     });
   }
@@ -69,6 +73,7 @@ function availablePayments(vendor: VendorDoc, walletBalance: number, currency: s
 
 export default async function CheckoutPage({ params }: { params: Promise<Params> }) {
   const locale = await getLocale();
+  const t = await getTranslations("Checkout");
   const { vendor: vendorSlug } = await params;
 
   let vendor;
@@ -86,7 +91,7 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
   const user = await getCurrentUser();
   const walletBalance = user ? await walletService.getBalance(user.id) : 0;
   const shippingOptions = quoteShippingMethods(cart.totals.subtotal);
-  const paymentOptions = availablePayments(vendor, walletBalance, cart.currency);
+  const paymentOptions = availablePayments(vendor, walletBalance, cart.currency, t);
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">
@@ -97,14 +102,14 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
           </Link>
           <span className="mx-2">/</span>
           <Link href={`/v/${vendorSlug}/cart`} className="hover:text-indigo-600">
-            Cart
+            {t("cart")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">Checkout</span>
+          <span className="text-zinc-700 dark:text-zinc-300">{t("checkout")}</span>
         </nav>
 
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Checkout
+          {t("checkout")}
         </h1>
 
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
@@ -114,7 +119,7 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
                 role="alert"
                 className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300"
               >
-                This store has no payment method available right now. Please try again later.
+                {t("noPaymentMethods")}
               </p>
             ) : (
               <CheckoutForm
@@ -131,7 +136,7 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
           <aside className="lg:col-span-1" aria-label="Order summary">
             <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {cart.itemCount} {cart.itemCount === 1 ? "item" : "items"}
+                {t("items", { count: cart.itemCount })}
               </h2>
 
               <ul className="mt-4 space-y-3 border-b border-zinc-200 pb-4 dark:border-zinc-800">

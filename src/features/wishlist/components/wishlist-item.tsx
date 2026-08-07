@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
@@ -10,6 +11,7 @@ import type { WishlistItemView } from "../queries";
 
 /** One saved item: move to cart, or drop it. */
 export function WishlistItem({ item }: { item: WishlistItemView }) {
+  const t = useTranslations("Wishlist");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
           <Image src={item.image} alt="" fill sizes="96px" className="object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-            No image
+            {t("noImage")}
           </div>
         )}
       </div>
@@ -69,11 +71,11 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
 
             <p className="mt-1 text-xs">
               {!item.available ? (
-                <span className="text-zinc-500">No longer available</span>
+                <span className="text-zinc-500">{t("noLongerAvailable")}</span>
               ) : inStock ? (
-                <span className="text-emerald-600 dark:text-emerald-400">In stock</span>
+                <span className="text-emerald-600 dark:text-emerald-400">{t("inStock")}</span>
               ) : (
-                <span className="text-red-600 dark:text-red-400">Out of stock</span>
+                <span className="text-red-600 dark:text-red-400">{t("outOfStock")}</span>
               )}
             </p>
           </div>
@@ -97,7 +99,7 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
             disabled={pending || !canBuy}
             className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Working…" : "Move to cart"}
+            {pending ? t("working") : t("moveToCart")}
           </button>
           <button
             type="button"
@@ -105,7 +107,7 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
             disabled={pending}
             className="text-xs text-zinc-500 underline-offset-4 transition hover:text-red-600 hover:underline disabled:opacity-40"
           >
-            Remove
+            {t("remove")}
           </button>
         </div>
 

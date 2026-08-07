@@ -22,6 +22,20 @@ export const createVendorSchema = z.object({
 export type CreateVendorInput = z.infer<typeof createVendorSchema>;
 
 /**
+ * A vendor editing their own store's public identity — distinct from
+ * `createVendorSchema`, which is the Super Admin's provisioning form and
+ * carries fields (`ownerEmail`, `currency`) a vendor has no business changing
+ * themselves.
+ */
+export const updateVendorSettingsSchema = z.object({
+  name: z.string().min(2).max(80),
+  nameAr: z.string().max(80).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  descriptionAr: z.string().max(1000).nullable().optional(),
+});
+export type UpdateVendorSettingsInput = z.infer<typeof updateVendorSettingsSchema>;
+
+/**
  * Vendor lifecycle — Super Admin only (authorization enforced by the caller).
  * Enforces the platform invariant: a vendor has exactly one owner, and a user
  * may own at most one vendor.
@@ -147,6 +161,33 @@ export const vendorService = {
     await connectToDatabase();
     const vendor = await vendorRepository.findBySlug(slug);
     if (!vendor || vendor.status !== "active") throw Errors.notFound("Vendor not found");
+    return vendor;
+  },
+
+  /** A vendor updating their own store's name/description (EN + AR). */
+  async updateSettings(
+    vendorId: string,
+    input: UpdateVendorSettingsInput,
+    actorId: string,
+  ): Promise<VendorDoc> {
+    await connectToDatabase();
+    const vendor = await vendorRepository.updateById(vendorId, {
+      $set: {
+        name: input.name,
+        nameAr: input.nameAr || null,
+        description: input.description || null,
+        descriptionAr: input.descriptionAr || null,
+        updatedBy: actorId,
+      },
+    });
+    if (!vendor) throw Errors.notFound("Vendor not found");
+    await writeAudit({
+      actor: actorId,
+      vendor: vendorId,
+      action: "vendor.settings.update",
+      entity: "Vendor",
+      entityId: vendorId,
+    });
     return vendor;
   },
 };

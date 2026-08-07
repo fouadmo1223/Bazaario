@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { Order } from "@/server/database/models/order.model";
@@ -22,14 +23,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const PAYMENT_NOTE: Record<string, string> = {
-  cod: "Pay the courier when your order arrives.",
-  stripe: "Paid by card.",
-  paymob: "Paid via Paymob.",
-  wallet: "Paid from your wallet.",
-};
-
 export default async function OrderConfirmationPage({ params }: { params: Promise<Params> }) {
+  const t = await getTranslations("OrderConfirmation");
   const { vendor: vendorSlug, id } = await params;
 
   // A malformed id is a 404, not a cast error.
@@ -57,21 +52,27 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
     month: "long",
     day: "numeric",
   });
+  const paymentNote: Record<string, string> = {
+    cod: t("codNote"),
+    stripe: t("stripeNote"),
+    paymob: t("paymobNote"),
+    wallet: t("walletNote"),
+  };
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-3xl px-6 py-12">
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950">
           <h1 className="text-xl font-semibold text-emerald-900 dark:text-emerald-100">
-            Thank you — your order is placed
+            {t("thankYou")}
           </h1>
           <p className="mt-1 text-sm text-emerald-800 dark:text-emerald-300">
-            Order <span className="font-semibold">#{order.number}</span> · {placedAt}
+            {t("order", { number: order.number })} · {placedAt}
           </p>
         </div>
 
         <section className="mt-8" aria-label="Items">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Items</h2>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
           <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
             {order.items.map((item, i) => (
               <li key={i} className="flex justify-between gap-4 py-3 text-sm">
@@ -91,7 +92,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Delivery</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress
                 address={
@@ -111,17 +112,17 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
               />
             </div>
             <p className="mt-2 text-xs text-zinc-500">
-              Method: {order.shipping?.method ?? "standard"}
+              {t("method", { method: order.shipping?.method ?? "standard" })}
             </p>
           </section>
 
           <section aria-label="Payment">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Payment</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("payment")}</h2>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              {PAYMENT_NOTE[order.payment.provider] ?? order.payment.provider}
+              {paymentNote[order.payment.provider] ?? order.payment.provider}
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              Status: {order.payment.status} · Order status: {order.status}
+              {t("statusLine", { paymentStatus: order.payment.status, orderStatus: order.status })}
             </p>
           </section>
         </div>
@@ -129,7 +130,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
         {order.status === "out_for_delivery" && (
           <section className="mt-8" aria-label="Track your delivery">
             <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Track your delivery
+              {t("trackDelivery")}
             </h2>
             <DeliveryMap
               orderId={String(order._id)}
@@ -150,7 +151,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           href={`/v/${vendorSlug}`}
           className="mt-8 inline-block rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
         >
-          Continue shopping
+          {t("continueShopping")}
         </Link>
       </div>
     </div>

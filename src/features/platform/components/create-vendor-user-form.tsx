@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useId } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
 import { createVendorUserAction } from "../actions";
@@ -18,19 +19,20 @@ import { Select } from "@/shared/components/select";
  * would be wrong.
  */
 
-const ROLE_OPTIONS = [
-  { value: "vendor", label: "Vendor admin", hint: "Full control of the store" },
-  { value: "marketing", label: "Marketing", hint: "Coupons, campaigns, CMS, analytics" },
-  { value: "support", label: "Support", hint: "Read orders, answer tickets" },
-  { value: "delivery_driver", label: "Delivery driver", hint: "Fulfil and update deliveries" },
-] as const;
-
 type FieldErrors = Record<string, string[] | undefined>;
 
 export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
+  const t = useTranslations("CreateVendorUserForm");
   const router = useRouter();
   const formId = useId();
   const [state, formAction, pending] = useActionState(createVendorUserAction, null);
+
+  const ROLE_OPTIONS = [
+    { value: "vendor", label: t("roleVendorAdmin"), hint: t("roleVendorAdminHint") },
+    { value: "marketing", label: t("roleMarketing"), hint: t("roleMarketingHint") },
+    { value: "support", label: t("roleSupport"), hint: t("roleSupportHint") },
+    { value: "delivery_driver", label: t("roleDeliveryDriver"), hint: t("roleDeliveryDriverHint") },
+  ] as const;
 
   // A new membership changes the staff lists rendered by the server component
   // above; revalidatePath alone does not refresh an already-mounted tree.
@@ -51,7 +53,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
   if (vendors.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 p-4 text-sm text-zinc-500 dark:border-zinc-800">
-        Create a vendor first — there is nothing to add staff to yet.
+        {t("createVendorFirst")}
       </p>
     );
   }
@@ -60,7 +62,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
     <form action={formAction} className="space-y-4">
       {state?.ok ? (
         <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">
-          {String(state.meta?.message ?? "Done.")}
+          {String(state.meta?.message ?? t("done"))}
         </p>
       ) : null}
       {state && !state.ok ? (
@@ -72,7 +74,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor={`${formId}-vendor`} className={label}>
-            Vendor
+            {t("vendor")}
           </label>
           <Select
             id={`${formId}-vendor`}
@@ -90,7 +92,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
 
         <div>
           <label htmlFor={`${formId}-role`} className={label}>
-            Role on this vendor
+            {t("roleOnVendor")}
           </label>
           <Select
             id={`${formId}-role`}
@@ -105,7 +107,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
 
         <div>
           <label htmlFor={`${formId}-email`} className={label}>
-            Email
+            {t("email")}
           </label>
           <input
             id={`${formId}-email`}
@@ -113,21 +115,19 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
             type="email"
             required
             autoComplete="off"
-            placeholder="person@example.com"
+            placeholder={t("emailPlaceholder")}
             className={field}
           />
           {fieldErrors.email ? (
             <p className={errorText}>{fieldErrors.email[0]}</p>
           ) : (
-            <p className="mt-1 text-xs text-zinc-400">
-              If this email already has an account, it is given the role instead.
-            </p>
+            <p className="mt-1 text-xs text-zinc-400">{t("emailHint")}</p>
           )}
         </div>
 
         <div>
           <label htmlFor={`${formId}-name`} className={label}>
-            Name
+            {t("name")}
           </label>
           <input
             id={`${formId}-name`}
@@ -142,7 +142,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
 
         <div className="sm:col-span-2">
           <label htmlFor={`${formId}-password`} className={label}>
-            Initial password
+            {t("initialPassword")}
           </label>
           <input
             id={`${formId}-password`}
@@ -156,11 +156,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
           {fieldErrors.password ? (
             <p className={errorText}>{fieldErrors.password[0]}</p>
           ) : (
-            <p className="mt-1 text-xs text-zinc-400">
-              At least 8 characters with an uppercase letter, a lowercase letter and a number. Used
-              only when the account is new — an existing user keeps their own password. Share it
-              over something other than email, and have them change it.
-            </p>
+            <p className="mt-1 text-xs text-zinc-400">{t("passwordHint")}</p>
           )}
         </div>
       </div>
@@ -170,7 +166,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
         disabled={pending}
         className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
       >
-        {pending ? "Adding…" : "Add to vendor"}
+        {pending ? t("adding") : t("addToVendor")}
       </button>
     </form>
   );

@@ -19,8 +19,10 @@ export const attributeInputSchema = z.object({
 export const createProductSchema = z.object({
   type: z.enum(["simple", "variable"]).default("simple"),
   title: z.string().min(2).max(200),
+  titleAr: z.string().max(200).optional(),
   slug: z.string().min(2).max(200).optional(),
   description: z.string().default(""),
+  descriptionAr: z.string().optional(),
   shortDescription: z.string().optional(),
   brand: z.string().optional(),
   categories: z.array(z.string()).default([]),

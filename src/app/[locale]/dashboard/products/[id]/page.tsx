@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
@@ -21,6 +21,7 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: { params: Promise<Params> }) {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardProducts");
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
@@ -46,7 +47,7 @@ export default async function EditProductPage({ params }: { params: Promise<Para
     <div className="mx-auto max-w-3xl px-6 py-10">
       <nav className="mb-6 text-sm text-zinc-500">
         <Link href="/dashboard/products" className="hover:text-indigo-600">
-          Products
+          {t("title")}
         </Link>
         <span className="mx-2">/</span>
         <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
@@ -54,7 +55,7 @@ export default async function EditProductPage({ params }: { params: Promise<Para
 
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Edit product
+          {t("editProduct")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">{product.title}</p>
       </header>

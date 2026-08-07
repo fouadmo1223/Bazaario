@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { getCartView } from "@/features/cart/queries";
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CartPage({ params }: { params: Promise<Params> }) {
+  const t = await getTranslations("Checkout");
+  const tCart = await getTranslations("Cart");
   const { vendor: vendorSlug } = await params;
 
   let vendor;
@@ -41,15 +44,15 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
             {vendor.name}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">Cart</span>
+          <span className="text-zinc-700 dark:text-zinc-300">{t("cart")}</span>
         </nav>
 
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Your cart
+          {tCart("title")}
         </h1>
 
         {cart.items.length === 0 ? (
-          <EmptyCart vendorSlug={vendorSlug} />
+          <EmptyCart vendorSlug={vendorSlug} t={tCart} />
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
             <section className="lg:col-span-2" aria-label="Cart items">
@@ -65,14 +68,12 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
                 ))}
               </ul>
 
-              <p className="mt-4 text-sm text-zinc-500">
-                {cart.itemCount} {cart.itemCount === 1 ? "item" : "items"}
-              </p>
+              <p className="mt-4 text-sm text-zinc-500">{tCart("items", { count: cart.itemCount })}</p>
             </section>
 
             <aside className="lg:col-span-1" aria-label="Order summary">
               <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Summary</h2>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("summary")}</h2>
 
                 <div className="mt-4">
                   <CouponForm vendorId={vendorId} vendorSlug={vendorSlug} applied={cart.coupon} />
@@ -86,14 +87,14 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
                   href={`/v/${vendorSlug}/checkout`}
                   className="mt-6 block rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
-                  Checkout
+                  {t("checkout")}
                 </Link>
 
                 <Link
                   href={`/v/${vendorSlug}`}
                   className="mt-3 block text-center text-sm text-zinc-500 underline-offset-4 hover:underline"
                 >
-                  Continue shopping
+                  {t("continueShopping")}
                 </Link>
               </div>
             </aside>
@@ -104,15 +105,21 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
   );
 }
 
-function EmptyCart({ vendorSlug }: { vendorSlug: string }) {
+function EmptyCart({
+  vendorSlug,
+  t,
+}: {
+  vendorSlug: string;
+  t: Awaited<ReturnType<typeof getTranslations>>;
+}) {
   return (
     <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-      <p className="text-sm text-zinc-500">Your cart is empty.</p>
+      <p className="text-sm text-zinc-500">{t("empty")}</p>
       <Link
         href={`/v/${vendorSlug}`}
         className="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
       >
-        Browse products
+        {t("browseProducts")}
       </Link>
     </div>
   );

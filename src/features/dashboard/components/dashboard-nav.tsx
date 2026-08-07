@@ -6,21 +6,25 @@ import { useTranslations } from "next-intl";
 const LINK_HREFS = [
   "/dashboard",
   "/dashboard/products",
+  "/dashboard/categories",
   "/dashboard/coupons",
   "/dashboard/banners",
   "/dashboard/orders",
   "/dashboard/deliveries",
   "/dashboard/messages",
+  "/dashboard/settings",
 ] as const;
 
 const LABEL_KEYS: Record<(typeof LINK_HREFS)[number], string> = {
   "/dashboard": "overview",
   "/dashboard/products": "products",
+  "/dashboard/categories": "categories",
   "/dashboard/coupons": "coupons",
   "/dashboard/banners": "banners",
   "/dashboard/orders": "orders",
   "/dashboard/deliveries": "deliveries",
   "/dashboard/messages": "messages",
+  "/dashboard/settings": "settings",
 };
 
 /** Dashboard navigation, marking the active section for assistive tech too. */

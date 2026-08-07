@@ -6,7 +6,7 @@ import { productService } from "@/server/services/product.service";
 import { getActiveBanner } from "@/features/cms/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { localized } from "@/shared/lib/localized";
 import type { Locale } from "@/i18n/locales";
 
@@ -46,6 +46,7 @@ export default async function VendorPage({
 }) {
   const { locale, vendor: slug } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("VendorPage");
   const { page = "1", search } = await searchParams;
 
   let vendor;
@@ -104,7 +105,7 @@ export default async function VendorPage({
           {banner.message}
           {banner.linkUrl && (
             <a href={banner.linkUrl} className="ml-2 font-semibold underline underline-offset-2">
-              {banner.linkLabel || "Learn more"}
+              {banner.linkLabel || t("learnMore")}
             </a>
           )}
         </div>
@@ -131,20 +132,20 @@ export default async function VendorPage({
             href={`/v/${slug}/contact`}
             className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
           >
-            Message store
+            {t("messageStore")}
           </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         <p className="mb-4 text-sm text-zinc-500">
-          {result.total} {result.total === 1 ? "product" : "products"}
-          {search ? ` for “${search}”` : ""}
+          {t("products", { count: result.total })}
+          {search ? t("resultsFor", { search }) : ""}
         </p>
 
         {products.length === 0 ? (
           <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-            <p className="text-sm text-zinc-500">No products found.</p>
+            <p className="text-sm text-zinc-500">{t("noProducts")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">

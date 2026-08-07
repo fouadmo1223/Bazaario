@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { placeOrderAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
@@ -41,6 +42,7 @@ export function CheckoutForm({
   paymentOptions: PaymentOption[];
   isAuthenticated: boolean;
 }) {
+  const t = useTranslations("Checkout");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -94,35 +96,35 @@ export function CheckoutForm({
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-8">
       {!isAuthenticated && (
-        <Section title="Contact">
+        <Section title={t("contact")}>
           <Field
             name="guestEmail"
-            label="Email"
+            label={t("email")}
             type="email"
             autoComplete="email"
             required
             errors={fieldErrors["guestEmail"]}
-            hint="Your receipt and order updates go here."
+            hint={t("emailHint")}
           />
         </Section>
       )}
 
-      <Section title="Delivery address">
+      <Section title={t("deliveryAddress")}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field name="recipient" label="Full name" autoComplete="name" required className="sm:col-span-2" />
-          <Field name="phone" label="Phone" type="tel" autoComplete="tel" required />
-          <Field name="country" label="Country code" autoComplete="country" required placeholder="EG" maxLength={2} />
-          <Field name="line1" label="Address" autoComplete="address-line1" required className="sm:col-span-2" />
-          <Field name="line2" label="Apartment, suite (optional)" autoComplete="address-line2" className="sm:col-span-2" />
-          <Field name="city" label="City" autoComplete="address-level2" required />
-          <Field name="region" label="Region (optional)" autoComplete="address-level1" />
-          <Field name="postalCode" label="Postal code (optional)" autoComplete="postal-code" />
+          <Field name="recipient" label={t("fullName")} autoComplete="name" required className="sm:col-span-2" />
+          <Field name="phone" label={t("phone")} type="tel" autoComplete="tel" required />
+          <Field name="country" label={t("countryCode")} autoComplete="country" required placeholder="EG" maxLength={2} />
+          <Field name="line1" label={t("address")} autoComplete="address-line1" required className="sm:col-span-2" />
+          <Field name="line2" label={t("apartment")} autoComplete="address-line2" className="sm:col-span-2" />
+          <Field name="city" label={t("city")} autoComplete="address-level2" required />
+          <Field name="region" label={t("region")} autoComplete="address-level1" />
+          <Field name="postalCode" label={t("postalCode")} autoComplete="postal-code" />
         </div>
       </Section>
 
-      <Section title="Shipping method">
+      <Section title={t("shippingMethod")}>
         <fieldset className="space-y-2">
-          <legend className="sr-only">Shipping method</legend>
+          <legend className="sr-only">{t("shippingMethod")}</legend>
           {shippingOptions.map((option) => (
             <Choice
               key={option.id}
@@ -132,15 +134,15 @@ export function CheckoutForm({
               onChange={() => setShippingMethod(option.id)}
               label={option.label}
               description={option.description}
-              trailing={option.quotedFee > 0 ? formatMoney(option.quotedFee, currency) : "Free"}
+              trailing={option.quotedFee > 0 ? formatMoney(option.quotedFee, currency) : t("free")}
             />
           ))}
         </fieldset>
       </Section>
 
-      <Section title="Payment">
+      <Section title={t("payment")}>
         <fieldset className="space-y-2">
-          <legend className="sr-only">Payment method</legend>
+          <legend className="sr-only">{t("payment")}</legend>
           {paymentOptions.map((option) => (
             <Choice
               key={option.id}
@@ -168,7 +170,7 @@ export function CheckoutForm({
         aria-busy={pending}
         className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Placing order…" : "Place order"}
+        {pending ? t("placingOrder") : t("placeOrder")}
       </button>
     </form>
   );

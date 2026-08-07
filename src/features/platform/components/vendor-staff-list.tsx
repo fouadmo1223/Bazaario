@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { suspendVendorUserAction } from "../actions";
 import type { VendorStaff } from "../queries";
@@ -14,21 +15,21 @@ import type { VendorStaff } from "../queries";
  * showing a control that always errors is worse than not showing one.
  */
 
-const ROLE_LABELS: Record<string, string> = {
-  vendor: "Vendor admin",
-  marketing: "Marketing",
-  support: "Support",
-  delivery_driver: "Delivery driver",
-};
-
 export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
+  const t = useTranslations("VendorStaffList");
+  const ROLE_LABELS: Record<string, string> = {
+    vendor: t("roleVendorAdmin"),
+    marketing: t("roleMarketing"),
+    support: t("roleSupport"),
+    delivery_driver: t("roleDeliveryDriver"),
+  };
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   function revoke(vendorId: string, userId: string, email: string) {
-    if (!confirm(`Remove ${email}'s access to this vendor?`)) return;
+    if (!confirm(t("confirmRemove", { email }))) return;
     setError(null);
     setBusy(`${vendorId}:${userId}`);
     startTransition(async () => {
@@ -43,7 +44,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
   }
 
   if (groups.length === 0) {
-    return <p className="text-sm text-zinc-500">No vendors yet.</p>;
+    return <p className="text-sm text-zinc-500">{t("noVendorsYet")}</p>;
   }
 
   return (
@@ -74,7 +75,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
           </header>
 
           {staff.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-zinc-500">No staff yet.</p>
+            <p className="px-4 py-3 text-sm text-zinc-500">{t("noStaffYet")}</p>
           ) : (
             <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {staff.map((m) => (
@@ -87,7 +88,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
                       {m.name}{" "}
                       {m.isOwner ? (
                         <span className="ml-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                          owner
+                          {t("owner")}
                         </span>
                       ) : null}
                     </p>
@@ -109,7 +110,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
                         onClick={() => revoke(vendor.id, m.userId, m.email)}
                         className="rounded-lg px-2 py-1 text-xs text-zinc-500 transition hover:text-red-600 disabled:opacity-50"
                       >
-                        {pending && busy === `${vendor.id}:${m.userId}` ? "Removing…" : "Remove"}
+                        {pending && busy === `${vendor.id}:${m.userId}` ? t("removing") : t("remove")}
                       </button>
                     )}
                   </div>

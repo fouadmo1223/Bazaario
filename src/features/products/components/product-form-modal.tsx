@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { Select as StyledSelect } from "@/shared/components/select";
@@ -39,6 +40,7 @@ export function ProductFormModal({
   /** Renders the form inline on its own page instead of inside a `<Modal>` overlay. */
   standalone?: boolean;
 }) {
+  const t = useTranslations("ProductForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,9 @@ export function ProductFormModal({
 
     const payload = {
       title: String(form.get("title") ?? "").trim(),
+      titleAr: String(form.get("titleAr") ?? "").trim() || undefined,
       description: String(form.get("description") ?? "").trim(),
+      descriptionAr: String(form.get("descriptionAr") ?? "").trim() || undefined,
       shortDescription: String(form.get("shortDescription") ?? "").trim() || undefined,
       type,
       status: String(form.get("status") ?? "draft") as "draft" | "active" | "archived",
@@ -104,34 +108,43 @@ export function ProductFormModal({
 
   const form = (
       <form onSubmit={onSubmit} noValidate className="space-y-5">
-        <Field
-          name="title"
-          label="Title"
-          required
-          defaultValue={initial?.title}
-          errors={fieldErrors["title"]}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field
+            name="title"
+            label={t("titleLabel")}
+            required
+            defaultValue={initial?.title}
+            errors={fieldErrors["title"]}
+          />
+          <Field
+            name="titleAr"
+            label={t("titleArLabel")}
+            dir="rtl"
+            defaultValue={initial?.titleAr}
+            hint={t("titleArHint")}
+          />
+        </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Select
             name="type"
-            label="Type"
+            label={t("type")}
             value={type}
             onChange={(v) => setType(v as "simple" | "variable")}
             options={[
-              { value: "simple", label: "Simple" },
-              { value: "variable", label: "Variable (has options)" },
+              { value: "simple", label: t("typeSimple") },
+              { value: "variable", label: t("typeVariable") },
             ]}
-            hint={type === "variable" ? "Price and stock come from its variants." : undefined}
+            hint={type === "variable" ? t("typeVariableHint") : undefined}
           />
           <Select
             name="status"
-            label="Status"
+            label={t("status")}
             defaultValue={initial?.status ?? "draft"}
             options={[
-              { value: "draft", label: "Draft — not visible" },
-              { value: "active", label: "Active — on sale" },
-              { value: "archived", label: "Archived" },
+              { value: "draft", label: t("statusDraft") },
+              { value: "active", label: t("statusActive") },
+              { value: "archived", label: t("statusArchived") },
             ]}
           />
         </div>
@@ -141,7 +154,7 @@ export function ProductFormModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field
               name="price"
-              label="Price"
+              label={t("price")}
               type="number"
               step="0.01"
               min="0"
@@ -151,16 +164,16 @@ export function ProductFormModal({
             />
             <Field
               name="compareAtPrice"
-              label="Compare at"
+              label={t("compareAt")}
               type="number"
               step="0.01"
               min="0"
               defaultValue={initial?.compareAtPrice ?? undefined}
-              hint="Shown struck through"
+              hint={t("compareAtHint")}
             />
             <Field
               name="stock"
-              label="Stock"
+              label={t("stock")}
               type="number"
               step="1"
               min="0"
@@ -173,19 +186,17 @@ export function ProductFormModal({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Select
             name="brand"
-            label="Brand"
+            label={t("brand")}
             defaultValue={initial?.brand ?? ""}
-            options={[{ value: "", label: "No brand" }, ...brands.map((b) => ({ value: b.id, label: b.name }))]}
+            options={[{ value: "", label: t("noBrand") }, ...brands.map((b) => ({ value: b.id, label: b.name }))]}
           />
-          <Field name="sku" label="SKU" defaultValue={initial?.sku} />
+          <Field name="sku" label={t("sku")} defaultValue={initial?.sku} />
         </div>
 
         <fieldset>
-          <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Categories</legend>
+          <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("categories")}</legend>
           {categories.length === 0 ? (
-            <p className="mt-1 text-xs text-zinc-500">
-              No categories yet — the product can still be saved without one.
-            </p>
+            <p className="mt-1 text-xs text-zinc-500">{t("noCategoriesYet")}</p>
           ) : (
             <div className="mt-2 flex flex-wrap gap-2">
               {categories.map((c) => (
@@ -209,51 +220,70 @@ export function ProductFormModal({
 
         <Field
           name="shortDescription"
-          label="Short description"
+          label={t("shortDescription")}
           defaultValue={initial?.shortDescription}
-          hint="One line, shown above the fold"
+          hint={t("shortDescriptionHint")}
         />
 
-        <div>
-          <label
-            htmlFor="field-description"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            Description
-          </label>
-          <textarea
-            id="field-description"
-            name="description"
-            rows={4}
-            defaultValue={initial?.description}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="field-description"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t("description")}
+            </label>
+            <textarea
+              id="field-description"
+              name="description"
+              rows={4}
+              defaultValue={initial?.description}
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="field-descriptionAr"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t("descriptionArLabel")}
+            </label>
+            <textarea
+              id="field-descriptionAr"
+              name="descriptionAr"
+              dir="rtl"
+              rows={4}
+              defaultValue={initial?.descriptionAr}
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            />
+            <p className="mt-1 text-xs text-zinc-500">{t("descriptionArHint")}</p>
+          </div>
         </div>
 
         <Field
           name="mediaUrl"
-          label="Image URL"
+          label={t("imageUrl")}
           type="url"
           defaultValue={initial?.media[0]?.url}
-          hint="Uploads are not wired up yet — paste a URL for now"
+          hint={t("imageUrlHint")}
           errors={fieldErrors["media"]}
         />
 
         <Field
           name="tags"
-          label="Tags"
+          label={t("tags")}
           defaultValue={initial?.tags.join(", ")}
-          hint="Comma separated"
+          hint={t("tagsHint")}
         />
 
         <div className="flex flex-wrap gap-4">
-          <Check name="featured" label="Featured" defaultChecked={initial?.featured} />
+          <Check name="featured" label={t("featured")} defaultChecked={initial?.featured} />
           <Check
             name="trackInventory"
-            label="Track inventory"
+            label={t("trackInventory")}
             defaultChecked={initial?.trackInventory ?? true}
           />
-          <Check name="allowBackorder" label="Allow backorder" defaultChecked={initial?.allowBackorder} />
+          <Check name="allowBackorder" label={t("allowBackorder")} defaultChecked={initial?.allowBackorder} />
         </div>
 
         {error && (
@@ -272,14 +302,14 @@ export function ProductFormModal({
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="submit"
             disabled={pending}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
           >
-            {pending ? "Saving…" : editing ? "Save changes" : "Create product"}
+            {pending ? t("saving") : editing ? t("saveChanges") : t("createProduct")}
           </button>
         </div>
       </form>
@@ -291,8 +321,8 @@ export function ProductFormModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={editing ? "Edit product" : "New product"}
-      description={editing ? initial.title : "Add a product to your catalogue"}
+      title={editing ? t("editTitle") : t("newTitle")}
+      description={editing ? initial.title : t("newDescription")}
       size="lg"
     >
       {form}

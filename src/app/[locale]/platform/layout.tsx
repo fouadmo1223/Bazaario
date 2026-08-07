@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { requireSuperAdminPage } from "@/features/platform/guard";
 
 /**
@@ -14,20 +15,21 @@ import { requireSuperAdminPage } from "@/features/platform/guard";
  */
 export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   await requireSuperAdminPage();
+  const t = await getTranslations("PlatformLayout");
 
   return (
     <div className="min-h-dvh bg-white dark:bg-black">
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-4">
           <Link href="/platform/vendors" className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-            Platform
+            {t("platform")}
           </Link>
           <nav className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
             <Link href="/platform/vendors" className="transition hover:text-zinc-900 dark:hover:text-zinc-100">
-              Vendors &amp; staff
+              {t("vendorsAndStaff")}
             </Link>
             <Link href="/" className="transition hover:text-zinc-900 dark:hover:text-zinc-100">
-              Storefront
+              {t("storefront")}
             </Link>
           </nav>
         </div>

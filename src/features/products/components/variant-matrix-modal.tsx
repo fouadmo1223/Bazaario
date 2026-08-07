@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { syncVariantsAction } from "../actions";
@@ -10,9 +11,9 @@ import type { VariantEditorData, VariantEditorRow } from "../queries";
  * The variant matrix editor.
  *
  * A variable product is two things a vendor has to keep in sync by hand
- * otherwise: the *options* it comes in (Size, Colourâ€¦) and the concrete
+ * otherwise: the *options* it comes in (Size, Colour…) and the concrete
  * combinations that are actually stocked. This editor derives the second from
- * the first â€” every combination of the option values is a candidate row â€” and
+ * the first — every combination of the option values is a candidate row — and
  * lets the vendor switch a combination on or off rather than expecting them to
  * type out a grid that may not be fully populated. A shoe in five sizes and
  * three colours has fifteen cells but perhaps only ten real SKUs; the seed data
@@ -32,7 +33,7 @@ type RowState = {
   compareAt: string;
   stock: string;
   active: boolean;
-  /** Carried through untouched â€” there is no per-variant image field here yet. */
+  /** Carried through untouched — there is no per-variant image field here yet. */
   image: string | null;
 };
 
@@ -101,6 +102,7 @@ export function VariantMatrixModal({
   vendorId: string;
   data: VariantEditorData;
 }) {
+  const t = useTranslations("ProductVariants");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,11 +208,11 @@ export function VariantMatrixModal({
     setError(null);
 
     if (parsedAttrs.length === 0) {
-      setError("Add at least one option with values before saving.");
+      setError(t("errorNoOptions"));
       return;
     }
     if (tooMany) {
-      setError(`That is ${combos.length} combinations â€” too many to manage here. Reduce the option values.`);
+      setError(t("errorTooMany", { count: combos.length }));
       return;
     }
 
@@ -223,19 +225,19 @@ export function VariantMatrixModal({
 
       const sku = row.sku.trim();
       if (!sku) {
-        setError("Every enabled variant needs a SKU. Use â€œGenerate SKUsâ€ to fill them in.");
+        setError(t("errorMissingSku"));
         return;
       }
       const lower = sku.toLowerCase();
       if (seenSku.has(lower)) {
-        setError(`Duplicate SKU â€œ${sku}â€. Each variant needs its own.`);
+        setError(t("errorDuplicateSku", { sku }));
         return;
       }
       seenSku.add(lower);
 
       const price = Number(row.price);
       if (!Number.isFinite(price) || price < 0) {
-        setError(`â€œ${sku}â€ needs a valid price.`);
+        setError(t("errorInvalidPrice", { sku }));
         return;
       }
       const compareAt = row.compareAt.trim() === "" ? null : Number(row.compareAt);
@@ -275,31 +277,29 @@ export function VariantMatrixModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Variants"
+      title={t("title")}
       description={data.title}
       size="lg"
     >
       <div className="space-y-6">
         {/* Options */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Options</h3>
-          <p className="mt-0.5 text-xs text-zinc-500">
-            Name each option and list its values, comma separated. Every combination becomes a row below.
-          </p>
+          <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{t("optionsHeading")}</h3>
+          <p className="mt-0.5 text-xs text-zinc-500">{t("optionsHint")}</p>
 
           <div className="mt-3 space-y-3">
             {attrs.map((attr, i) => (
               <div key={i} className="flex items-start gap-2">
                 <input
-                  aria-label={`Option ${i + 1} name`}
-                  placeholder="Size"
+                  aria-label={t("optionName", { n: i + 1 })}
+                  placeholder={t("optionNamePlaceholder")}
                   value={attr.name}
                   onChange={(e) => updateAttr(i, { name: e.target.value })}
                   className="w-32 shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
                 />
                 <input
-                  aria-label={`Option ${i + 1} values`}
-                  placeholder="S, M, L, XL"
+                  aria-label={t("optionValues", { n: i + 1 })}
+                  placeholder={t("optionValuesPlaceholder")}
                   value={attr.valuesText}
                   onChange={(e) => updateAttr(i, { valuesText: e.target.value })}
                   className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
@@ -308,10 +308,10 @@ export function VariantMatrixModal({
                   type="button"
                   onClick={() => removeAttr(i)}
                   disabled={attrs.length === 1}
-                  aria-label={`Remove option ${i + 1}`}
+                  aria-label={t("removeOption", { n: i + 1 })}
                   className="shrink-0 rounded-lg px-2.5 py-2 text-sm text-zinc-400 transition hover:bg-zinc-100 hover:text-red-600 disabled:opacity-40 dark:hover:bg-zinc-800"
                 >
-                  âœ•
+                  ✕
                 </button>
               </div>
             ))}
@@ -321,7 +321,7 @@ export function VariantMatrixModal({
             onClick={addAttr}
             className="mt-3 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            + Add option
+            {t("addOption")}
           </button>
         </section>
 
@@ -329,19 +329,19 @@ export function VariantMatrixModal({
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-              Variants
+              {t("variantsHeading")}
               <span className="ml-2 font-normal text-zinc-500">
-                {enabledCombos.length} of {combos.length} enabled
+                {t("enabledOfTotal", { enabled: enabledCombos.length, total: combos.length })}
               </span>
             </h3>
             {combos.length > 0 && !tooMany && (
               <div className="flex items-center gap-2 text-xs">
                 <button type="button" onClick={() => setAllEnabled(true)} className="text-indigo-600 hover:underline dark:text-indigo-400">
-                  Enable all
+                  {t("enableAll")}
                 </button>
-                <span className="text-zinc-300 dark:text-zinc-700">Â·</span>
+                <span className="text-zinc-300 dark:text-zinc-700">·</span>
                 <button type="button" onClick={() => setAllEnabled(false)} className="text-zinc-500 hover:underline">
-                  Disable all
+                  {t("disableAll")}
                 </button>
               </div>
             )}
@@ -349,19 +349,19 @@ export function VariantMatrixModal({
 
           {combos.length === 0 ? (
             <p className="mt-3 rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
-              Define an option with values to see the variant grid.
+              {t("defineOptionPrompt")}
             </p>
           ) : tooMany ? (
             <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-              {combos.length} combinations is more than this editor handles ({MAX_CELLS} max). Trim the option values.
+              {t("tooManyCombos", { count: combos.length, max: MAX_CELLS })}
             </p>
           ) : (
             <>
-              {/* Bulk helpers â€” a fifteen-cell grid is tedious without them. */}
+              {/* Bulk helpers — a fifteen-cell grid is tedious without them. */}
               <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-2 rounded-lg bg-zinc-50 p-3 text-xs dark:bg-zinc-900">
                 <div className="flex items-end gap-2">
                   <label className="flex flex-col gap-1">
-                    <span className="text-zinc-500">SKU prefix</span>
+                    <span className="text-zinc-500">{t("skuPrefix")}</span>
                     <input
                       value={skuPrefix}
                       onChange={(e) => setSkuPrefix(e.target.value)}
@@ -370,12 +370,12 @@ export function VariantMatrixModal({
                     />
                   </label>
                   <button type="button" onClick={generateSkus} className="rounded-md border border-zinc-300 px-2.5 py-1.5 font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
-                    Generate SKUs
+                    {t("generateSkus")}
                   </button>
                 </div>
                 <div className="flex items-end gap-2">
                   <label className="flex flex-col gap-1">
-                    <span className="text-zinc-500">Set price</span>
+                    <span className="text-zinc-500">{t("setPrice")}</span>
                     <input
                       type="number"
                       min="0"
@@ -387,7 +387,7 @@ export function VariantMatrixModal({
                     />
                   </label>
                   <button type="button" onClick={applyBulkPrice} className="rounded-md border border-zinc-300 px-2.5 py-1.5 font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
-                    Apply to enabled
+                    {t("applyToEnabled")}
                   </button>
                 </div>
               </div>
@@ -396,15 +396,15 @@ export function VariantMatrixModal({
                 <table className="w-full min-w-[640px] text-sm">
                   <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
                     <tr>
-                      <th className="px-3 py-2 font-medium">On</th>
+                      <th className="px-3 py-2 font-medium">{t("colOn")}</th>
                       {names.map((n) => (
                         <th key={n} className="px-3 py-2 font-medium">{n}</th>
                       ))}
-                      <th className="px-3 py-2 font-medium">SKU</th>
-                      <th className="px-3 py-2 font-medium">Price</th>
-                      <th className="px-3 py-2 font-medium">Compare at</th>
-                      <th className="px-3 py-2 font-medium">Stock</th>
-                      <th className="px-3 py-2 font-medium">Active</th>
+                      <th className="px-3 py-2 font-medium">{t("colSku")}</th>
+                      <th className="px-3 py-2 font-medium">{t("colPrice")}</th>
+                      <th className="px-3 py-2 font-medium">{t("colCompareAt")}</th>
+                      <th className="px-3 py-2 font-medium">{t("colStock")}</th>
+                      <th className="px-3 py-2 font-medium">{t("colActive")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -419,7 +419,7 @@ export function VariantMatrixModal({
                               type="checkbox"
                               checked={row.enabled}
                               onChange={(e) => setRow(key, { enabled: e.target.checked })}
-                              aria-label={`Enable ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("enableCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="h-4 w-4 accent-indigo-600"
                             />
                           </td>
@@ -433,7 +433,7 @@ export function VariantMatrixModal({
                               value={row.sku}
                               disabled={off}
                               onChange={(e) => setRow(key, { sku: e.target.value })}
-                              aria-label={`SKU for ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("skuForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="w-32 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
@@ -445,7 +445,7 @@ export function VariantMatrixModal({
                               value={row.price}
                               disabled={off}
                               onChange={(e) => setRow(key, { price: e.target.value })}
-                              aria-label={`Price for ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("priceForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
@@ -457,7 +457,7 @@ export function VariantMatrixModal({
                               value={row.compareAt}
                               disabled={off}
                               onChange={(e) => setRow(key, { compareAt: e.target.value })}
-                              aria-label={`Compare-at price for ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("compareAtForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
@@ -469,7 +469,7 @@ export function VariantMatrixModal({
                               value={row.stock}
                               disabled={off}
                               onChange={(e) => setRow(key, { stock: e.target.value })}
-                              aria-label={`Stock for ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("stockForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="w-16 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
@@ -479,7 +479,7 @@ export function VariantMatrixModal({
                               checked={row.active}
                               disabled={off}
                               onChange={(e) => setRow(key, { active: e.target.checked })}
-                              aria-label={`Active for ${names.map((n) => combo[n]).join(" / ")}`}
+                              aria-label={t("activeForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
                               className="h-4 w-4 accent-indigo-600 disabled:opacity-40"
                             />
                           </td>
@@ -489,10 +489,7 @@ export function VariantMatrixModal({
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-xs text-zinc-500">
-                Turn a combination <strong>On</strong> to stock it. <strong>Active</strong> keeps a stocked
-                variant but hides it from shoppers â€” the storefront price is set by the lowest active variant.
-              </p>
+              <p className="mt-2 text-xs text-zinc-500">{t("onActiveHint")}</p>
             </>
           )}
         </section>
@@ -510,7 +507,7 @@ export function VariantMatrixModal({
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -518,7 +515,7 @@ export function VariantMatrixModal({
             disabled={pending}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
           >
-            {pending ? "Savingâ€¦" : "Save variants"}
+            {pending ? t("saving") : t("saveVariants")}
           </button>
         </div>
       </div>

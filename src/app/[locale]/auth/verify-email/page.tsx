@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { authService } from "@/server/services/auth.service";
 import { isAppError } from "@/shared/lib/errors";
@@ -16,10 +17,11 @@ export default async function VerifyEmailPage({
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
+  const t = await getTranslations("Auth");
   const { token } = await searchParams;
 
   let status: "success" | "error" | "missing" = "missing";
-  let message = "No verification token was provided.";
+  let message = t("noVerificationToken");
 
   if (token) {
     const result = await authService.verifyEmail(token).then(
@@ -28,18 +30,16 @@ export default async function VerifyEmailPage({
     );
     if (result.ok) {
       status = "success";
-      message = "Your email has been verified. Your account is now active.";
+      message = t("emailVerified");
     } else {
       status = "error";
-      message = isAppError(result.err)
-        ? result.err.message
-        : "This verification link is invalid or has expired.";
+      message = isAppError(result.err) ? result.err.message : t("verificationInvalid");
     }
   }
 
   const success = status === "success";
   return (
-    <AuthShell title={success ? "Email verified" : "Verification failed"}>
+    <AuthShell title={success ? t("emailVerifiedTitle") : t("verificationFailedTitle")}>
       <div
         className={`rounded-lg border px-4 py-3 text-sm ${
           success
@@ -53,7 +53,7 @@ export default async function VerifyEmailPage({
         href={success ? "/login" : "/register"}
         className="mt-6 flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
       >
-        {success ? "Continue to sign in" : "Back to sign up"}
+        {success ? t("continueToSignIn") : t("backToSignUp")}
       </Link>
     </AuthShell>
   );

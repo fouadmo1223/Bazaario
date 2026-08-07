@@ -32,8 +32,10 @@ export type ProductRow = {
 export type ProductFormValues = {
   id: string;
   title: string;
+  titleAr: string;
   slug: string;
   description: string;
+  descriptionAr: string;
   shortDescription: string;
   type: "simple" | "variable";
   status: "draft" | "active" | "archived";
@@ -145,8 +147,10 @@ export async function getProductForEdit(
   return {
     id: String(product._id),
     title: product.title,
+    titleAr: product.titleAr ?? "",
     slug: product.slug,
     description: product.description ?? "",
+    descriptionAr: product.descriptionAr ?? "",
     shortDescription: product.shortDescription ?? "",
     type: product.type as "simple" | "variable",
     status: product.status as "draft" | "active" | "archived",

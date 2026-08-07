@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { getCurrentUser } from "@/server/security/current-user";
@@ -33,6 +33,7 @@ export default async function ContactStorePage({
   params: Promise<{ vendor: string }>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("ContactStore");
   const { vendor: slug } = await params;
 
   let vendor;
@@ -58,15 +59,14 @@ export default async function ContactStorePage({
         </Link>
 
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Message {vendor.name}
+          {t("messageVendor", { vendor: vendor.name })}
         </h1>
         <p className="mt-1 mb-6 text-sm text-zinc-500">
-          Ask about a product, stock, or delivery. Replies arrive in your{" "}
+          {t("askAbout")}{" "}
           <Link href="/account/messages" className="underline">
-            messages
+            {t("messages")}
           </Link>
-          . For a question about an order you already placed, message the store from that order
-          instead — they can act on it directly.
+          {t("orderQuestion")}
         </p>
 
         <NewConversationForm
