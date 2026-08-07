@@ -30,7 +30,7 @@ export default async function WishlistPage() {
           <p className="mt-1 text-xs text-zinc-400">{t("emptyHint")}</p>
           <Link
             href="/products"
-            className="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            className="mt-4 inline-block rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             {t("browseProducts")}
           </Link>

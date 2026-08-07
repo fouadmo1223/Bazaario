@@ -42,7 +42,7 @@ export default async function AccountMessagesPage({
 
           <Link
             href="/account/messages/new"
-            className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500"
+            className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover"
           >
             {t("contactSupport")}
           </Link>

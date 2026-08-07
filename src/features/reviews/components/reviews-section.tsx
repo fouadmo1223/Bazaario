@@ -91,7 +91,7 @@ export function ReviewsSection({
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder={t("titlePlaceholder")}
-            className="mt-3 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-3 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
           <textarea
             value={body}
@@ -99,7 +99,7 @@ export function ReviewsSection({
             rows={3}
             maxLength={2000}
             placeholder={t("bodyPlaceholder")}
-            className="mt-2 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-2 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
 
           {error ? (
@@ -114,7 +114,7 @@ export function ReviewsSection({
           <button
             type="submit"
             disabled={pending}
-            className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            className="mt-3 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
           >
             {pending ? t("saving") : editing ? t("updateReview") : t("postReview")}
           </button>
@@ -123,7 +123,7 @@ export function ReviewsSection({
         <p className="mt-4 text-sm text-zinc-500">
           <Link
             href={`/login?next=${encodeURIComponent(`/v/${vendorSlug}/p/${productSlug}`)}`}
-            className="text-indigo-600 hover:underline dark:text-indigo-400"
+            className="text-brand hover:underline dark:text-brand"
           >
             {t("signIn")}
           </Link>

@@ -51,7 +51,7 @@ export default async function VerifyEmailPage({
       </div>
       <Link
         href={success ? "/login" : "/register"}
-        className="mt-6 flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+        className="mt-6 flex w-full items-center justify-center rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
       >
         {success ? t("continueToSignIn") : t("backToSignUp")}
       </Link>

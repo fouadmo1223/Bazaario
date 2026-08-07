@@ -48,7 +48,7 @@ export default async function DashboardThreadPage({ params }: { params: Promise<
       {thread.orderId ? (
         <Link
           href={`/dashboard/orders/${thread.orderId}`}
-          className="ml-4 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+          className="ml-4 text-sm text-brand hover:underline dark:text-brand"
         >
           {t("viewRelatedOrder")}
         </Link>

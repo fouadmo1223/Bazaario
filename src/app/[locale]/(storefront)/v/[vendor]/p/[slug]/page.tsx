@@ -191,7 +191,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <nav className="mb-6 text-sm text-zinc-500">
-        <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
+        <Link href={`/v/${vendorSlug}`} className="hover:text-brand">
           {localized(locale as Locale, vendor.name, vendor.nameAr)}
         </Link>
         <span className="mx-2">/</span>

@@ -18,7 +18,7 @@ export default async function LoginPage() {
       footer={
         <>
           {t("noAccount")}{" "}
-          <Link href="/register" className="font-medium text-indigo-600 hover:underline">
+          <Link href="/register" className="font-medium text-brand hover:underline">
             {t("createOne")}
           </Link>
         </>
@@ -30,7 +30,7 @@ export default async function LoginPage() {
         <LoginForm />
       </Suspense>
       <div className="mt-4 text-center">
-        <Link href="/forgot-password" className="text-sm text-zinc-500 hover:text-indigo-600">
+        <Link href="/forgot-password" className="text-sm text-zinc-500 hover:text-brand">
           {t("forgotPassword")}
         </Link>
       </div>

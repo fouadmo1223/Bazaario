@@ -101,7 +101,7 @@ export default async function VendorPage({
       />
 
       {banner && (
-        <div className="bg-indigo-600 px-6 py-2 text-center text-sm text-white">
+        <div className="bg-brand px-6 py-2 text-center text-sm text-white">
           {banner.message}
           {banner.linkUrl && (
             <a href={banner.linkUrl} className="ml-2 font-semibold underline underline-offset-2">

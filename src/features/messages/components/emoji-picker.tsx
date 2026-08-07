@@ -92,7 +92,7 @@ export function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
                 aria-label={g.label}
                 aria-pressed={group === i}
                 className={`rounded-md px-2 py-1 text-base transition ${
-                  group === i ? "bg-indigo-100 dark:bg-indigo-950" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  group === i ? "bg-brand/10" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 }`}
               >
                 {g.emoji}

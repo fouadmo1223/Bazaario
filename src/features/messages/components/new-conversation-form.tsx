@@ -83,7 +83,7 @@ export function NewConversationForm({
           onChange={(e) => setSubject(e.target.value)}
           maxLength={200}
           placeholder={t("subjectPlaceholder")}
-          className="mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
@@ -99,14 +99,14 @@ export function NewConversationForm({
           required
           maxLength={5000}
           placeholder={t("bodyPlaceholder")}
-          className="mt-1 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
       <button
         type="submit"
         disabled={pending || body.trim().length === 0}
-        className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+        className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
       >
         {pending ? t("sending") : (submitLabel ?? t("sendMessage"))}
       </button>

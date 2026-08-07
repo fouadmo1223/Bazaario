@@ -70,7 +70,7 @@ export function AddToCartButton({
         onClick={onClick}
         disabled={disabled || pending}
         aria-busy={pending}
-        className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         {disabled
           ? (soldOutLabel ?? t("soldOut"))

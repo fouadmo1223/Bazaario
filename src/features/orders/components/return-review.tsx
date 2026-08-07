@@ -57,7 +57,7 @@ export function ReturnReview({
             id="return-decline-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
           <div className="flex gap-3">
             <button

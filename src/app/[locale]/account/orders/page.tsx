@@ -50,7 +50,7 @@ export default async function AccountOrdersPage({
                 <li key={order.id}>
                   <Link
                     href={`/account/orders/${order.id}`}
-                    className="flex items-center gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-indigo-400 hover:shadow-sm dark:border-zinc-800"
+                    className="flex items-center gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
                   >
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
                       {order.firstItemImage ? (
@@ -128,7 +128,7 @@ function PageLink({
   return (
     <Link
       href={`/account/orders?page=${page}`}
-      className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+      className="text-sm text-brand hover:underline dark:text-brand"
     >
       {children}
     </Link>

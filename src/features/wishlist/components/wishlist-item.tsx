@@ -63,7 +63,7 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
         <div className="flex justify-between gap-4">
           <div className="min-w-0">
             <h3 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              <Link href={`/v/${item.vendorSlug}/p/${item.slug}`} className="hover:text-indigo-600">
+              <Link href={`/v/${item.vendorSlug}/p/${item.slug}`} className="hover:text-brand">
                 {item.title}
               </Link>
             </h3>
@@ -97,7 +97,7 @@ export function WishlistItem({ item }: { item: WishlistItemView }) {
             type="button"
             onClick={moveToCart}
             disabled={pending || !canBuy}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending ? t("working") : t("moveToCart")}
           </button>

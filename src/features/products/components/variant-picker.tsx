@@ -167,12 +167,12 @@ export function VariantPicker({
                     }
                     className={`rounded-lg border px-3 py-1.5 text-sm transition ${
                       active
-                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        ? "border-brand bg-brand text-white"
                         : state === "none"
                           ? "cursor-not-allowed border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
                           : state === "oos"
                             ? "border-zinc-200 text-zinc-400 line-through dark:border-zinc-800"
-                            : "border-zinc-300 text-zinc-700 hover:border-indigo-400 dark:border-zinc-700 dark:text-zinc-300"
+                            : "border-zinc-300 text-zinc-700 hover:border-brand dark:border-zinc-700 dark:text-zinc-300"
                     }`}
                   >
                     {value}

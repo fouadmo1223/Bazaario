@@ -60,7 +60,7 @@ export function ConversationList({
           <li key={row.id}>
             <Link
               href={`${basePath}/${row.id}`}
-              className="flex items-start gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-indigo-400 hover:shadow-sm dark:border-zinc-800"
+              className="flex items-start gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -94,7 +94,7 @@ export function ConversationList({
                 <span className="text-xs text-zinc-400">{relativeTime(row.lastMessageAt, t)}</span>
                 {row.unread > 0 ? (
                   <span
-                    className="inline-flex min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 py-0.5 text-[11px] font-semibold text-white"
+                    className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand px-1.5 py-0.5 text-[11px] font-semibold text-white"
                     aria-label={t("unreadAria", { count: row.unread })}
                   >
                     {row.unread}

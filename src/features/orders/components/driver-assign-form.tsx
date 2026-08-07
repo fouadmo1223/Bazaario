@@ -56,7 +56,7 @@ export function DriverAssignForm({
           type="button"
           onClick={assign}
           disabled={pending || !driverId || driverId === currentDriverId}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+          className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
         >
           {pending ? t("assigning") : currentDriverId ? t("reassign") : t("assign")}
         </button>

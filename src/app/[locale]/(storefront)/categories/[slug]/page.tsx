@@ -71,7 +71,7 @@ export default async function CategoryPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <nav className="mb-6 text-sm text-zinc-500">
-        <Link href="/categories" className="hover:text-indigo-600">
+        <Link href="/categories" className="hover:text-brand">
           {t("title")}
         </Link>
         <span className="mx-2">/</span>
@@ -105,7 +105,7 @@ export default async function CategoryPage({
               <p className="text-sm text-zinc-500">{t("emptyCategory")}</p>
               <Link
                 href="/products"
-                className="mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+                className="mt-3 inline-block text-sm text-brand hover:underline dark:text-brand"
               >
                 {t("browseAll")}
               </Link>

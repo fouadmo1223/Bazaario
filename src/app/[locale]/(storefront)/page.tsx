@@ -100,7 +100,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <h2 id="home-categories" className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
               {t("categories")}
             </h2>
-            <Link href="/categories" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
+            <Link href="/categories" className="text-sm text-brand hover:underline dark:text-brand">
               {t("allCategories")}
             </Link>
           </div>
@@ -109,7 +109,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <li key={c.slug}>
                 <Link
                   href={`/categories/${c.slug}`}
-                  className="flex h-24 items-end rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm font-medium text-zinc-800 transition hover:border-indigo-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                  className="flex h-24 items-end rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm font-medium text-zinc-800 transition hover:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                 >
                   {localized(locale as Locale, c.name, c.nameAr)}
                 </Link>
@@ -149,7 +149,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <li key={v.id}>
                 <Link
                   href={`/v/${v.slug}`}
-                  className="flex items-center gap-3 rounded-xl border border-zinc-200 p-4 transition hover:border-indigo-400 dark:border-zinc-800"
+                  className="flex items-center gap-3 rounded-xl border border-zinc-200 p-4 transition hover:border-brand dark:border-zinc-800"
                 >
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
                     {v.logo ? (
@@ -199,7 +199,7 @@ function ProductRail({
         <h2 id={id} className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           {title}
         </h2>
-        <Link href="/products" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
+        <Link href="/products" className="text-sm text-brand hover:underline dark:text-brand">
           {seeAllLabel}
         </Link>
       </div>

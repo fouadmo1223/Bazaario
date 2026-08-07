@@ -57,7 +57,7 @@ export default async function DriverDeliveryPage({ params }: { params: Promise<P
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
       <nav className="mb-6 text-sm text-zinc-500">
-        <Link href="/dashboard/deliveries" className="hover:text-indigo-600">
+        <Link href="/dashboard/deliveries" className="hover:text-brand">
           {t("deliveries")}
         </Link>
         <span className="mx-2">/</span>

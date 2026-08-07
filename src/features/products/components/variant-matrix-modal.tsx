@@ -295,14 +295,14 @@ export function VariantMatrixModal({
                   placeholder={t("optionNamePlaceholder")}
                   value={attr.name}
                   onChange={(e) => updateAttr(i, { name: e.target.value })}
-                  className="w-32 shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-32 shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
                 />
                 <input
                   aria-label={t("optionValues", { n: i + 1 })}
                   placeholder={t("optionValuesPlaceholder")}
                   value={attr.valuesText}
                   onChange={(e) => updateAttr(i, { valuesText: e.target.value })}
-                  className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
                 />
                 <button
                   type="button"
@@ -319,7 +319,7 @@ export function VariantMatrixModal({
           <button
             type="button"
             onClick={addAttr}
-            className="mt-3 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            className="mt-3 text-xs font-medium text-brand hover:underline dark:text-brand"
           >
             {t("addOption")}
           </button>
@@ -336,7 +336,7 @@ export function VariantMatrixModal({
             </h3>
             {combos.length > 0 && !tooMany && (
               <div className="flex items-center gap-2 text-xs">
-                <button type="button" onClick={() => setAllEnabled(true)} className="text-indigo-600 hover:underline dark:text-indigo-400">
+                <button type="button" onClick={() => setAllEnabled(true)} className="text-brand hover:underline dark:text-brand">
                   {t("enableAll")}
                 </button>
                 <span className="text-zinc-300 dark:text-zinc-700">·</span>
@@ -366,7 +366,7 @@ export function VariantMatrixModal({
                       value={skuPrefix}
                       onChange={(e) => setSkuPrefix(e.target.value)}
                       placeholder="TEE"
-                      className="w-24 rounded-md border border-zinc-200 bg-white px-2 py-1.5 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                      className="w-24 rounded-md border border-zinc-200 bg-white px-2 py-1.5 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
                     />
                   </label>
                   <button type="button" onClick={generateSkus} className="rounded-md border border-zinc-300 px-2.5 py-1.5 font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
@@ -383,7 +383,7 @@ export function VariantMatrixModal({
                       value={bulkPrice}
                       onChange={(e) => setBulkPrice(e.target.value)}
                       placeholder="0.00"
-                      className="w-24 rounded-md border border-zinc-200 bg-white px-2 py-1.5 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                      className="w-24 rounded-md border border-zinc-200 bg-white px-2 py-1.5 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950"
                     />
                   </label>
                   <button type="button" onClick={applyBulkPrice} className="rounded-md border border-zinc-300 px-2.5 py-1.5 font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
@@ -420,7 +420,7 @@ export function VariantMatrixModal({
                               checked={row.enabled}
                               onChange={(e) => setRow(key, { enabled: e.target.checked })}
                               aria-label={t("enableCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="h-4 w-4 accent-indigo-600"
+                              className="h-4 w-4 accent-brand"
                             />
                           </td>
                           {names.map((n) => (
@@ -434,7 +434,7 @@ export function VariantMatrixModal({
                               disabled={off}
                               onChange={(e) => setRow(key, { sku: e.target.value })}
                               aria-label={t("skuForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="w-32 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+                              className="w-32 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm focus:border-brand focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -446,7 +446,7 @@ export function VariantMatrixModal({
                               disabled={off}
                               onChange={(e) => setRow(key, { price: e.target.value })}
                               aria-label={t("priceForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+                              className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-brand focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -458,7 +458,7 @@ export function VariantMatrixModal({
                               disabled={off}
                               onChange={(e) => setRow(key, { compareAt: e.target.value })}
                               aria-label={t("compareAtForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+                              className="w-20 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-brand focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -470,7 +470,7 @@ export function VariantMatrixModal({
                               disabled={off}
                               onChange={(e) => setRow(key, { stock: e.target.value })}
                               aria-label={t("stockForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="w-16 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-indigo-500 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+                              className="w-16 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums focus:border-brand focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -480,7 +480,7 @@ export function VariantMatrixModal({
                               disabled={off}
                               onChange={(e) => setRow(key, { active: e.target.checked })}
                               aria-label={t("activeForCombo", { combo: names.map((n) => combo[n]).join(" / ") })}
-                              className="h-4 w-4 accent-indigo-600 disabled:opacity-40"
+                              className="h-4 w-4 accent-brand disabled:opacity-40"
                             />
                           </td>
                         </tr>
@@ -513,7 +513,7 @@ export function VariantMatrixModal({
             type="button"
             onClick={onSave}
             disabled={pending}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
           >
             {pending ? t("saving") : t("saveVariants")}
           </button>

@@ -81,7 +81,7 @@ export default async function ProductsPage({
               <p className="text-sm text-zinc-500">{t("empty")}</p>
               <Link
                 href="/products"
-                className="mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+                className="mt-3 inline-block text-sm text-brand hover:underline dark:text-brand"
               >
                 {t("clearFilters")}
               </Link>

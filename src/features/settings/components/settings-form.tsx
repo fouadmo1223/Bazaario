@@ -46,7 +46,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
             name="name"
             required
             defaultValue={initial.name}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
         <div>
@@ -58,7 +58,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
             name="nameAr"
             dir="rtl"
             defaultValue={initial.nameAr}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
           <p className="mt-1 text-xs text-zinc-500">{t("storeNameArHint")}</p>
         </div>
@@ -77,7 +77,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
             name="description"
             rows={4}
             defaultValue={initial.description}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
         <div>
@@ -93,7 +93,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
             dir="rtl"
             rows={4}
             defaultValue={initial.descriptionAr}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
           <p className="mt-1 text-xs text-zinc-500">{t("descriptionArHint")}</p>
         </div>
@@ -113,7 +113,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
       >
         {pending ? t("saving") : t("saveChanges")}
       </button>

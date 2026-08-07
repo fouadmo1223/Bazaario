@@ -84,7 +84,7 @@ export function ProductGallery({
                 onClick={() => setIndex(i)}
                 className={`relative aspect-square overflow-hidden rounded-lg border-2 transition ${
                   selected
-                    ? "border-indigo-600"
+                    ? "border-brand"
                     : "border-transparent hover:border-zinc-300 dark:hover:border-zinc-700"
                 }`}
               >

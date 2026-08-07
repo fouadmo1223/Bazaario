@@ -54,7 +54,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <nav className="mb-6 text-sm text-zinc-500">
-          <Link href="/account/orders" className="hover:text-indigo-600">
+          <Link href="/account/orders" className="hover:text-brand">
             {t("yourOrders")}
           </Link>
           <span className="mx-2">/</span>
@@ -91,7 +91,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
           <ReorderButton orderId={order.id} />
           <Link
             href={`/account/orders/${order.id}/invoice`}
-            className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+            className="text-sm text-brand hover:underline dark:text-brand"
           >
             {t("downloadInvoice")}
           </Link>

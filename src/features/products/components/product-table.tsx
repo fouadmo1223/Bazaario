@@ -176,7 +176,7 @@ export function ProductTable({
                       {p.status === "active" && (
                         <Link
                           href={`/v/${vendorSlug}/p/${p.slug}`}
-                          className="text-xs text-zinc-500 hover:text-indigo-600 hover:underline"
+                          className="text-xs text-zinc-500 hover:text-brand hover:underline"
                         >
                           {t("view")}
                         </Link>
@@ -186,14 +186,14 @@ export function ProductTable({
                           type="button"
                           onClick={() => openVariants(p)}
                           disabled={loadingVariants === p.id}
-                          className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50 dark:text-indigo-400"
+                          className="text-xs font-medium text-brand hover:underline disabled:opacity-50 dark:text-brand"
                         >
                           {loadingVariants === p.id ? t("loading") : t("variants")}
                         </button>
                       )}
                       <Link
                         href={`/dashboard/products/${p.id}`}
-                        className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        className="text-xs font-medium text-brand hover:underline dark:text-brand"
                       >
                         {t("edit")}
                       </Link>

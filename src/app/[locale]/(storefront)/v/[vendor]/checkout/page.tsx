@@ -97,11 +97,11 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-5xl px-6 py-10">
         <nav className="mb-6 text-sm text-zinc-500">
-          <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
+          <Link href={`/v/${vendorSlug}`} className="hover:text-brand">
             {vendor.name}
           </Link>
           <span className="mx-2">/</span>
-          <Link href={`/v/${vendorSlug}/cart`} className="hover:text-indigo-600">
+          <Link href={`/v/${vendorSlug}/cart`} className="hover:text-brand">
             {t("cart")}
           </Link>
           <span className="mx-2">/</span>

@@ -83,7 +83,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
           <div>
@@ -95,7 +95,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              className="mt-1 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
 
@@ -109,7 +109,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
             <button
               type="submit"
               disabled={pending || !reason.trim()}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
             >
               {pending ? t("sending") : t("submitRequest")}
             </button>

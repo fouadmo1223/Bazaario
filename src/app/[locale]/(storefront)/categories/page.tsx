@@ -40,7 +40,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
             <li key={c.slug}>
               <Link
                 href={`/categories/${c.slug}`}
-                className="group block overflow-hidden rounded-xl border border-zinc-200 transition hover:border-indigo-400 hover:shadow-md dark:border-zinc-800"
+                className="group block overflow-hidden rounded-xl border border-zinc-200 transition hover:border-brand hover:shadow-md dark:border-zinc-800"
               >
                 <div className="relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-900">
                   {c.image ? (

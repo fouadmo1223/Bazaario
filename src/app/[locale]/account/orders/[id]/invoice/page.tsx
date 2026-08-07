@@ -53,7 +53,7 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-3xl px-6 py-10 print:px-0 print:py-6">
         <div className="flex items-center justify-between print:hidden">
-          <Link href={`/account/orders/${order.id}`} className="text-sm text-zinc-500 hover:text-indigo-600">
+          <Link href={`/account/orders/${order.id}`} className="text-sm text-zinc-500 hover:text-brand">
             {t("backToOrder")}
           </Link>
           <InvoicePrintButton />

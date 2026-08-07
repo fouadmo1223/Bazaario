@@ -184,7 +184,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
           <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         {unread > 0 && (
-          <span className="absolute -end-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+          <span className="absolute -end-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold tabular-nums text-white">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
@@ -198,7 +198,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
               <button
                 type="button"
                 onClick={markAll}
-                className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                className="text-xs font-medium text-brand hover:underline dark:text-brand"
               >
                 {t("markAllRead")}
               </button>
@@ -222,13 +222,13 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
                       type="button"
                       onClick={() => openItem(item)}
                       className={`flex w-full gap-2 border-b border-zinc-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-zinc-50 dark:border-zinc-900 dark:hover:bg-zinc-900 ${
-                        item.readAt ? "" : "bg-indigo-50/50 dark:bg-indigo-950/20"
+                        item.readAt ? "" : "bg-brand/5 dark:bg-brand/10"
                       }`}
                     >
                       <span
                         aria-hidden
                         className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                          item.readAt ? "bg-transparent" : "bg-indigo-600"
+                          item.readAt ? "bg-transparent" : "bg-brand"
                         }`}
                       />
                       <span className="min-w-0 flex-1">

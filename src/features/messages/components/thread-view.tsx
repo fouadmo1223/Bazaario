@@ -256,7 +256,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                       mine
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-brand text-white"
                         : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                     }`}
                   >
@@ -379,12 +379,12 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 rows={2}
                 maxLength={5000}
                 placeholder={t("writeMessage")}
-                className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
               />
               <button
                 type="submit"
                 disabled={pending || uploading > 0 || (body.trim().length === 0 && attachments.length === 0)}
-                className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+                className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
               >
                 {pending ? t("sending") : t("send")}
               </button>
@@ -443,7 +443,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       href={attachment.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-2 text-xs text-indigo-600 hover:underline dark:border-zinc-800 dark:text-indigo-400"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-2 text-xs text-brand hover:underline dark:border-zinc-800 dark:text-brand"
     >
       📎 {attachment.name}
     </a>

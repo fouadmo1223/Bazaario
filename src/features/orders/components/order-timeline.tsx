@@ -20,7 +20,7 @@ export function OrderTimeline({
             <span
               aria-hidden
               className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                isLatest ? "bg-indigo-600" : "bg-zinc-300 dark:bg-zinc-700"
+                isLatest ? "bg-brand" : "bg-zinc-300 dark:bg-zinc-700"
               }`}
             />
             <div className="min-w-0">

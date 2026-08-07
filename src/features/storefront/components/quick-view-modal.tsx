@@ -118,7 +118,7 @@ export function QuickViewModal({
                 <Link
                   href={href}
                   onClick={onClose}
-                  className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
+                  className="flex-1 rounded-lg bg-brand px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-hover"
                 >
                   {t("chooseOptions")}
                 </Link>
@@ -137,7 +137,7 @@ export function QuickViewModal({
             <Link
               href={href}
               onClick={onClose}
-              className="block text-center text-sm text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
+              className="block text-center text-sm text-brand underline-offset-4 hover:underline dark:text-brand"
             >
               {t("viewFullDetails")}
             </Link>

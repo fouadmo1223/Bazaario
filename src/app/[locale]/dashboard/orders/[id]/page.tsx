@@ -70,7 +70,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <nav className="mb-6 text-sm text-zinc-500">
-        <Link href="/dashboard/orders" className="hover:text-indigo-600">
+        <Link href="/dashboard/orders" className="hover:text-brand">
           {t("orders")}
         </Link>
         <span className="mx-2">/</span>

@@ -60,7 +60,7 @@ export function StatusActions({
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
               status === "cancelled" || status === "refunded"
                 ? "border border-zinc-300 text-zinc-700 hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-brand text-white hover:bg-brand-hover"
             }`}
           >
             {pending && target === status

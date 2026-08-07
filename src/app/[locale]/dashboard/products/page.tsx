@@ -111,7 +111,7 @@ function Chip({ label, href, active }: { label: string; href: string; active: bo
       aria-current={active ? "page" : undefined}
       className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
         active
-          ? "bg-indigo-600 text-white"
+          ? "bg-brand text-white"
           : "border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
       }`}
     >
@@ -144,7 +144,7 @@ function PageLink({
   return (
     <Link
       href={`/dashboard/products?${query}`}
-      className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+      className="text-sm text-brand hover:underline dark:text-brand"
     >
       {children}
     </Link>

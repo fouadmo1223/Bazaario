@@ -87,7 +87,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
                     <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">
                       {m.name}{" "}
                       {m.isOwner ? (
-                        <span className="ml-1 rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                        <span className="ml-1 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
                           {t("owner")}
                         </span>
                       ) : null}

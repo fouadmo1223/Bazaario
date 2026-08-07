@@ -103,7 +103,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
   }
 
   const field =
-    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
+    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
   const label = "block text-xs font-medium text-zinc-600 dark:text-zinc-400";
 
   return (
@@ -191,7 +191,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
               type="checkbox"
               name="isDefault"
               defaultChecked={editing.isDefault}
-              className="h-4 w-4 accent-indigo-600"
+              className="h-4 w-4 accent-brand"
             />
             {t("useAsDefault")}
           </label>
@@ -200,7 +200,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
             <button
               type="submit"
               disabled={pending}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
             >
               {pending ? t("saving") : editing.id ? t("saveAddress") : t("addAddress")}
             </button>
@@ -233,7 +233,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       {address.label}
                     </span>
                     {address.isDefault ? (
-                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
                         {t("default")}
                       </span>
                     ) : null}

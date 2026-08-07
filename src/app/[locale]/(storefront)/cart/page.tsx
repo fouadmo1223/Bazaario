@@ -91,7 +91,7 @@ export default async function GlobalCartPage() {
           <p className="text-sm text-zinc-500">{t("empty")}</p>
           <Link
             href="/products"
-            className="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            className="mt-4 inline-block rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             {t("browseProducts")}
           </Link>
@@ -107,7 +107,7 @@ export default async function GlobalCartPage() {
               <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
                 <Link
                   href={`/v/${cart.vendorSlug}`}
-                  className="text-sm font-semibold text-zinc-900 hover:text-indigo-600 dark:text-zinc-100"
+                  className="text-sm font-semibold text-zinc-900 hover:text-brand dark:text-zinc-100"
                 >
                   {cart.vendorName}
                 </Link>
@@ -153,7 +153,7 @@ export default async function GlobalCartPage() {
                   </Link>
                   <Link
                     href={`/v/${cart.vendorSlug}/checkout`}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
                   >
                     {t("checkout")}
                   </Link>

@@ -212,7 +212,7 @@ function Field({
         name={name}
         aria-invalid={errors?.length ? true : undefined}
         aria-describedby={describedBy}
-        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         {...input}
       />
       {hint && !errors?.length && (
@@ -260,7 +260,7 @@ function Choice({
         value={value}
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 accent-indigo-600"
+        className="h-4 w-4 accent-brand"
       />
       <span className="flex-1">
         <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>

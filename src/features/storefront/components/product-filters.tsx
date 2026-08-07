@@ -71,7 +71,7 @@ export function ProductFilters({
               const search = params.get("search");
               router.push(search ? `${pathname}?search=${encodeURIComponent(search)}` : pathname);
             }}
-            className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+            className="text-xs text-brand hover:underline dark:text-brand"
           >
             {t("clear", { count: activeCount })}
           </button>
@@ -165,7 +165,7 @@ export function ProductFilters({
                 aria-pressed={active}
                 className={`block w-full rounded-lg px-2 py-1.5 text-left text-sm transition ${
                   active
-                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                    ? "bg-brand/10 text-brand"
                     : "text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-900"
                 }`}
               >
@@ -182,7 +182,7 @@ export function ProductFilters({
             type="checkbox"
             checked={params.get("inStock") === "true"}
             onChange={(e) => apply({ inStock: e.target.checked ? "true" : null })}
-            className="h-4 w-4 accent-indigo-600"
+            className="h-4 w-4 accent-brand"
           />
           {t("inStockOnly")}
         </label>

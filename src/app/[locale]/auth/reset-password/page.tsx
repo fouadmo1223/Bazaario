@@ -22,7 +22,7 @@ export default async function ResetPasswordPage({
         </div>
         <Link
           href="/forgot-password"
-          className="mt-6 flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          className="mt-6 flex w-full items-center justify-center rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
         >
           {t("requestNewLink")}
         </Link>

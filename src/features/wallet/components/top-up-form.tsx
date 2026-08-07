@@ -50,14 +50,14 @@ export function TopUpForm() {
             min="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-28 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="w-28 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
       </div>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
       >
         {pending ? t("redirecting") : t("payWithCard")}
       </button>

@@ -106,7 +106,7 @@ function BannerRow({
           <button
             type="button"
             onClick={onEdit}
-            className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            className="text-xs font-medium text-brand hover:underline dark:text-brand"
           >
             {t("edit")}
           </button>
@@ -190,7 +190,7 @@ function BannerForm({
           maxLength={200}
           required
           placeholder={t("messagePlaceholder")}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
@@ -205,7 +205,7 @@ function BannerForm({
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             placeholder="https://…"
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
         <div>
@@ -218,7 +218,7 @@ function BannerForm({
             onChange={(e) => setLinkLabel(e.target.value)}
             maxLength={40}
             placeholder={t("linkTextPlaceholder")}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
       </div>
@@ -233,7 +233,7 @@ function BannerForm({
             type="date"
             value={startsAt}
             onChange={(e) => setStartsAt(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
         <div>
@@ -245,7 +245,7 @@ function BannerForm({
             type="date"
             value={endsAt}
             onChange={(e) => setEndsAt(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
       </div>

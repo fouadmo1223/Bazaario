@@ -209,7 +209,7 @@ export function ProductFormModal({
                     name="categories"
                     value={c.id}
                     defaultChecked={initial?.categories.includes(c.id)}
-                    className="h-4 w-4 accent-indigo-600"
+                    className="h-4 w-4 accent-brand"
                   />
                   {c.name}
                 </label>
@@ -238,7 +238,7 @@ export function ProductFormModal({
               name="description"
               rows={4}
               defaultValue={initial?.description}
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
             />
           </div>
           <div>
@@ -254,7 +254,7 @@ export function ProductFormModal({
               dir="rtl"
               rows={4}
               defaultValue={initial?.descriptionAr}
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
             />
             <p className="mt-1 text-xs text-zinc-500">{t("descriptionArHint")}</p>
           </div>
@@ -307,7 +307,7 @@ export function ProductFormModal({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
           >
             {pending ? t("saving") : editing ? t("saveChanges") : t("createProduct")}
           </button>
@@ -353,7 +353,7 @@ function Field({
         name={name}
         aria-invalid={errors?.length ? true : undefined}
         aria-describedby={errors?.length ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         {...input}
       />
       {hint && !errors?.length && (
@@ -420,7 +420,7 @@ function Check({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="h-4 w-4 accent-indigo-600"
+        className="h-4 w-4 accent-brand"
       />
       {label}
     </label>

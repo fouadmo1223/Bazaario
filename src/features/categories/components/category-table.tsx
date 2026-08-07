@@ -114,7 +114,7 @@ export function CategoryTable({
                       <button
                         type="button"
                         onClick={() => setEditing(c)}
-                        className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        className="text-xs font-medium text-brand hover:underline dark:text-brand"
                       >
                         {t("edit")}
                       </button>

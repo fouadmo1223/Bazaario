@@ -63,7 +63,7 @@ export function ProfileForm({
   }
 
   const field =
-    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
+    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
   const label = "block text-sm font-medium text-zinc-700 dark:text-zinc-300";
 
   return (
@@ -123,7 +123,7 @@ export function ProfileForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+        className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
       >
         {pending ? t("saving") : t("saveChanges")}
       </button>

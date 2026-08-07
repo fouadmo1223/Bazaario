@@ -132,7 +132,7 @@ export function Select({
           }
         }}
         {...rest}
-        className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-start text-sm text-zinc-900 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-start text-sm text-zinc-900 transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
       >
         <span className={`truncate ${selected ? "" : "text-zinc-400"}`}>
           {selected ? selected.label : (placeholder ?? "Select…")}
@@ -174,7 +174,7 @@ export function Select({
                   ? "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
                   : "cursor-pointer text-zinc-700 dark:text-zinc-200",
                 !o.disabled && i === activeIndex
-                  ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                  ? "bg-brand/10 text-brand"
                   : "",
                 o.value === current ? "font-medium" : "",
               ]

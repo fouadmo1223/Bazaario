@@ -6,7 +6,7 @@ export function InvoicePrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="print:hidden rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
+      className="print:hidden rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover"
     >
       Print / Save as PDF
     </button>

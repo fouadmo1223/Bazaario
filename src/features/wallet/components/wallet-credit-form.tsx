@@ -78,7 +78,7 @@ export function WalletCreditForm({
           min="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
@@ -90,7 +90,7 @@ export function WalletCreditForm({
           id="wallet-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
@@ -104,7 +104,7 @@ export function WalletCreditForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
         >
           {pending ? t("crediting") : t("confirmCredit")}
         </button>

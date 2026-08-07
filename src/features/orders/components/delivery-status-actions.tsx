@@ -57,7 +57,7 @@ export function DeliveryStatusActions({
         type="button"
         onClick={mark}
         disabled={pending}
-        className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
+        className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
       >
         {pending ? t("updating") : t("markStatus", { status: orderStatusLabel(next, tStatus) })}
       </button>

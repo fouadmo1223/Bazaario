@@ -63,7 +63,7 @@ export default async function DriverDeliveriesPage({
             <li key={order.id}>
               <Link
                 href={`/dashboard/deliveries/${order.id}`}
-                className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-indigo-400 hover:shadow-sm dark:border-zinc-800"
+                className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -115,7 +115,7 @@ function PageLink({
   return (
     <Link
       href={`/dashboard/deliveries?page=${page}`}
-      className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+      className="text-sm text-brand hover:underline dark:text-brand"
     >
       {children}
     </Link>

@@ -98,7 +98,7 @@ export function ProductSearchBox({
           onFocus={() => setOpen(true)}
           autoComplete="off"
           placeholder={t("searchPlaceholder")}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
         <button
           type="submit"

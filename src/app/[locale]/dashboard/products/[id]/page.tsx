@@ -46,7 +46,7 @@ export default async function EditProductPage({ params }: { params: Promise<Para
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       <nav className="mb-6 text-sm text-zinc-500">
-        <Link href="/dashboard/products" className="hover:text-indigo-600">
+        <Link href="/dashboard/products" className="hover:text-brand">
           {t("title")}
         </Link>
         <span className="mx-2">/</span>
