@@ -1,8 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render as rtlRender, screen, fireEvent } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import type { ReactElement } from "react";
 import { ThreadView } from "@/features/messages/components/thread-view";
 import type { Thread } from "@/features/messages/queries";
 import type { ChatMessagePayload } from "@/shared/hooks/use-socket";
+import messages from "@/i18n/messages/en.json";
+
+function render(ui: ReactElement) {
+  return rtlRender(
+    <NextIntlClientProvider locale="en" messages={messages}>
+      {ui}
+    </NextIntlClientProvider>,
+  );
+}
 
 /**
  * `useConversation` (typing state, read receipts, socket relay) is mocked
