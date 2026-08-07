@@ -113,7 +113,7 @@ export function SettingsForm({ vendorId, initial }: { vendorId: string; initial:
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
+        className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
         {pending ? t("saving") : t("saveChanges")}
       </button>

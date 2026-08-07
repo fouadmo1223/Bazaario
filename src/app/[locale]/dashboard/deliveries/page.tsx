@@ -47,14 +47,14 @@ export default async function DriverDeliveriesPage({
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">{t("count", { count: orders.total })}</p>
       </header>
 
       {orders.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
+        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
           <p className="text-sm text-zinc-500">{t("nothingAssigned")}</p>
         </div>
       ) : (
@@ -63,7 +63,7 @@ export default async function DriverDeliveriesPage({
             <li key={order.id}>
               <Link
                 href={`/dashboard/deliveries/${order.id}`}
-                className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
+                className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm dark:border-zinc-800"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">

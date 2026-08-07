@@ -58,7 +58,7 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
       {groups.map(({ vendor, staff }) => (
         <section
           key={vendor.id}
-          className="rounded-2xl border border-zinc-200 dark:border-zinc-800"
+          className="rounded-2xl border border-zinc-200 transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800"
         >
           <header className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
             <div className="min-w-0">

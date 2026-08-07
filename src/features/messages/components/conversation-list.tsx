@@ -60,7 +60,7 @@ export function ConversationList({
           <li key={row.id}>
             <Link
               href={`${basePath}/${row.id}`}
-              className="flex items-start gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
+              className="flex items-start gap-4 rounded-2xl border border-zinc-200 p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm dark:border-zinc-800"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">

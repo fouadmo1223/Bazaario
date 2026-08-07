@@ -32,7 +32,7 @@ export default async function NewSupportThreadPage() {
           {t("backToMessages")}
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("title")}
         </h1>
         <p className="mt-1 mb-6 text-sm text-zinc-500">{t("hint")}</p>

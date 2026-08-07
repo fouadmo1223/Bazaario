@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import type { RevenuePoint } from "@/server/services/analytics.service";
 
-const ACCENT = "#4f46e5";
+const ACCENT = "#4338ca";
 
 /** Daily revenue area chart. Recharts is client-only, so this is a leaf client component. */
 export function RevenueChart({ data, currency = "USD" }: { data: RevenuePoint[]; currency?: string }) {
@@ -27,7 +27,7 @@ export function RevenueChart({ data, currency = "USD" }: { data: RevenuePoint[];
     new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
   return (
-    <div className="h-72 w-full rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>

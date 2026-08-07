@@ -106,7 +106,7 @@ export function NewConversationForm({
       <button
         type="submit"
         disabled={pending || body.trim().length === 0}
-        className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-50"
+        className="rounded-xl bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
         {pending ? t("sending") : (submitLabel ?? t("sendMessage"))}
       </button>

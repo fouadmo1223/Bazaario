@@ -46,7 +46,7 @@ export default async function ContactVendorPage({ params }: { params: Promise<{ 
           {t("backToOrder", { number: order.number })}
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("messageVendor", { vendor: order.vendorName })}
         </h1>
         <p className="mt-1 mb-6 text-sm text-zinc-500">{t("aboutOrder", { number: order.number })}</p>

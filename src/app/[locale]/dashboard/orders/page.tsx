@@ -55,7 +55,7 @@ export default async function DashboardOrdersPage({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -77,11 +77,11 @@ export default async function DashboardOrdersPage({
       </nav>
 
       {orders.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
+        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
           <p className="text-sm text-zinc-500">{t("noOrders")}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
               <tr>

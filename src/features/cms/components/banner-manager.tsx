@@ -20,7 +20,7 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md"
           >
             {t("newBanner")}
           </button>
@@ -28,20 +28,20 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
       </div>
 
       {adding && (
-        <div className="mb-6 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="mb-6 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
           <BannerForm vendorId={vendorId} onDone={() => setAdding(false)} />
         </div>
       )}
 
       {banners.length === 0 && !adding ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
+        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
           <p className="text-sm text-zinc-500">{t("noBanners")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {banners.map((b) =>
             editing?.id === b.id ? (
-              <li key={b.id} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+              <li key={b.id} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
                 <BannerForm vendorId={vendorId} initial={b} onDone={() => setEditing(null)} />
               </li>
             ) : (
@@ -82,7 +82,7 @@ function BannerRow({
   }
 
   return (
-    <li className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <li className="rounded-2xl border border-zinc-200 p-4 transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm text-zinc-900 dark:text-zinc-100">{banner.message}</p>

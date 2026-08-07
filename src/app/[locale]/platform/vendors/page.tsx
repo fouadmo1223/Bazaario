@@ -23,7 +23,7 @@ export default async function PlatformVendorsPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-10 px-6 py-10">
       <div>
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
         <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
       </div>
 

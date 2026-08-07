@@ -34,7 +34,7 @@ export default async function AccountOrdersPage({
   return (
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">{t("count", { count: orders.total })}</p>
@@ -50,7 +50,7 @@ export default async function AccountOrdersPage({
                 <li key={order.id}>
                   <Link
                     href={`/account/orders/${order.id}`}
-                    className="flex items-center gap-4 rounded-xl border border-zinc-200 p-4 transition hover:border-brand hover:shadow-sm dark:border-zinc-800"
+                    className="flex items-center gap-4 rounded-2xl border border-zinc-200 p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm dark:border-zinc-800"
                   >
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
                       {order.firstItemImage ? (

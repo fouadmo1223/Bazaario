@@ -28,7 +28,7 @@ export function DeliveryMap({ orderId, destination }: { orderId: string; destina
 
   if (!center) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-xl border border-dashed border-zinc-300 text-sm text-zinc-500 dark:border-zinc-800">
+      <div className="flex h-64 items-center justify-center rounded-2xl border border-dashed border-zinc-300 text-sm text-zinc-500 dark:border-zinc-800">
         {connected ? "Waiting for the driver's location…" : "Connecting…"}
       </div>
     );
@@ -36,7 +36,7 @@ export function DeliveryMap({ orderId, destination }: { orderId: string; destina
 
   return (
     <div>
-      <div className="h-64 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+      <div className="h-64 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
         <MapContainer center={[center.lat, center.lng]} zoom={14} style={{ height: "100%", width: "100%" }}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

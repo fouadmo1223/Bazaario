@@ -392,7 +392,7 @@ export function VariantMatrixModal({
                 </div>
               </div>
 
-              <div className="mt-3 overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="mt-3 overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
                 <table className="w-full min-w-[640px] text-sm">
                   <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">
                     <tr>
@@ -513,7 +513,7 @@ export function VariantMatrixModal({
             type="button"
             onClick={onSave}
             disabled={pending}
-            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
+            className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
           >
             {pending ? t("saving") : t("saveVariants")}
           </button>
