@@ -1,26 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createBannerAction, updateBannerAction, deleteBannerAction } from "../actions";
 import type { BannerView } from "../queries";
 
 /** Add/edit/delete a vendor's storefront announcement banners. */
 export function BannerManager({ vendorId, banners }: { vendorId: string; banners: BannerView[] }) {
+  const t = useTranslations("BannerManager");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<BannerView | null>(null);
 
   return (
     <div>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">{banners.length} shown</p>
+        <p className="text-sm text-zinc-500">{t("shown", { count: banners.length })}</p>
         {!adding && (
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
-            New banner
+            {t("newBanner")}
           </button>
         )}
       </div>
@@ -33,7 +35,7 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
 
       {banners.length === 0 && !adding ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">No banners yet.</p>
+          <p className="text-sm text-zinc-500">{t("noBanners")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -61,12 +63,13 @@ function BannerRow({
   banner: BannerView;
   onEdit: () => void;
 }) {
+  const t = useTranslations("BannerManager");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function remove() {
-    if (!confirm("Delete this banner?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setError(null);
     startTransition(async () => {
       const result = await deleteBannerAction(vendorId, banner.id);
@@ -88,7 +91,7 @@ function BannerRow({
               {banner.linkLabel || banner.linkUrl} → {banner.linkUrl}
             </p>
           )}
-          <p className="mt-1 text-xs text-zinc-400">{windowLabel(banner)}</p>
+          <p className="mt-1 text-xs text-zinc-400">{windowLabel(banner, t)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span
@@ -98,14 +101,14 @@ function BannerRow({
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
             }`}
           >
-            {banner.isActive ? "Active" : "Off"}
+            {banner.isActive ? t("active") : t("off")}
           </span>
           <button
             type="button"
             onClick={onEdit}
             className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            Edit
+            {t("edit")}
           </button>
           <button
             type="button"
@@ -113,7 +116,7 @@ function BannerRow({
             disabled={pending}
             className="text-xs text-zinc-500 hover:text-red-600 hover:underline disabled:opacity-50"
           >
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? t("deleting") : t("delete")}
           </button>
         </div>
       </div>
@@ -126,10 +129,10 @@ function BannerRow({
   );
 }
 
-function windowLabel(b: BannerView): string {
-  if (!b.startsAt && !b.endsAt) return "Always shown while active";
-  const from = b.startsAt ? new Date(b.startsAt).toLocaleDateString() : "now";
-  const to = b.endsAt ? new Date(b.endsAt).toLocaleDateString() : "no end date";
+function windowLabel(b: BannerView, t: ReturnType<typeof useTranslations>): string {
+  if (!b.startsAt && !b.endsAt) return t("alwaysShown");
+  const from = b.startsAt ? new Date(b.startsAt).toLocaleDateString() : t("windowNow");
+  const to = b.endsAt ? new Date(b.endsAt).toLocaleDateString() : t("windowNoEnd");
   return `${from} → ${to}`;
 }
 
@@ -146,6 +149,7 @@ function BannerForm({
   initial?: BannerView;
   onDone: () => void;
 }) {
+  const t = useTranslations("BannerManager");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState(initial?.message ?? "");
@@ -177,7 +181,7 @@ function BannerForm({
     <form onSubmit={submit} noValidate className="space-y-3">
       <div>
         <label htmlFor="banner-message" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Message
+          {t("message")}
         </label>
         <input
           id="banner-message"
@@ -185,7 +189,7 @@ function BannerForm({
           onChange={(e) => setMessage(e.target.value)}
           maxLength={200}
           required
-          placeholder="Free shipping on orders over $50 this week"
+          placeholder={t("messagePlaceholder")}
           className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
@@ -193,7 +197,7 @@ function BannerForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="banner-link-url" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Link (optional)
+            {t("linkOptional")}
           </label>
           <input
             id="banner-link-url"
@@ -206,14 +210,14 @@ function BannerForm({
         </div>
         <div>
           <label htmlFor="banner-link-label" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Link text (optional)
+            {t("linkTextOptional")}
           </label>
           <input
             id="banner-link-label"
             value={linkLabel}
             onChange={(e) => setLinkLabel(e.target.value)}
             maxLength={40}
-            placeholder="Shop now"
+            placeholder={t("linkTextPlaceholder")}
             className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
           />
         </div>
@@ -222,7 +226,7 @@ function BannerForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="banner-starts" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Starts (optional)
+            {t("startsOptional")}
           </label>
           <input
             id="banner-starts"
@@ -234,7 +238,7 @@ function BannerForm({
         </div>
         <div>
           <label htmlFor="banner-ends" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Ends (optional)
+            {t("endsOptional")}
           </label>
           <input
             id="banner-ends"
@@ -253,7 +257,7 @@ function BannerForm({
           onChange={(e) => setIsActive(e.target.checked)}
           className="rounded border-zinc-300 dark:border-zinc-700"
         />
-        Active
+        {t("activeLabel")}
       </label>
 
       {error && (
@@ -268,7 +272,7 @@ function BannerForm({
           disabled={pending || !message.trim()}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
         >
-          {pending ? "Saving…" : initial ? "Save changes" : "Create banner"}
+          {pending ? t("saving") : initial ? t("saveChanges") : t("createBanner")}
         </button>
         <button
           type="button"
@@ -276,7 +280,7 @@ function BannerForm({
           disabled={pending}
           className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

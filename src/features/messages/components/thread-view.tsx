@@ -27,6 +27,7 @@ import type { Thread } from "../queries";
  */
 export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: string }) {
   const t = useTranslations("ThreadView");
+  const tStatus = useTranslations("ConversationStatus");
   const { messages, append, typingUsers, connected, setTyping, reads, emitRead } = useConversation(
     thread.id,
     thread.messages,
@@ -191,7 +192,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
               ? t("withNames", { names: thread.counterparties.join(", ") })
               : t("noOneReplied")}
             {" · "}
-            <span>{thread.status}</span>
+            <span>{tStatus(thread.status)}</span>
           </p>
         </div>
 

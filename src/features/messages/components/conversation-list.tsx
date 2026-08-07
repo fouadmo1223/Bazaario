@@ -35,6 +35,7 @@ export function ConversationList({
   emptyMessage?: string;
 }) {
   const t = useTranslations("ConversationList");
+  const tStatus = useTranslations("ConversationStatus");
   const KIND_LABELS: Record<string, string> = {
     customer_vendor: t("kindStore"),
     admin_vendor: t("kindPlatform"),
@@ -74,7 +75,7 @@ export function ConversationList({
                       STATUS_STYLES[row.status] ?? STATUS_STYLES.closed
                     }`}
                   >
-                    {row.status}
+                    {tStatus(row.status)}
                   </span>
                 </div>
 

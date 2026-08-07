@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { CouponFormModal } from "./coupon-form-modal";
@@ -28,6 +29,7 @@ export function CouponTable({
   products: Option[];
   categories: Option[];
 }) {
+  const t = useTranslations("CouponTable");
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<CouponView | null>(null);
@@ -52,13 +54,13 @@ export function CouponTable({
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">{coupons.length} shown</p>
+        <p className="text-sm text-zinc-500">{t("shown", { count: coupons.length })}</p>
         <button
           type="button"
           onClick={() => setAdding(true)}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
         >
-          New coupon
+          {t("newCoupon")}
         </button>
       </div>
 
@@ -73,13 +75,13 @@ export function CouponTable({
 
       {coupons.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">No coupons yet.</p>
+          <p className="text-sm text-zinc-500">{t("noCoupons")}</p>
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
-            Create your first coupon
+            {t("createFirst")}
           </button>
         </div>
       ) : (
@@ -87,12 +89,12 @@ export function CouponTable({
           <table className="w-full min-w-[720px] text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
               <tr>
-                <Th>Code</Th>
-                <Th>Discount</Th>
-                <Th>Limits</Th>
-                <Th>Window</Th>
-                <Th>Status</Th>
-                <Th className="text-right">Actions</Th>
+                <Th>{t("colCode")}</Th>
+                <Th>{t("colDiscount")}</Th>
+                <Th>{t("colLimits")}</Th>
+                <Th>{t("colWindow")}</Th>
+                <Th>{t("colStatus")}</Th>
+                <Th className="text-right">{t("colActions")}</Th>
               </tr>
             </thead>
             <tbody>
@@ -103,13 +105,13 @@ export function CouponTable({
                 >
                   <td className="px-4 py-3">
                     <p className="font-mono font-medium text-zinc-900 dark:text-zinc-100">{c.code}</p>
-                    <p className="text-xs text-zinc-500">{scopeLabel(c)}</p>
+                    <p className="text-xs text-zinc-500">{scopeLabel(c, t)}</p>
                   </td>
                   <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
-                    {discountLabel(c, currency)}
+                    {discountLabel(c, currency, t)}
                   </td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">{limitLabel(c)}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">{windowLabel(c)}</td>
+                  <td className="px-4 py-3 text-xs text-zinc-500">{limitLabel(c, t)}</td>
+                  <td className="px-4 py-3 text-xs text-zinc-500">{windowLabel(c, t)}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -118,7 +120,7 @@ export function CouponTable({
                           : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                       }`}
                     >
-                      {c.isActive ? "Active" : "Off"}
+                      {c.isActive ? t("active") : t("off")}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -128,14 +130,14 @@ export function CouponTable({
                         onClick={() => setEditing(c)}
                         className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
                       >
-                        Edit
+                        {t("edit")}
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeleting(c)}
                         className="text-xs text-zinc-500 hover:text-red-600 hover:underline"
                       >
-                        Delete
+                        {t("delete")}
                       </button>
                     </div>
                   </td>
@@ -170,14 +172,11 @@ export function CouponTable({
       <Modal
         open={deleting !== null}
         onClose={() => setDeleting(null)}
-        title="Delete coupon"
+        title={t("deleteCoupon")}
         description={deleting?.code}
         size="sm"
       >
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Shoppers can no longer redeem this code. Past orders that used it keep their own record,
-          so their history is unaffected.
-        </p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("deleteConfirm")}</p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
@@ -185,7 +184,7 @@ export function CouponTable({
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -193,7 +192,7 @@ export function CouponTable({
             disabled={pending}
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
           >
-            {pending ? "Deleting…" : "Delete"}
+            {pending ? t("deleting") : t("delete")}
           </button>
         </div>
       </Modal>
@@ -201,31 +200,35 @@ export function CouponTable({
   );
 }
 
-function discountLabel(c: CouponView, currency: string): string {
-  if (c.type === "free_shipping") return "Free shipping";
+type T = ReturnType<typeof useTranslations>;
+
+function discountLabel(c: CouponView, currency: string, t: T): string {
+  if (c.type === "free_shipping") return t("freeShipping");
   if (c.type === "percentage") {
-    return `${c.value}% off${c.maxDiscount != null ? ` (max ${formatMoney(c.maxDiscount, currency)})` : ""}`;
+    return c.maxDiscount != null
+      ? t("percentOffCapped", { value: c.value, max: formatMoney(c.maxDiscount, currency) })
+      : t("percentOff", { value: c.value });
   }
-  return `${formatMoney(c.value, currency)} off`;
+  return t("amountOff", { amount: formatMoney(c.value, currency) });
 }
 
-function scopeLabel(c: CouponView): string {
+function scopeLabel(c: CouponView, t: T): string {
   const parts: string[] = [];
-  if (c.appliesToProducts.length) parts.push(`${c.appliesToProducts.length} product${c.appliesToProducts.length === 1 ? "" : "s"}`);
-  if (c.appliesToCategories.length) parts.push(`${c.appliesToCategories.length} categor${c.appliesToCategories.length === 1 ? "y" : "ies"}`);
-  return parts.length ? `Limited to ${parts.join(" + ")}` : "Whole cart";
+  if (c.appliesToProducts.length) parts.push(t("limitedToProducts", { count: c.appliesToProducts.length }));
+  if (c.appliesToCategories.length) parts.push(t("limitedToCategories", { count: c.appliesToCategories.length }));
+  return parts.length ? t("limitedTo", { parts: parts.join(" + ") }) : t("wholeCart");
 }
 
-function limitLabel(c: CouponView): string {
+function limitLabel(c: CouponView, t: T): string {
   const parts: string[] = [];
-  if (c.usageLimit != null) parts.push(`${c.usedCount}/${c.usageLimit} used`);
-  else if (c.usedCount > 0) parts.push(`${c.usedCount} used`);
-  if (c.perUserLimit != null) parts.push(`${c.perUserLimit}/shopper`);
-  return parts.length ? parts.join(" · ") : "No limit";
+  if (c.usageLimit != null) parts.push(t("usedOfLimit", { used: c.usedCount, limit: c.usageLimit }));
+  else if (c.usedCount > 0) parts.push(t("used", { count: c.usedCount }));
+  if (c.perUserLimit != null) parts.push(t("perShopper", { count: c.perUserLimit }));
+  return parts.length ? parts.join(" · ") : t("noLimit");
 }
 
-function windowLabel(c: CouponView): string {
-  if (!c.startsAt && !c.expiresAt) return "Always";
+function windowLabel(c: CouponView, t: T): string {
+  if (!c.startsAt && !c.expiresAt) return t("always");
   return `${c.startsAt ?? "—"} → ${c.expiresAt ?? "—"}`;
 }
 

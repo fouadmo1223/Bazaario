@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/server/security/current-user";
 import { getThread } from "@/features/messages/queries";
@@ -24,6 +24,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function DashboardThreadPage({ params }: { params: Promise<{ id: string }> }) {
   const locale = await getLocale();
+  const t = await getTranslations("ThreadPage");
   const { id } = await params;
 
   const user = await requireUser().catch(() => null);
@@ -41,7 +42,7 @@ export default async function DashboardThreadPage({ params }: { params: Promise<
   return (
     <main className="mx-auto max-w-3xl px-6 py-6">
       <Link href="/dashboard/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
-        ← Messages
+        {t("backToMessages")}
       </Link>
 
       {thread.orderId ? (
@@ -49,7 +50,7 @@ export default async function DashboardThreadPage({ params }: { params: Promise<
           href={`/dashboard/orders/${thread.orderId}`}
           className="ml-4 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
         >
-          View related order
+          {t("viewRelatedOrder")}
         </Link>
       ) : null}
 

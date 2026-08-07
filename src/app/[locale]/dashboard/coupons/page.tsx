@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorCoupons, getCouponFormOptions } from "@/features/coupons/queries";
@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardCouponsPage() {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardCoupons");
   // Auth resolves here, before anything streams — a redirect thrown after a
   // Suspense shell flushes cannot set a status line, stranding the visitor.
   let vendor;
@@ -40,10 +41,10 @@ export default async function DashboardCouponsPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Coupons
+          {t("title")}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          {coupons.length} {coupons.length === 1 ? "coupon" : "coupons"} in {vendor.name}
+          {t("count", { count: coupons.length, vendor: vendor.name })}
         </p>
       </header>
 

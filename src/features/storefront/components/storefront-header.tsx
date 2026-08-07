@@ -20,19 +20,47 @@ import { formatMoney } from "@/shared/lib/format";
 export function StorefrontHeader() {
   const t = useTranslations("StorefrontHeader");
   const storefront = useStorefront();
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
   const counts = {
     cart: storefront?.cartCount ?? 0,
     wishlist: storefront?.wishlistCount ?? 0,
   };
 
+  // A route change is the one thing that should always close the mobile
+  // panel — otherwise a link tap leaves it hanging open on the next page.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- closes the panel in response to a route change, not derivable from props/state during render.
+    setMenuOpen(false);
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:border-zinc-800/80 dark:bg-black/85 dark:supports-[backdrop-filter]:bg-black/70">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          aria-label={t("menu")}
+          className="-ms-1.5 me-0.5 flex shrink-0 items-center justify-center rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 sm:hidden dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
+            {menuOpen ? (
+              <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
+            ) : (
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" strokeLinejoin="round" />
+            )}
+          </svg>
+        </button>
+
         <Link href="/" className="group flex shrink-0 items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white transition group-hover:bg-brand-hover">
             B
           </span>
-          <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          {/* Wordmark waits for `sm` — on a phone the icon alone still reads as
+              "home," and dropping the text keeps the row down to menu/wishlist/cart. */}
+          <span className="hidden text-base font-semibold tracking-tight text-zinc-900 sm:inline dark:text-zinc-50">
             Bazaario
           </span>
         </Link>
@@ -42,13 +70,19 @@ export function StorefrontHeader() {
           <HeaderLink href="/categories">{t("categories")}</HeaderLink>
         </nav>
 
-        <SearchBox />
+        {/* Search moves into the mobile panel below `sm` — this instance is
+            desktop-only so the top row stays down to menu/wishlist/cart. */}
+        <div className="hidden sm:block sm:flex-1">
+          <SearchBox />
+        </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <LanguageSwitcher />
-
-          {/* Only for an account — a guest has nothing to be notified about. */}
-          {storefront?.signedIn ? <NotificationBell /> : null}
+        {/* Everything but wishlist/cart moves into the mobile panel below
+            `sm`, so the top row is never more than four tap targets wide. */}
+        <div className="ms-auto flex shrink-0 items-center gap-0.5 sm:ms-0 sm:gap-1">
+          <span className="hidden sm:contents">
+            <LanguageSwitcher />
+            {storefront?.signedIn ? <NotificationBell /> : null}
+          </span>
 
           <IconLink href="/wishlist" label={t("wishlist")} count={counts.wishlist}>
             {/* Heart */}
@@ -68,24 +102,68 @@ export function StorefrontHeader() {
               wishlist — "Account" meaning only "orders" was a dead end. */}
           <Link
             href="/account/profile"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+            aria-label={t("account")}
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 sm:block dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
           >
             {t("account")}
           </Link>
         </div>
       </div>
+
+      {menuOpen && (
+        <div id="mobile-nav" className="border-t border-zinc-200/80 px-4 py-3 sm:hidden dark:border-zinc-800/80">
+          <SearchBox id="storefront-search-mobile" />
+
+          <nav aria-label="Browse" className="mt-2">
+            <ul className="flex flex-col">
+              <li>
+                <HeaderLink href="/products" block>
+                  {t("products")}
+                </HeaderLink>
+              </li>
+              <li>
+                <HeaderLink href="/categories" block>
+                  {t("categories")}
+                </HeaderLink>
+              </li>
+            </ul>
+          </nav>
+
+          <div className="mt-3 flex items-center justify-between border-t border-zinc-200/80 pt-3 dark:border-zinc-800/80">
+            <Link
+              href="/account/profile"
+              className="rounded-lg px-3 py-2.5 text-base font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              {t("account")}
+            </Link>
+            <div className="flex items-center gap-1">
+              {storefront?.signedIn ? <NotificationBell /> : null}
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
 
-function HeaderLink({ href, children }: { href: string; children: React.ReactNode }) {
+function HeaderLink({
+  href,
+  children,
+  block = false,
+}: {
+  href: string;
+  children: React.ReactNode;
+  /** Full-width, larger tap target — for the stacked mobile panel. */
+  block?: boolean;
+}) {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(`${href}/`);
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+      className={`rounded-lg font-medium transition ${block ? "block px-3 py-2.5 text-base" : "px-3 py-1.5 text-sm"} ${
         active
           ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
           : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -114,7 +192,7 @@ type QuickResult = {
  * before) because the dropdown needs to react to keystrokes; it still starts
  * from `?search=` on mount so a reload keeps the visible term.
  */
-function SearchBox() {
+function SearchBox({ id = "storefront-search" }: { id?: string }) {
   const t = useTranslations("StorefrontHeader");
   const router = useRouter();
   const params = useSearchParams();
@@ -168,11 +246,11 @@ function SearchBox() {
   return (
     <div ref={rootRef} className="relative min-w-0 flex-1">
       <form onSubmit={submit} role="search">
-        <label htmlFor="storefront-search" className="sr-only">
+        <label htmlFor={id} className="sr-only">
           {t("searchLabel")}
         </label>
         <input
-          id="storefront-search"
+          id={id}
           name="search"
           type="search"
           value={value}

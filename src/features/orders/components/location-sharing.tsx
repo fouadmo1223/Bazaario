@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useOrderTracking } from "@/shared/hooks/use-socket";
 
 /**
@@ -11,6 +12,7 @@ import { useOrderTracking } from "@/shared/hooks/use-socket";
  * permission prompt.
  */
 export function LocationSharing({ orderId }: { orderId: string }) {
+  const t = useTranslations("LocationSharing");
   const { shareLocation } = useOrderTracking(orderId);
   const [sharing, setSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +27,12 @@ export function LocationSharing({ orderId }: { orderId: string }) {
   function start() {
     setError(null);
     if (!("geolocation" in navigator)) {
-      setError("Your browser doesn't support location sharing.");
+      setError(t("noGeoSupport"));
       return;
     }
     watchId.current = navigator.geolocation.watchPosition(
       (pos) => shareLocation(pos.coords.latitude, pos.coords.longitude),
-      () => setError("Couldn't get your location — check that this site has permission."),
+      () => setError(t("permissionError")),
       { enableHighAccuracy: true, maximumAge: 5000 },
     );
     setSharing(true);
@@ -55,7 +57,7 @@ export function LocationSharing({ orderId }: { orderId: string }) {
             : "bg-emerald-600 text-white hover:bg-emerald-500"
         }`}
       >
-        {sharing ? "Stop sharing location" : "Share my location"}
+        {sharing ? t("stopSharing") : t("shareLocation")}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Modal } from "@/shared/components/modal";
 import { Select as StyledSelect } from "@/shared/components/select";
@@ -34,6 +35,7 @@ export function CouponFormModal({
   /** Absent for a new coupon. */
   initial?: CouponView;
 }) {
+  const t = useTranslations("CouponForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -98,30 +100,30 @@ export function CouponFormModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={editing ? "Edit coupon" : "New coupon"}
-      description={editing ? initial.code : "Create a discount code for your store"}
+      title={editing ? t("editTitle") : t("newTitle")}
+      description={editing ? initial.code : t("newDescription")}
       size="lg"
     >
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
             name="code"
-            label="Code"
+            label={t("code")}
             required
             defaultValue={initial?.code}
-            hint="What the shopper types at checkout"
+            hint={t("codeHint")}
             errors={fieldErrors["code"]}
             style={{ textTransform: "uppercase" }}
           />
           <Select
             name="type"
-            label="Type"
+            label={t("type")}
             value={type}
             onChange={(v) => setType(v as CouponType)}
             options={[
-              { value: "percentage", label: "Percentage off" },
-              { value: "fixed", label: "Fixed amount off" },
-              { value: "free_shipping", label: "Free shipping" },
+              { value: "percentage", label: t("typePercentage") },
+              { value: "fixed", label: t("typeFixed") },
+              { value: "free_shipping", label: t("typeFreeShipping") },
             ]}
           />
         </div>
@@ -130,35 +132,35 @@ export function CouponFormModal({
           {hasAmount && (
             <Field
               name="value"
-              label={type === "percentage" ? "Percentage" : "Amount off"}
+              label={type === "percentage" ? t("percentage") : t("amountOff")}
               type="number"
               step={type === "percentage" ? "1" : "0.01"}
               min="0"
               required
               defaultValue={initial?.value}
-              hint={type === "percentage" ? "e.g. 10 for 10%" : undefined}
+              hint={type === "percentage" ? t("percentageHint") : undefined}
               errors={fieldErrors["value"]}
             />
           )}
           <Field
             name="minSpend"
-            label="Minimum spend"
+            label={t("minimumSpend")}
             type="number"
             step="0.01"
             min="0"
             defaultValue={initial?.minSpend || undefined}
-            hint="0 for no minimum"
+            hint={t("minimumSpendHint")}
             errors={fieldErrors["minSpend"]}
           />
           {type === "percentage" && (
             <Field
               name="maxDiscount"
-              label="Max discount"
+              label={t("maxDiscount")}
               type="number"
               step="0.01"
               min="0"
               defaultValue={initial?.maxDiscount ?? undefined}
-              hint="Cap on the amount"
+              hint={t("maxDiscountHint")}
               errors={fieldErrors["maxDiscount"]}
             />
           )}
@@ -167,22 +169,22 @@ export function CouponFormModal({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
             name="usageLimit"
-            label="Total uses"
+            label={t("totalUses")}
             type="number"
             step="1"
             min="1"
             defaultValue={initial?.usageLimit ?? undefined}
-            hint="Across all shoppers — blank for unlimited"
+            hint={t("totalUsesHint")}
             errors={fieldErrors["usageLimit"]}
           />
           <Field
             name="perUserLimit"
-            label="Uses per shopper"
+            label={t("usesPerShopper")}
             type="number"
             step="1"
             min="1"
             defaultValue={initial?.perUserLimit ?? undefined}
-            hint="Signed-in shoppers only — blank for unlimited"
+            hint={t("usesPerShopperHint")}
             errors={fieldErrors["perUserLimit"]}
           />
         </div>
@@ -190,45 +192,42 @@ export function CouponFormModal({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
             name="startsAt"
-            label="Starts"
+            label={t("starts")}
             type="date"
             defaultValue={initial?.startsAt ?? undefined}
-            hint="Blank to start immediately"
+            hint={t("startsHint")}
           />
           <Field
             name="expiresAt"
-            label="Ends"
+            label={t("ends")}
             type="date"
             defaultValue={initial?.expiresAt ?? undefined}
-            hint="Blank for no expiry"
+            hint={t("endsHint")}
             errors={fieldErrors["expiresAt"]}
           />
         </div>
 
         <Scope
-          legend="Limit to products"
+          legend={t("limitToProducts")}
           name="appliesToProducts"
           options={products}
           selected={initial?.appliesToProducts ?? []}
-          empty="No products yet."
+          empty={t("noProductsYet")}
         />
         <Scope
-          legend="Limit to categories"
+          legend={t("limitToCategories")}
           name="appliesToCategories"
           options={categories}
           selected={initial?.appliesToCategories ?? []}
-          empty="No categories yet."
+          empty={t("noCategoriesYet")}
         />
-        <p className="-mt-2 text-xs text-zinc-500">
-          Leave both empty to apply the discount to the whole cart. When either is set, the
-          discount only touches the matching items.
-        </p>
+        <p className="-mt-2 text-xs text-zinc-500">{t("scopeHint")}</p>
 
         <Field
           name="description"
-          label="Description"
+          label={t("description")}
           defaultValue={initial?.description}
-          hint="A note for your team — not shown to shoppers"
+          hint={t("descriptionHint")}
         />
 
         <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
@@ -238,7 +237,7 @@ export function CouponFormModal({
             defaultChecked={initial?.isActive ?? true}
             className="h-4 w-4 accent-indigo-600"
           />
-          Active — shoppers can use it
+          {t("activeLabel")}
         </label>
 
         {error && (
@@ -257,14 +256,14 @@ export function CouponFormModal({
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="submit"
             disabled={pending}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
           >
-            {pending ? "Saving…" : editing ? "Save changes" : "Create coupon"}
+            {pending ? t("saving") : editing ? t("saveChanges") : t("createCoupon")}
           </button>
         </div>
       </form>

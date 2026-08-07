@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { driverUpdateStatusAction } from "../actions";
+import { orderStatusLabel } from "./order-status-badge";
 import type { OrderStatus } from "@/server/database/models/order.model";
 
 /**
@@ -20,6 +22,8 @@ export function DeliveryStatusActions({
   orderId: string;
   status: OrderStatus;
 }) {
+  const t = useTranslations("DeliveryStatusActions");
+  const tStatus = useTranslations("OrderStatus");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +34,7 @@ export function DeliveryStatusActions({
   if (!next) {
     return (
       <p className="text-sm text-zinc-500">
-        Nothing to update — this delivery is {status.replace(/_/g, " ")}.
+        {t("nothingToUpdate", { status: orderStatusLabel(status, tStatus) })}
       </p>
     );
   }
@@ -55,7 +59,7 @@ export function DeliveryStatusActions({
         disabled={pending}
         className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
       >
-        {pending ? "Updating…" : `Mark ${next.replace(/_/g, " ")}`}
+        {pending ? t("updating") : t("markStatus", { status: orderStatusLabel(next, tStatus) })}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">

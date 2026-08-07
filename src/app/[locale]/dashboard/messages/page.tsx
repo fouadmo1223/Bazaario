@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission, requireUser } from "@/server/security/current-user";
 import { listInbox } from "@/features/messages/queries";
@@ -35,6 +35,8 @@ export default async function DashboardMessagesPage({
   searchParams: Promise<Search>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardMessages");
+  const tStatus = await getTranslations("ConversationStatus");
   const { page, status, scope } = await searchParams;
 
   const user = await requireUser().catch(() => null);
@@ -90,12 +92,12 @@ export default async function DashboardMessagesPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Messages
+            {t("title")}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
-            {platformScope ? "Platform-wide" : vendorName}
+            {platformScope ? t("platformWide") : vendorName}
             {" · "}
-            {inbox.total} {inbox.total === 1 ? "conversation" : "conversations"}
+            {t("count", { count: inbox.total })}
           </p>
         </div>
 
@@ -110,7 +112,7 @@ export default async function DashboardMessagesPage({
                   : "text-zinc-500"
               }`}
             >
-              This store
+              {t("thisStore")}
             </Link>
             <Link
               href={href({ scope: "platform" })}
@@ -121,13 +123,13 @@ export default async function DashboardMessagesPage({
                   : "text-zinc-500"
               }`}
             >
-              Platform
+              {t("platform")}
             </Link>
           </div>
         ) : null}
       </div>
 
-      <nav aria-label="Filter by status" className="mt-6 flex flex-wrap items-center gap-2">
+      <nav aria-label={t("filterByStatus")} className="mt-6 flex flex-wrap items-center gap-2">
         <Link
           href={href({ status: undefined, page: undefined })}
           aria-current={!activeStatus ? "page" : undefined}
@@ -137,20 +139,20 @@ export default async function DashboardMessagesPage({
               : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
           }`}
         >
-          All
+          {t("all")}
         </Link>
         {STATUSES.map((s) => (
           <Link
             key={s}
             href={href({ status: s, page: undefined })}
             aria-current={activeStatus === s ? "page" : undefined}
-            className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
               activeStatus === s
                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
                 : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
             }`}
           >
-            {s}
+            {tStatus(s)}
           </Link>
         ))}
       </nav>
@@ -158,7 +160,7 @@ export default async function DashboardMessagesPage({
       <ConversationList
         items={inbox.items}
         basePath="/dashboard/messages"
-        emptyMessage="No conversations here."
+        emptyMessage={t("emptyMessage")}
       />
 
       {inbox.totalPages > 1 ? (
@@ -168,18 +170,18 @@ export default async function DashboardMessagesPage({
               href={href({ page: String(inbox.page - 1) })}
               className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
             >
-              Previous
+              {t("prev")}
             </Link>
           ) : null}
           <span className="text-sm text-zinc-500">
-            Page {inbox.page} of {inbox.totalPages}
+            {t("pageOf", { page: inbox.page, totalPages: inbox.totalPages })}
           </span>
           {inbox.page < inbox.totalPages ? (
             <Link
               href={href({ page: String(inbox.page + 1) })}
               className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
             >
-              Next
+              {t("next")}
             </Link>
           ) : null}
         </nav>

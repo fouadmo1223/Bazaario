@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listDriverOrders } from "@/features/orders/queries";
@@ -26,6 +26,7 @@ export default async function DriverDeliveriesPage({
   searchParams: Promise<Search>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardDeliveries");
   const { page } = await searchParams;
 
   let vendor;
@@ -47,16 +48,14 @@ export default async function DriverDeliveriesPage({
     <div className="mx-auto max-w-4xl px-6 py-10">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Deliveries
+          {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {orders.total} {orders.total === 1 ? "order" : "orders"} out with you
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: orders.total })}</p>
       </header>
 
       {orders.items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">Nothing assigned to you right now.</p>
+          <p className="text-sm text-zinc-500">{t("nothingAssigned")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -87,13 +86,13 @@ export default async function DriverDeliveriesPage({
       {orders.totalPages > 1 && (
         <nav className="mt-6 flex items-center justify-between" aria-label="Pagination">
           <PageLink page={orders.page - 1} disabled={!orders.hasPrev}>
-            ← Previous
+            {t("prev")}
           </PageLink>
           <span className="text-sm text-zinc-500">
-            Page {orders.page} of {orders.totalPages}
+            {t("pageOf", { page: orders.page, totalPages: orders.totalPages })}
           </span>
           <PageLink page={orders.page + 1} disabled={!orders.hasNext}>
-            Next →
+            {t("next")}
           </PageLink>
         </nav>
       )}
