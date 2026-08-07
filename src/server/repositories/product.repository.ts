@@ -37,7 +37,16 @@ class ProductRepository extends BaseRepository<ProductRaw> {
       if (f.minPrice != null) query.price.$gte = f.minPrice;
       if (f.maxPrice != null) query.price.$lte = f.maxPrice;
     }
-    if (f.search) query.$text = { $search: f.search };
+    // A case-insensitive partial match on title/description — not `$text`,
+    // which only matches whole stemmed words and so misses "as you type"
+    // input like "drif" for "Drift" until the last letter lands.
+    if (f.search) {
+      const escaped = f.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.$or = [
+        { title: { $regex: escaped, $options: "i" } },
+        { description: { $regex: escaped, $options: "i" } },
+      ];
+    }
     return query;
   }
 
@@ -45,17 +54,10 @@ class ProductRepository extends BaseRepository<ProductRaw> {
     const filter = this.buildFilter(filters);
     const { page, limit } = pagination;
     const skip = (page - 1) * limit;
-
-    // Relevance sort when text-searching, otherwise the requested sort.
-    const sort = filters.search
-      ? { score: { $meta: "textScore" } as const }
-      : toSortObject(pagination);
-
-    const q = Product.find(filter);
-    if (filters.search) q.select({ score: { $meta: "textScore" } });
+    const sort = toSortObject(pagination);
 
     const [items, total] = await Promise.all([
-      q.sort(sort as Record<string, 1 | -1>).skip(skip).limit(limit).populate("brand").exec(),
+      Product.find(filter).sort(sort).skip(skip).limit(limit).populate("brand").exec(),
       Product.countDocuments(filter).exec(),
     ]);
     return buildPaginated(items, total, { page, limit });

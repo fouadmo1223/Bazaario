@@ -6,6 +6,8 @@ import { catalogService, type CatalogSort } from "@/server/services/catalog.serv
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 type Params = { locale: string; slug: string };
 type Search = Record<string, string | undefined>;
@@ -55,6 +57,8 @@ export default async function CategoryPage({
     catalogService.priceBounds(),
   ]);
 
+  const categoryName = localized(locale as Locale, category.name, category.nameAr);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -71,12 +75,12 @@ export default async function CategoryPage({
           {t("title")}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">{category.name}</span>
+        <span className="text-zinc-700 dark:text-zinc-300">{categoryName}</span>
       </nav>
 
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {category.name}
+          {categoryName}
         </h1>
         <p className="mt-1 text-sm text-zinc-500">{t("productCount", { count: result.total })}</p>
       </header>

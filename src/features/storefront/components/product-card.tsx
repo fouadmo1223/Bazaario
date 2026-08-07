@@ -1,11 +1,15 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { formatMoney, discountPercent } from "@/shared/lib/format";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 export type ProductCardData = {
   id: string;
   slug: string;
   title: string;
+  titleAr?: string | null;
   price: number;
   compareAtPrice?: number | null;
   image?: string | null;
@@ -14,7 +18,7 @@ export type ProductCardData = {
   stock?: number;
 };
 
-export function ProductCard({
+export async function ProductCard({
   product,
   vendorSlug,
   currency = "USD",
@@ -23,6 +27,9 @@ export function ProductCard({
   vendorSlug: string;
   currency?: string;
 }) {
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("ProductDetail");
+  const title = localized(locale, product.title, product.titleAr);
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
   const soldOut = product.stock != null && product.stock <= 0;
@@ -36,13 +43,15 @@ export function ProductCard({
         {product.image ? (
           <Image
             src={product.image}
-            alt={product.title}
+            alt={title}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             className="object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">No image</div>
+          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
+            {t("noImageShort")}
+          </div>
         )}
 
         {onSale && !soldOut && (
@@ -52,14 +61,14 @@ export function ProductCard({
         )}
         {soldOut && (
           <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-semibold text-zinc-700 dark:bg-black/60 dark:text-zinc-200">
-            Sold out
+            {t("soldOut")}
           </span>
         )}
       </div>
 
       <div className="p-3">
         <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          {product.title}
+          {title}
         </h3>
         {product.ratingCount ? (
           <p className="mt-1 text-xs text-zinc-500">

@@ -44,16 +44,19 @@ async function activeVendorIds(): Promise<string[]> {
 }
 
 /** Slug + name for each vendor, for linking products back to their store. */
-async function vendorLookup(ids: string[]): Promise<Map<string, { name: string; slug: string }>> {
+async function vendorLookup(
+  ids: string[],
+): Promise<Map<string, { name: string; nameAr: string | null; slug: string }>> {
   if (ids.length === 0) return new Map();
-  const vendors = await Vendor.find({ _id: { $in: ids } }).select("name slug");
-  return new Map(vendors.map((v) => [String(v._id), { name: v.name, slug: v.slug }]));
+  const vendors = await Vendor.find({ _id: { $in: ids } }).select("name nameAr slug");
+  return new Map(vendors.map((v) => [String(v._id), { name: v.name, nameAr: v.nameAr ?? null, slug: v.slug }]));
 }
 
 export type CatalogProduct = {
   id: string;
   slug: string;
   title: string;
+  titleAr: string | null;
   /** For a variable product this is the lowest variant price ("from"). */
   price: number;
   compareAtPrice: number | null;
@@ -67,13 +70,14 @@ export type CatalogProduct = {
   priceRange: { min: number; max: number } | null;
   vendorId: string;
   vendorName: string;
+  vendorNameAr: string | null;
   vendorSlug: string;
 };
 
 /** Shape a product for the storefront, resolving its vendor for links. */
 function toCatalogProduct(
   p: ProductDoc,
-  vendors: Map<string, { name: string; slug: string }>,
+  vendors: Map<string, { name: string; nameAr: string | null; slug: string }>,
 ): CatalogProduct {
   const vendor = vendors.get(String(p.vendor));
   const isVariable = p.type === "variable";
@@ -83,6 +87,7 @@ function toCatalogProduct(
     id: String(p._id),
     slug: p.slug,
     title: p.title,
+    titleAr: p.titleAr ?? null,
     price: p.price,
     compareAtPrice: p.compareAtPrice ?? null,
     image: p.media[0]?.url ?? null,
@@ -96,6 +101,7 @@ function toCatalogProduct(
         : null,
     vendorId: String(p.vendor),
     vendorName: vendor?.name ?? "",
+    vendorNameAr: vendor?.nameAr ?? null,
     vendorSlug: vendor?.slug ?? "",
   };
 }
@@ -182,9 +188,7 @@ export const catalogService = {
     if (brandIds) filter.brand = { $in: brandIds };
 
     const skip = (pagination.page - 1) * pagination.limit;
-    const sort = filters.search
-      ? ({ score: { $meta: "textScore" } } as unknown as Record<string, 1 | -1>)
-      : toSortObject(pagination);
+    const sort = toSortObject(pagination);
 
     const [items, total] = await Promise.all([
       Product.find(filter).sort(sort).skip(skip).limit(pagination.limit).exec(),
@@ -272,18 +276,48 @@ export const catalogService = {
   },
 
   /**
+   * Live "as you type" search for the header search box's dropdown —
+   * marketplace-wide, small limit, no pagination. Same partial title/
+   * description match as the full `/products` listing.
+   */
+  async quickSearch(q: string, limit = 6): Promise<CatalogProduct[]> {
+    const query = q.trim();
+    if (!query) return [];
+
+    await connectToDatabase();
+    const allowed = await activeVendorIds();
+    if (allowed.length === 0) return [];
+
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const items = await Product.find({
+      vendor: { $in: allowed },
+      status: "active",
+      $or: [
+        { title: { $regex: escaped, $options: "i" } },
+        { description: { $regex: escaped, $options: "i" } },
+      ],
+    })
+      .limit(limit)
+      .exec();
+
+    return decorate(items);
+  },
+
+  /**
    * Categories across the marketplace, keyed by slug.
    *
    * Categories are per-vendor rows, so two vendors both selling "Footwear" have
    * two Category documents. The marketplace presents one entry per slug with the
    * ids folded together, so a shopper browsing "Footwear" sees every vendor's.
    */
-  async categories(): Promise<{ slug: string; name: string; image: string | null; ids: string[] }[]> {
+  async categories(): Promise<
+    { slug: string; name: string; nameAr: string | null; image: string | null; ids: string[] }[]
+  > {
     await connectToDatabase();
     const allowed = await activeVendorIds();
     if (allowed.length === 0) return [];
 
-    return cached(`catalog:categories:${allowed.length}`, CACHE_TTL, async () => {
+    return cached(`catalog:categories:v2:${allowed.length}`, CACHE_TTL, async () => {
       const rows = await Category.find({
         vendor: { $in: allowed },
         isActive: true,
@@ -291,16 +325,21 @@ export const catalogService = {
         .sort({ order: 1, name: 1 })
         .exec();
 
-      const bySlug = new Map<string, { slug: string; name: string; image: string | null; ids: string[] }>();
+      const bySlug = new Map<
+        string,
+        { slug: string; name: string; nameAr: string | null; image: string | null; ids: string[] }
+      >();
       for (const c of rows) {
         const existing = bySlug.get(c.slug);
         if (existing) {
           existing.ids.push(String(c._id));
           existing.image ??= c.image ?? null;
+          existing.nameAr ??= c.nameAr ?? null;
         } else {
           bySlug.set(c.slug, {
             slug: c.slug,
             name: c.name,
+            nameAr: c.nameAr ?? null,
             image: c.image ?? null,
             ids: [String(c._id)],
           });
@@ -335,7 +374,11 @@ export const catalogService = {
   },
 
   /** Storefronts to feature on the home page. */
-  async vendors(limit = 8): Promise<{ id: string; name: string; slug: string; logo: string | null; description: string | null }[]> {
+  async vendors(
+    limit = 8,
+  ): Promise<
+    { id: string; name: string; nameAr: string | null; slug: string; logo: string | null; description: string | null; descriptionAr: string | null }[]
+  > {
     await connectToDatabase();
     const rows = await Vendor.find({ status: "active" })
       .sort({ "stats.orders": -1, createdAt: -1 })
@@ -345,9 +388,11 @@ export const catalogService = {
     return rows.map((v) => ({
       id: String(v._id),
       name: v.name,
+      nameAr: v.nameAr ?? null,
       slug: v.slug,
       logo: v.logo ?? null,
       description: v.description ?? null,
+      descriptionAr: v.descriptionAr ?? null,
     }));
   },
 

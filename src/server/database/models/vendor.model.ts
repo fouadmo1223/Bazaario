@@ -46,8 +46,11 @@ const vendorStatsSchema = new Schema(
 
 const vendorSchema = new Schema({
   name: { type: String, required: true, trim: true },
+  /** Optional Arabic display name — falls back to `name` when empty. */
+  nameAr: { type: String, default: null, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true, unique: true, index: true },
   description: { type: String, default: null },
+  descriptionAr: { type: String, default: null },
   logo: { type: String, default: null },
   banner: { type: String, default: null },
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useSocket } from "@/shared/hooks/use-socket";
 import { useStorefront } from "@/features/storefront/storefront-provider";
@@ -47,6 +48,7 @@ type LiveNotification = {
 };
 
 export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number } = {}) {
+  const t = useTranslations("Notifications");
   const router = useRouter();
   const storefront = useStorefront();
   const { socket } = useSocket();
@@ -136,11 +138,11 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
       setItems(body.data.items);
       setUnread(body.data.unread);
     } catch {
-      setError("Could not load notifications.");
+      setError(t("loadError"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   function toggle() {
     const next = !open;
@@ -173,7 +175,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
       <button
         type="button"
         onClick={toggle}
-        aria-label={unread > 0 ? `Notifications (${unread} unread)` : "Notifications"}
+        aria-label={unread > 0 ? t("labelUnread", { count: unread }) : t("label")}
         aria-expanded={open}
         className="relative rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
       >
@@ -182,36 +184,36 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
           <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold tabular-nums text-white">
+          <span className="absolute -end-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold tabular-nums text-white">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="absolute end-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
           <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Notifications</p>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("label")}</p>
             {unread > 0 && (
               <button
                 type="button"
                 onClick={markAll}
                 className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                Mark all read
+                {t("markAllRead")}
               </button>
             )}
           </div>
 
           <div className="max-h-96 overflow-y-auto">
             {loading && items === null ? (
-              <p className="px-3 py-8 text-center text-sm text-zinc-500">Loading…</p>
+              <p className="px-3 py-8 text-center text-sm text-zinc-500">{t("loading")}</p>
             ) : error ? (
               <p role="alert" className="px-3 py-8 text-center text-sm text-red-600 dark:text-red-400">
                 {error}
               </p>
             ) : !items || items.length === 0 ? (
-              <p className="px-3 py-8 text-center text-sm text-zinc-500">Nothing yet.</p>
+              <p className="px-3 py-8 text-center text-sm text-zinc-500">{t("empty")}</p>
             ) : (
               <ul>
                 {items.map((item) => (

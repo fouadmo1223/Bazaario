@@ -1,6 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render as rtlRender, screen, fireEvent, waitFor } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import messages from "@/i18n/messages/en.json";
+
+/**
+ * Renders with the real English messages so `useTranslations` has a provider
+ * and the output matches production text exactly. `rerender` is wrapped the
+ * same way — RTL's own `rerender` would otherwise swap in a bare tree with no
+ * provider, breaking the second render the same as never wrapping at all.
+ */
+function render(ui: React.ReactElement) {
+  const wrap = (el: React.ReactElement) => (
+    <NextIntlClientProvider locale="en" messages={messages}>
+      {el}
+    </NextIntlClientProvider>
+  );
+  const result = rtlRender(wrap(ui));
+  return { ...result, rerender: (nextUi: React.ReactElement) => result.rerender(wrap(nextUi)) };
+}
 
 /**
  * Two sources feed the badge: the server count (a prop here, since there is no

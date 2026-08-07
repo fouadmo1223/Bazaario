@@ -35,8 +35,11 @@ const productSchema = new Schema({
   type: { type: String, enum: ["simple", "variable"], default: "simple", index: true },
 
   title: { type: String, required: true, trim: true },
+  /** Optional Arabic display title — falls back to `title` when empty. */
+  titleAr: { type: String, default: null, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
   description: { type: String, default: "" },
+  descriptionAr: { type: String, default: null },
   shortDescription: { type: String, default: null },
 
   brand: { type: Schema.Types.ObjectId, ref: "Brand", default: null, index: true },

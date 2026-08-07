@@ -4,6 +4,8 @@
     "categories": "الفئات",
     "searchLabel": "بحث عن المنتجات",
     "searchPlaceholder": "ابحث عن المنتجات…",
+    "searching": "جارٍ البحث…",
+    "noQuickResults": "لم يتم العثور على منتجات.",
     "wishlist": "المفضلة",
     "cart": "السلة",
     "account": "الحساب"
@@ -95,7 +97,13 @@
     "messageStore": "راسل المتجر",
     "moreFromStore": "المزيد من هذا المتجر",
     "saveToWishlist": "أضف إلى المفضلة",
-    "removeFromWishlist": "إزالة من المفضلة"
+    "removeFromWishlist": "إزالة من المفضلة",
+    "noImageShort": "بدون صورة",
+    "quickView": "عرض سريع",
+    "chooseOptions": "اختر الخيارات",
+    "viewFullDetails": "عرض كل التفاصيل",
+    "availableInOptions": "متوفر بخيارات",
+    "availableInSeveralOptions": "متوفر بعدة خيارات"
   },
   "Dashboard": {
     "title": "لوحة التحكم",
@@ -238,6 +246,14 @@
     "passwordHint": "8 أحرف على الأقل تحتوي على حرف كبير وحرف صغير ورقم.",
     "createAccountBtn": "إنشاء الحساب",
     "sendResetLink": "إرسال رابط إعادة التعيين"
+  },
+  "Notifications": {
+    "label": "الإشعارات",
+    "labelUnread": "الإشعارات ({count} غير مقروءة)",
+    "markAllRead": "تحديد الكل كمقروء",
+    "loading": "جارٍ التحميل…",
+    "loadError": "تعذّر تحميل الإشعارات.",
+    "empty": "لا شيء بعد."
   },
   "Reviews": {
     "title": "التقييمات",

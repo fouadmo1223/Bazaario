@@ -7,6 +7,8 @@ import { getActiveBanner } from "@/features/cms/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
 import { setRequestLocale } from "next-intl/server";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 type Params = { locale: string; vendor: string };
 type Search = { page?: string; search?: string; sort?: string };
@@ -54,6 +56,11 @@ export default async function VendorPage({
     throw err;
   }
 
+  const vendorName = localized(locale as Locale, vendor.name, vendor.nameAr);
+  const vendorDescription = vendor.description
+    ? localized(locale as Locale, vendor.description, vendor.descriptionAr)
+    : null;
+
   const [result, banner] = await Promise.all([
     productService.listStorefront(String(vendor._id), {
       page,
@@ -67,6 +74,7 @@ export default async function VendorPage({
     id: p.id,
     slug: p.slug,
     title: p.title,
+    titleAr: p.titleAr,
     price: p.price,
     compareAtPrice: p.compareAtPrice,
     image: p.image,
@@ -106,10 +114,10 @@ export default async function VendorPage({
         <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4 px-6 py-8">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              {vendor.name}
+              {vendorName}
             </h1>
-            {vendor.description && (
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendor.description}</p>
+            {vendorDescription && (
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendorDescription}</p>
             )}
           </div>
 

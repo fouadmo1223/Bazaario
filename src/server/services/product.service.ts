@@ -25,6 +25,7 @@ export type StorefrontProduct = {
   id: string;
   slug: string;
   title: string;
+  titleAr: string | null;
   type: "simple" | "variable";
   price: number;
   priceRange: { min: number; max: number } | null;
@@ -40,6 +41,7 @@ function toStorefrontProduct(p: ProductDoc): StorefrontProduct {
     id: String(p._id),
     slug: p.slug,
     title: p.title,
+    titleAr: p.titleAr ?? null,
     type: p.type as "simple" | "variable",
     price: p.price,
     priceRange: p.priceRange

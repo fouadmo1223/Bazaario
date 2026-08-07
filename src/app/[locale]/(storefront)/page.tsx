@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 export const metadata: Metadata = {
   title: "Bazaario · Shop every store in one place",
@@ -103,7 +105,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   href={`/categories/${c.slug}`}
                   className="flex h-24 items-end rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm font-medium text-zinc-800 transition hover:border-indigo-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
                 >
-                  {c.name}
+                  {localized(locale as Locale, c.name, c.nameAr)}
                 </Link>
               </li>
             ))}
@@ -154,10 +156,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {v.name}
+                      {localized(locale as Locale, v.name, v.nameAr)}
                     </p>
                     {v.description && (
-                      <p className="truncate text-xs text-zinc-500">{v.description}</p>
+                      <p className="truncate text-xs text-zinc-500">
+                        {localized(locale as Locale, v.description, v.descriptionAr)}
+                      </p>
                     )}
                   </div>
                 </Link>

@@ -3,9 +3,12 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
 import { QuickViewModal } from "./quick-view-modal";
 import { formatMoney, discountPercent } from "@/shared/lib/format";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 import type { CatalogProduct } from "@/server/services/catalog.service";
 
 /**
@@ -25,7 +28,11 @@ export function CatalogProductCard({
   currency?: string;
   saved?: boolean;
 }) {
+  const t = useTranslations("ProductDetail");
+  const locale = useLocale() as Locale;
   const [quickView, setQuickView] = useState(false);
+  const title = localized(locale, product.title, product.titleAr);
+  const vendorName = localized(locale, product.vendorName, product.vendorNameAr);
 
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
@@ -45,14 +52,14 @@ export function CatalogProductCard({
           {product.image ? (
             <Image
               src={product.image}
-              alt={product.title}
+              alt={title}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
               className="object-cover transition duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-              No image
+              {t("noImageShort")}
             </div>
           )}
 
@@ -63,7 +70,7 @@ export function CatalogProductCard({
           )}
           {soldOut && (
             <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-semibold text-zinc-700 dark:bg-black/60 dark:text-zinc-200">
-              Sold out
+              {t("soldOut")}
             </span>
           )}
 
@@ -77,7 +84,7 @@ export function CatalogProductCard({
             onClick={() => setQuickView(true)}
             className="absolute inset-x-2 bottom-2 z-10 rounded-lg bg-white/95 py-2 text-xs font-semibold text-zinc-900 opacity-0 shadow transition group-hover:opacity-100 focus-visible:opacity-100 dark:bg-zinc-900/95 dark:text-zinc-100"
           >
-            Quick view
+            {t("quickView")}
           </button>
         </div>
 
@@ -85,12 +92,12 @@ export function CatalogProductCard({
           <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {/* Stretched link: covers the card without wrapping the buttons. */}
             <Link href={href} className="after:absolute after:inset-0 after:content-['']">
-              {product.title}
+              {title}
             </Link>
           </h3>
 
-          {product.vendorName && (
-            <p className="mt-0.5 truncate text-xs text-zinc-500">{product.vendorName}</p>
+          {vendorName && (
+            <p className="mt-0.5 truncate text-xs text-zinc-500">{vendorName}</p>
           )}
 
           {product.ratingCount > 0 && (

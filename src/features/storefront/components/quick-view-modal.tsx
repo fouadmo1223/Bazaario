@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Modal } from "@/shared/components/modal";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
 import { WishlistButton } from "@/features/wishlist/components/wishlist-button";
 import { formatMoney, discountPercent } from "@/shared/lib/format";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 import type { CatalogProduct } from "@/server/services/catalog.service";
 
 /**
@@ -28,6 +31,10 @@ export function QuickViewModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const t = useTranslations("ProductDetail");
+  const locale = useLocale() as Locale;
+  const title = localized(locale, product.title, product.titleAr);
+  const vendorName = localized(locale, product.vendorName, product.vendorNameAr);
   const onSale = product.compareAtPrice != null && product.compareAtPrice > product.price;
   const discount = onSale ? discountPercent(product.price, product.compareAtPrice!) : 0;
   // Variable products carry their availability on the variants, not the parent.
@@ -37,20 +44,20 @@ export function QuickViewModal({
     product.priceRange != null && product.priceRange.max > product.priceRange.min;
 
   return (
-    <Modal open={open} onClose={onClose} title={product.title} description={product.vendorName} size="lg">
+    <Modal open={open} onClose={onClose} title={title} description={vendorName} size="lg">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
           {product.image ? (
             <Image
               src={product.image}
-              alt={product.title}
+              alt={title}
               fill
               sizes="(max-width: 640px) 90vw, 320px"
               className="object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-              No image
+              {t("noImageShort")}
             </div>
           )}
           {onSale && inStock && (
@@ -79,23 +86,24 @@ export function QuickViewModal({
 
           {product.ratingCount > 0 && (
             <p className="mt-1 text-sm text-zinc-500">
-              ★ {product.ratingAvg.toFixed(1)} · {product.ratingCount} reviews
+              ★ {product.ratingAvg.toFixed(1)} · {t("reviews", { count: product.ratingCount })}
             </p>
           )}
 
           <p className="mt-3 text-sm">
             {!inStock ? (
-              <span className="text-red-600 dark:text-red-400">Out of stock</span>
+              <span className="text-red-600 dark:text-red-400">{t("outOfStock")}</span>
             ) : product.isVariable ? (
               // A variable parent's `stock` is 0 by design — real availability
               // lives on the variants, which this summary does not load. Quoting
               // it here produced "In stock — only 0 left".
               <span className="text-emerald-600 dark:text-emerald-400">
-                Available in {product.priceRange ? "several options" : "options"}
+                {product.priceRange ? t("availableInSeveralOptions") : t("availableInOptions")}
               </span>
             ) : (
               <span className="text-emerald-600 dark:text-emerald-400">
-                In stock{product.stock <= 5 ? ` — only ${product.stock} left` : ""}
+                {t("inStock")}
+                {product.stock <= 5 ? t("onlyLeft", { count: product.stock }) : ""}
               </span>
             )}
           </p>
@@ -112,7 +120,7 @@ export function QuickViewModal({
                   onClick={onClose}
                   className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
                 >
-                  Choose options
+                  {t("chooseOptions")}
                 </Link>
               ) : (
                 <AddToCartButton
@@ -131,7 +139,7 @@ export function QuickViewModal({
               onClick={onClose}
               className="block text-center text-sm text-indigo-600 underline-offset-4 hover:underline dark:text-indigo-400"
             >
-              View full details
+              {t("viewFullDetails")}
             </Link>
           </div>
         </div>

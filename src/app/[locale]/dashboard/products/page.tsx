@@ -5,6 +5,7 @@ import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
 import { requireVendorPermission } from "@/server/security/current-user";
 import { listVendorProducts, getProductFormOptions } from "@/features/products/queries";
 import { ProductTable } from "@/features/products/components/product-table";
+import { ProductSearchBox } from "@/features/products/components/product-search-box";
 import { PERMISSIONS } from "@/shared/constants/rbac";
 import { isAppError } from "@/shared/lib/errors";
 
@@ -62,26 +63,7 @@ export default async function DashboardProductsPage({
       </header>
 
       <div className="mb-5 flex flex-wrap items-center gap-4">
-        <form action="/dashboard/products" className="flex gap-2">
-          <label htmlFor="product-search" className="sr-only">
-            {t("searchLabel")}
-          </label>
-          <input
-            id="product-search"
-            name="search"
-            type="search"
-            defaultValue={search ?? ""}
-            placeholder={t("searchPlaceholder")}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
-          />
-          {activeStatus && <input type="hidden" name="status" value={activeStatus} />}
-          <button
-            type="submit"
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-          >
-            {t("search")}
-          </button>
-        </form>
+        <ProductSearchBox defaultValue={search ?? ""} status={activeStatus} />
 
         <nav aria-label={t("filterByStatus")} className="flex flex-wrap gap-2">
           <Chip label={t("all")} href="/dashboard/products" active={!activeStatus} />

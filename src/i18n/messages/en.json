@@ -4,6 +4,8 @@
     "categories": "Categories",
     "searchLabel": "Search products",
     "searchPlaceholder": "Search products…",
+    "searching": "Searching…",
+    "noQuickResults": "No products found.",
     "wishlist": "Wishlist",
     "cart": "Cart",
     "account": "Account"
@@ -95,7 +97,13 @@
     "messageStore": "Message store",
     "moreFromStore": "More from this store",
     "saveToWishlist": "Save to wishlist",
-    "removeFromWishlist": "Remove from wishlist"
+    "removeFromWishlist": "Remove from wishlist",
+    "noImageShort": "No image",
+    "quickView": "Quick view",
+    "chooseOptions": "Choose options",
+    "viewFullDetails": "View full details",
+    "availableInOptions": "Available in options",
+    "availableInSeveralOptions": "Available in several options"
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -238,6 +246,14 @@
     "passwordHint": "At least 8 characters with upper, lower, and a number.",
     "createAccountBtn": "Create account",
     "sendResetLink": "Send reset link"
+  },
+  "Notifications": {
+    "label": "Notifications",
+    "labelUnread": "Notifications ({count} unread)",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "loadError": "Could not load notifications.",
+    "empty": "Nothing yet."
   },
   "Reviews": {
     "title": "Reviews",

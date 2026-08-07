@@ -48,6 +48,7 @@ const ACCOUNTS = {
 type SimpleSpec = {
   kind: "simple";
   title: string;
+  titleAr: string;
   price: number;
   compareAtPrice?: number | null;
   stock: number;
@@ -57,17 +58,20 @@ type SimpleSpec = {
   featured?: boolean;
   rating?: [number, number]; // [avg, count]
   description: string;
+  descriptionAr: string;
 };
 
 type VariableSpec = {
   kind: "variable";
   title: string;
+  titleAr: string;
   category: string;
   brand: string;
   tags: string[];
   featured?: boolean;
   rating?: [number, number];
   description: string;
+  descriptionAr: string;
   attributes: { name: string; values: string[] }[];
   /** Variant price/stock overrides keyed by "Value / Value" in attribute order. */
   variants: { options: string[]; price: number; compareAtPrice?: number | null; stock: number }[];
@@ -77,50 +81,59 @@ type Spec = SimpleSpec | VariableSpec;
 
 const NOVA_PRODUCTS: Spec[] = [
   {
-    kind: "simple", title: "Aurora Wireless Headphones", price: 129.99, compareAtPrice: 179.99,
+    kind: "simple", title: "Aurora Wireless Headphones", titleAr: "سماعة أورورا اللاسلكية", price: 129.99, compareAtPrice: 179.99,
     stock: 24, category: "audio", brand: "nova", tags: ["audio", "wireless"], featured: true, rating: [4.6, 128],
     description: "Immersive sound with active noise cancellation and 30-hour battery life.",
+    descriptionAr: "صوت غامر مع خاصية إلغاء الضوضاء النشط وعمر بطارية يصل إلى 30 ساعة.",
   },
   {
-    kind: "simple", title: "Pulse Bluetooth Speaker", price: 74.5, compareAtPrice: 99,
+    kind: "simple", title: "Pulse Bluetooth Speaker", titleAr: "مكبر صوت بلس بلوتوث", price: 74.5, compareAtPrice: 99,
     stock: 40, category: "audio", brand: "nova", tags: ["audio", "portable"], featured: true, rating: [4.3, 64],
     description: "Room-filling sound in a bag-sized package. IPX7 water resistant.",
+    descriptionAr: "صوت يملأ الغرفة بحجم صغير يناسب الحقيبة. مقاوم للماء بمعيار IPX7.",
   },
   {
-    kind: "simple", title: "Vertex Mechanical Keyboard", price: 149, compareAtPrice: 199,
+    kind: "simple", title: "Vertex Mechanical Keyboard", titleAr: "لوحة مفاتيح فيرتكس الميكانيكية", price: 149, compareAtPrice: 199,
     stock: 0, category: "computing", brand: "vertex", tags: ["computing"], featured: true, rating: [4.8, 210],
     description: "Hot-swappable switches, aluminium body, per-key RGB.",
+    descriptionAr: "مفاتيح قابلة للاستبدال أثناء التشغيل، هيكل ألمنيوم، إضاءة RGB لكل مفتاح.",
   },
   {
-    kind: "simple", title: "Nimbus Laptop Sleeve", price: 34, compareAtPrice: 45,
+    kind: "simple", title: "Nimbus Laptop Sleeve", titleAr: "حقيبة نيمبوس للابتوب", price: 34, compareAtPrice: 45,
     stock: 60, category: "accessories", brand: "nimbus", tags: ["accessories"], rating: [4.1, 33],
     description: "Water-resistant 14-inch sleeve with a felt interior.",
+    descriptionAr: "حقيبة مقاومة للماء بحجم 14 بوصة وبطانة من اللباد.",
   },
   {
-    kind: "simple", title: "Solstice Desk Lamp", price: 59, stock: 3,
+    kind: "simple", title: "Solstice Desk Lamp", titleAr: "مصباح مكتب سولستيس", price: 59, stock: 3,
     category: "home", brand: "nova", tags: ["home", "lighting"], rating: [4.4, 51],
     description: "Adjustable warm-to-cool LED lamp with touch dimming.",
+    descriptionAr: "مصباح LED قابل للتعديل من دافئ إلى بارد مع تحكم باللمس.",
   },
   {
-    kind: "simple", title: "Cobalt Water Bottle", price: 24.99, stock: 120,
+    kind: "simple", title: "Cobalt Water Bottle", titleAr: "زجاجة مياه كوبالت", price: 24.99, stock: 120,
     category: "outdoors", brand: "nimbus", tags: ["outdoors"], rating: [4.7, 88],
     description: "Vacuum-insulated 750ml bottle; keeps drinks cold for 24 hours.",
+    descriptionAr: "زجاجة معزولة بالفراغ سعة 750 مل، تحافظ على برودة المشروبات لمدة 24 ساعة.",
   },
   {
-    kind: "simple", title: "Halo Wireless Charger", price: 39.99, compareAtPrice: 54.99,
+    kind: "simple", title: "Halo Wireless Charger", titleAr: "شاحن هالو اللاسلكي", price: 39.99, compareAtPrice: 54.99,
     stock: 75, category: "accessories", brand: "nova", tags: ["accessories", "wireless"], rating: [4.0, 42],
     description: "15W Qi charging pad with a non-slip base.",
+    descriptionAr: "لوحة شحن Qi بقوة 15 واط بقاعدة مانعة للانزلاق.",
   },
   {
-    kind: "simple", title: "Quartz Mouse Pad XL", price: 19.5, stock: 200,
+    kind: "simple", title: "Quartz Mouse Pad XL", titleAr: "قاعدة ماوس كوارتز XL", price: 19.5, stock: 200,
     category: "computing", brand: "vertex", tags: ["computing"], rating: [4.2, 19],
     description: "900×400mm stitched-edge desk mat.",
+    descriptionAr: "قاعدة مكتب بحواف مخيطة بقياس 900×400 مم.",
   },
   // ---- Variable products: these exercise the variant picker ----------------
   {
-    kind: "variable", title: "Terra Running Shoes", category: "footwear", brand: "terra",
+    kind: "variable", title: "Terra Running Shoes", titleAr: "حذاء تيرا للجري", category: "footwear", brand: "terra",
     tags: ["footwear", "running"], featured: true, rating: [4.5, 156],
     description: "Lightweight trail runners with responsive cushioning.",
+    descriptionAr: "حذاء جري خفيف الوزن للمسارات الوعرة بوسادة استجابة عالية.",
     attributes: [
       { name: "Size", values: ["7", "8", "9", "10", "11"] },
       { name: "Colour", values: ["Black", "Sand", "Forest"] },
@@ -141,9 +154,10 @@ const NOVA_PRODUCTS: Spec[] = [
     ],
   },
   {
-    kind: "variable", title: "Drift Merino Tee", category: "apparel", brand: "terra",
+    kind: "variable", title: "Drift Merino Tee", titleAr: "قميص درفت الميرينو", category: "apparel", brand: "terra",
     tags: ["apparel"], featured: true, rating: [4.4, 74],
     description: "Featherweight merino wool tee that resists odour for days.",
+    descriptionAr: "قميص خفيف الوزن من صوف الميرينو يقاوم الروائح لأيام.",
     attributes: [
       { name: "Size", values: ["S", "M", "L", "XL"] },
       { name: "Colour", values: ["Charcoal", "Oat"] },
@@ -163,34 +177,40 @@ const NOVA_PRODUCTS: Spec[] = [
 
 const ATLAS_PRODUCTS: Spec[] = [
   {
-    kind: "simple", title: "Atlas Cast Iron Skillet", price: 45, compareAtPrice: 60,
+    kind: "simple", title: "Atlas Cast Iron Skillet", titleAr: "مقلاة أطلس الحديدية", price: 45, compareAtPrice: 60,
     stock: 30, category: "kitchen", brand: "atlas", tags: ["kitchen"], featured: true, rating: [4.9, 302],
     description: "Pre-seasoned 12-inch skillet that outlives its owner.",
+    descriptionAr: "مقلاة مُتبّلة مسبقًا بحجم 12 بوصة تدوم لأجيال.",
   },
   {
-    kind: "simple", title: "Ember Pour-Over Set", price: 68, stock: 18,
+    kind: "simple", title: "Ember Pour-Over Set", titleAr: "طقم إمبر للقهوة المصبوبة", price: 68, stock: 18,
     category: "kitchen", brand: "atlas", tags: ["kitchen", "coffee"], featured: true, rating: [4.6, 91],
     description: "Borosilicate carafe, steel filter, no paper required.",
+    descriptionAr: "إبريق من زجاج البوروسيليكات وفلتر ستانلس بدون الحاجة لورق فلتر.",
   },
   {
-    kind: "simple", title: "Grove Chopping Board", price: 32, stock: 44,
+    kind: "simple", title: "Grove Chopping Board", titleAr: "لوح تقطيع جروف", price: 32, stock: 44,
     category: "kitchen", brand: "grove", tags: ["kitchen"], rating: [4.3, 27],
     description: "End-grain walnut board with a juice groove.",
+    descriptionAr: "لوح تقطيع من خشب الجوز مع تجويف لتجميع العصارة.",
   },
   {
-    kind: "simple", title: "Fern Ceramic Planter", price: 28, compareAtPrice: 36,
+    kind: "simple", title: "Fern Ceramic Planter", titleAr: "أصيص فيرن الخزفي", price: 28, compareAtPrice: 36,
     stock: 65, category: "home", brand: "grove", tags: ["home", "garden"], rating: [4.5, 58],
     description: "Matte stoneware planter with a drainage tray.",
+    descriptionAr: "أصيص من الحجر الخزفي غير اللامع مع صينية تصريف.",
   },
   {
-    kind: "simple", title: "Linen Throw Blanket", price: 89, stock: 12,
+    kind: "simple", title: "Linen Throw Blanket", titleAr: "بطانية لينن الكتانية", price: 89, stock: 12,
     category: "home", brand: "grove", tags: ["home"], rating: [4.7, 40],
     description: "Stonewashed European linen, softens with every wash.",
+    descriptionAr: "كتان أوروبي مغسول بالحجر، يزداد نعومة مع كل غسلة.",
   },
   {
-    kind: "variable", title: "Harbor Enamel Mug", category: "kitchen", brand: "atlas",
+    kind: "variable", title: "Harbor Enamel Mug", titleAr: "كوب هاربر المطلي بالمينا", category: "kitchen", brand: "atlas",
     tags: ["kitchen", "outdoors"], rating: [4.2, 63],
     description: "Chip-resistant enamel over steel. Campfire safe.",
+    descriptionAr: "طلاء مينا مقاوم للتشقق فوق الستانلس. آمن على نار المخيم.",
     attributes: [
       { name: "Size", values: ["350ml", "500ml"] },
       { name: "Colour", values: ["Navy", "Cream", "Rust"] },
@@ -217,6 +237,17 @@ const CATEGORY_NAMES: Record<string, string> = {
   kitchen: "Kitchen",
 };
 
+const CATEGORY_NAMES_AR: Record<string, string> = {
+  audio: "صوتيات",
+  computing: "حوسبة",
+  accessories: "إكسسوارات",
+  home: "المنزل",
+  outdoors: "أنشطة خارجية",
+  footwear: "أحذية",
+  apparel: "ملابس",
+  kitchen: "مطبخ",
+};
+
 const BRAND_NAMES: Record<string, string> = {
   nova: "Nova",
   vertex: "Vertex",
@@ -230,7 +261,9 @@ const VENDORS = [
   {
     slug: "nova-electronics",
     name: "Nova Electronics",
+    nameAr: "نوفا للإلكترونيات",
     description: "Audio, computing, and the small things that make them better.",
+    descriptionAr: "صوتيات، حوسبة، والتفاصيل الصغيرة التي تجعلها أفضل.",
     ownerKey: "vendorOwner" as const,
     currency: "USD",
     products: NOVA_PRODUCTS,
@@ -243,7 +276,9 @@ const VENDORS = [
   {
     slug: "atlas-home",
     name: "Atlas Home & Kitchen",
+    nameAr: "أطلس للمنزل والمطبخ",
     description: "Hard-wearing kit for the kitchen and the room it opens onto.",
+    descriptionAr: "أدوات متينة للمطبخ والغرفة المتصلة به.",
     ownerKey: "vendorOwner2" as const,
     currency: "USD",
     products: ATLAS_PRODUCTS,
@@ -335,7 +370,17 @@ async function seedProduct(
   },
 ): Promise<"created" | "skipped"> {
   const slug = slugify(spec.title);
-  if (await Product.findOne({ vendor: ctx.vendorId, slug })) return "skipped";
+  const existingProduct = await Product.findOne({ vendor: ctx.vendorId, slug });
+  if (existingProduct) {
+    // Same backfill reasoning as vendors/categories above — a product from a
+    // previous seed run predates titleAr/descriptionAr existing at all.
+    if (existingProduct.titleAr !== spec.titleAr || existingProduct.descriptionAr !== spec.descriptionAr) {
+      existingProduct.titleAr = spec.titleAr;
+      existingProduct.descriptionAr = spec.descriptionAr;
+      await existingProduct.save();
+    }
+    return "skipped";
+  }
 
   // Both maps are built from these same specs, so a miss means the spec names a
   // category/brand that doesn't exist — a seed bug worth failing on, not one to
@@ -348,8 +393,10 @@ async function seedProduct(
   const base = {
     vendor: ctx.vendorId,
     title: spec.title,
+    titleAr: spec.titleAr,
     slug,
     description: spec.description,
+    descriptionAr: spec.descriptionAr,
     shortDescription: spec.description,
     brand: brandId,
     categories: [categoryId],
@@ -437,11 +484,22 @@ async function main() {
     const owner = users[v.ownerKey];
 
     let vendor = await Vendor.findOne({ slug: v.slug });
-    if (!vendor) {
+    if (vendor) {
+      // Backfill Arabic names onto a vendor a previous seed already created —
+      // without this, re-running the seed (without --reset) would leave
+      // existing dev data stuck with no Arabic name until a full reset.
+      if (vendor.nameAr !== v.nameAr || vendor.descriptionAr !== v.descriptionAr) {
+        vendor.nameAr = v.nameAr;
+        vendor.descriptionAr = v.descriptionAr;
+        await vendor.save();
+      }
+    } else {
       vendor = await Vendor.create({
         name: v.name,
+        nameAr: v.nameAr,
         slug: v.slug,
         description: v.description,
+        descriptionAr: v.descriptionAr,
         owner: owner._id,
         status: "active",
         createdBy: admin._id,
@@ -483,16 +541,26 @@ async function main() {
     const categorySlugs = [...new Set(v.products.map((p) => p.category))];
     const categories = new Map<string, Types.ObjectId>();
     for (const slug of categorySlugs) {
-      const existing =
-        (await Category.findOne({ vendor: vendorId, slug })) ??
-        (await Category.create({
+      let existing = await Category.findOne({ vendor: vendorId, slug });
+      const nameAr = CATEGORY_NAMES_AR[slug] ?? null;
+      if (existing) {
+        // Same backfill reasoning as the vendor above — re-running the seed
+        // should fill in a category's Arabic name even if the row predates it.
+        if (existing.nameAr !== nameAr) {
+          existing.nameAr = nameAr;
+          await existing.save();
+        }
+      } else {
+        existing = await Category.create({
           vendor: vendorId,
           name: CATEGORY_NAMES[slug] ?? slug,
+          nameAr,
           slug,
           image: `https://picsum.photos/seed/cat-${slug}/600/450`,
           isActive: true,
           createdBy: owner._id,
-        }));
+        });
+      }
       categories.set(slug, existing._id);
     }
 

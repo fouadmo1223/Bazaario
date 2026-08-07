@@ -6,6 +6,8 @@ import { CatalogProductCard } from "@/features/storefront/components/catalog-pro
 import { Reveal } from "@/shared/components/reveal";
 import { ProductFilters } from "@/features/storefront/components/product-filters";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 type Search = Record<string, string | undefined>;
 
@@ -60,7 +62,10 @@ export default async function ProductsPage({
           <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />}>
             <ProductFilters
               facets={{
-                categories: categories.map((c) => ({ slug: c.slug, name: c.name })),
+                categories: categories.map((c) => ({
+                  slug: c.slug,
+                  name: localized(locale as Locale, c.name, c.nameAr),
+                })),
                 brands: brands.map((b) => ({ slug: b.slug, name: b.name })),
                 priceBounds,
               }}

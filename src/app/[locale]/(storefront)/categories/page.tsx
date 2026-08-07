@@ -4,6 +4,8 @@ import Image from "next/image";
 import { catalogService } from "@/server/services/catalog.service";
 import { Reveal } from "@/shared/components/reveal";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 export const metadata: Metadata = {
   title: "Categories · Bazaario",
@@ -51,12 +53,14 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-2xl font-semibold text-zinc-300 dark:text-zinc-700">
-                      {c.name.charAt(0)}
+                      {localized(locale as Locale, c.name, c.nameAr).charAt(0)}
                     </div>
                   )}
                 </div>
                 <div className="p-3">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{c.name}</p>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    {localized(locale as Locale, c.name, c.nameAr)}
+                  </p>
                   <p className="mt-0.5 text-xs text-zinc-500">
                     {t("storeCount", { count: c.ids.length })}
                   </p>

@@ -6,6 +6,8 @@ import type { BaseFields } from "../types";
 const categorySchema = new Schema({
   vendor: { type: Schema.Types.ObjectId, ref: "Vendor", required: true, index: true },
   name: { type: String, required: true, trim: true },
+  /** Optional Arabic display name — falls back to `name` when empty. */
+  nameAr: { type: String, default: null, trim: true },
   slug: { type: String, required: true, lowercase: true, trim: true },
   description: { type: String, default: null },
   image: { type: String, default: null },

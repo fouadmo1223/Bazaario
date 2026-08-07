@@ -13,6 +13,8 @@ import { getProductReviews } from "@/features/reviews/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
 import { isAppError } from "@/shared/lib/errors";
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { localized } from "@/shared/lib/localized";
+import type { Locale } from "@/i18n/locales";
 
 type Params = { locale: string; vendor: string; slug: string };
 
@@ -92,8 +94,8 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
   const detail: ProductDetailData = {
     id: String(product._id),
-    title: product.title,
-    description: product.description,
+    title: localized(locale as Locale, product.title, product.titleAr),
+    description: localized(locale as Locale, product.description, product.descriptionAr),
     shortDescription: product.shortDescription ?? null,
     type: product.type as "simple" | "variable",
     price: product.price,
@@ -125,6 +127,7 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       id: p.id,
       slug: p.slug,
       title: p.title,
+      titleAr: p.titleAr,
       price: p.price,
       compareAtPrice: p.compareAtPrice,
       image: p.image,
@@ -189,10 +192,10 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
 
       <nav className="mb-6 text-sm text-zinc-500">
         <Link href={`/v/${vendorSlug}`} className="hover:text-indigo-600">
-          {vendor.name}
+          {localized(locale as Locale, vendor.name, vendor.nameAr)}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
+        <span className="text-zinc-700 dark:text-zinc-300">{detail.title}</span>
       </nav>
 
       <ProductDetailView
