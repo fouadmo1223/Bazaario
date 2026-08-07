@@ -108,7 +108,7 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
           <span className="text-zinc-700 dark:text-zinc-300">{t("checkout")}</span>
         </nav>
 
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {t("checkout")}
         </h1>
 

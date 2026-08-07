@@ -51,7 +51,7 @@ export function CategoryTable({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
         >
           {t("newCategory")}
         </button>
@@ -72,7 +72,7 @@ export function CategoryTable({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             {t("createFirst")}
           </button>

@@ -47,7 +47,7 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
           <span className="text-zinc-700 dark:text-zinc-300">{t("cart")}</span>
         </nav>
 
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {tCart("title")}
         </h1>
 
@@ -85,7 +85,7 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
 
                 <Link
                   href={`/v/${vendorSlug}/checkout`}
-                  className="mt-6 block rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
+                  className="mt-6 block rounded-xl bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md"
                 >
                   {t("checkout")}
                 </Link>

@@ -168,7 +168,7 @@ export function CheckoutForm({
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
         {pending ? t("placingOrder") : t("placeOrder")}
       </button>
@@ -248,9 +248,9 @@ function Choice({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${
+      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
         checked
-          ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30"
+          ? "border-brand bg-brand/5 dark:bg-brand/10"
           : "border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
       }`}
     >

@@ -63,8 +63,8 @@ async function DashboardPanels({
         <KpiCard label={t("products")} value={productCount} />
       </section>
 
-      <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+      <section className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+        <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
           {t("revenueOverTime")}
         </h2>
         <RevenueChart data={series} currency={currency} />
@@ -75,7 +75,7 @@ async function DashboardPanels({
           <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
             {t("topProducts")}
           </h2>
-          <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
             {top.length === 0 ? (
               <p className="p-5 text-sm text-zinc-500">{t("noSales")}</p>
             ) : (
@@ -102,7 +102,7 @@ async function DashboardPanels({
           <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
             {t("lowStock")}
           </h2>
-          <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
             {lowStock.length === 0 ? (
               <p className="p-5 text-sm text-zinc-500">{t("wellStocked")}</p>
             ) : (
@@ -157,8 +157,8 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{role.replace(/_/g, " ")}</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <p className="text-sm font-medium text-brand capitalize">{role.replace(/_/g, " ")}</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {vendor.name}
         </h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("last30Days")}</p>

@@ -47,7 +47,7 @@ export function CatalogProductCard({
 
   return (
     <>
-      <div className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700">
         <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900">
           {product.image ? (
             <Image
@@ -64,7 +64,7 @@ export function CatalogProductCard({
           )}
 
           {onSale && !soldOut && (
-            <span className="absolute left-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+            <span className="absolute start-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
               −{discount}%
             </span>
           )}
@@ -75,20 +75,20 @@ export function CatalogProductCard({
           )}
 
           {/* Sits above the stretched link so it stays clickable. */}
-          <div className="absolute right-2 top-2 z-10">
+          <div className="absolute end-2 top-2 z-10">
             <WishlistButton productId={product.id} initialSaved={saved} size="sm" />
           </div>
 
           <button
             type="button"
             onClick={() => setQuickView(true)}
-            className="absolute inset-x-2 bottom-2 z-10 rounded-lg bg-white/95 py-2 text-xs font-semibold text-zinc-900 opacity-0 shadow transition group-hover:opacity-100 focus-visible:opacity-100 dark:bg-zinc-900/95 dark:text-zinc-100"
+            className="absolute inset-x-2 bottom-2 z-10 translate-y-1 rounded-lg bg-white/95 py-2 text-xs font-semibold text-zinc-900 opacity-0 shadow-md transition duration-200 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 dark:bg-zinc-900/95 dark:text-zinc-100"
           >
             {t("quickView")}
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col p-3">
+        <div className="flex flex-1 flex-col p-3.5">
           <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {/* Stretched link: covers the card without wrapping the buttons. */}
             <Link href={href} className="after:absolute after:inset-0 after:content-['']">
@@ -106,11 +106,11 @@ export function CatalogProductCard({
             </p>
           )}
 
-          <div className="mt-2 flex items-baseline gap-2">
+          <div className="mt-2 flex items-baseline gap-1.5">
             {spansRange && (
               <span className="text-xs text-zinc-500">{t("from")}</span>
             )}
-            <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+            <span className="text-[15px] font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
               {formatMoney(spansRange ? product.priceRange!.min : product.price, currency)}
             </span>
             {onSale && !spansRange && (

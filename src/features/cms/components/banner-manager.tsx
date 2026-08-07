@@ -20,7 +20,7 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover"
           >
             {t("newBanner")}
           </button>
@@ -270,7 +270,7 @@ function BannerForm({
         <button
           type="submit"
           disabled={pending || !message.trim()}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:opacity-50"
         >
           {pending ? t("saving") : initial ? t("saveChanges") : t("createBanner")}
         </button>

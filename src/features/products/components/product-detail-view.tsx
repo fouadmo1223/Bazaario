@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Reveal } from "@/shared/components/reveal";
 import { ProductGallery, type GalleryMedia } from "./product-gallery";
 import { VariantPicker, type VariantOption, type VariantView } from "./variant-picker";
 import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
@@ -53,10 +54,13 @@ export function ProductDetailView({
 
   return (
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-      <ProductGallery media={product.media} title={product.title} activeUrl={activeImage} />
+      <Reveal immediate fade={false} from="left">
+        <ProductGallery media={product.media} title={product.title} activeUrl={activeImage} />
+      </Reveal>
 
+      <Reveal immediate delay={0.1}>
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-balance text-zinc-900 dark:text-zinc-50">
           {product.title}
         </h1>
 
@@ -79,11 +83,11 @@ export function ProductDetailView({
         ) : (
           <>
             <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+              <span className="text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
                 {formatMoney(product.price, currency)}
               </span>
               {onSale && (
-                <span className="text-lg text-zinc-400 line-through">
+                <span className="text-lg tabular-nums text-zinc-400 line-through">
                   {formatMoney(product.compareAtPrice!, currency)}
                 </span>
               )}
@@ -157,6 +161,8 @@ export function ProductDetailView({
           </div>
         )}
       </div>
+      </Reveal>
     </div>
   );
 }
+

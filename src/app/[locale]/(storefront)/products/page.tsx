@@ -59,6 +59,7 @@ export default async function ProductsPage({
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         <div className="lg:col-span-1">
+          <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
           <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />}>
             <ProductFilters
               facets={{
@@ -71,6 +72,7 @@ export default async function ProductsPage({
               }}
             />
           </Suspense>
+          </div>
         </div>
 
         <div className="lg:col-span-3">
@@ -100,7 +102,7 @@ export default async function ProductsPage({
               </Reveal>
 
               {result.totalPages > 1 && (
-                <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">
+                <nav className="mt-10 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800" aria-label="Pagination">
                   <PageLink params={params} page={result.page - 1} disabled={!result.hasPrev}>
                     {t("prev")}
                   </PageLink>
@@ -133,7 +135,9 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return <span className="text-sm text-zinc-300 dark:text-zinc-700">{children}</span>;
+    return (
+      <span className="rounded-lg px-3 py-2 text-sm text-zinc-300 dark:text-zinc-700">{children}</span>
+    );
   }
 
   const query = new URLSearchParams();
@@ -145,7 +149,7 @@ function PageLink({
   return (
     <Link
       href={`/products?${query.toString()}`}
-      className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+      className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
     >
       {children}
     </Link>
