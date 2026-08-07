@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { listCustomerOrders } from "@/features/orders/queries";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
@@ -23,6 +23,7 @@ export default async function AccountOrdersPage({
   searchParams: Promise<Search>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("AccountOrders");
   const user = await getCurrentUser();
   // Send them back here after signing in rather than dropping them on the home page.
   if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/orders")}`, locale });
@@ -34,15 +35,13 @@ export default async function AccountOrdersPage({
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-4xl px-6 py-10">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Your orders
+          {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {orders.total} {orders.total === 1 ? "order" : "orders"}
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: orders.total })}</p>
 
         {orders.items.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-            <p className="text-sm text-zinc-500">You haven&apos;t placed any orders yet.</p>
+            <p className="text-sm text-zinc-500">{t("empty")}</p>
           </div>
         ) : (
           <>
@@ -74,7 +73,7 @@ export default async function AccountOrdersPage({
                       </div>
                       <p className="mt-0.5 truncate text-sm text-zinc-600 dark:text-zinc-400">
                         {order.firstItemTitle}
-                        {order.itemCount > 1 ? ` + ${order.itemCount - 1} more` : ""}
+                        {order.itemCount > 1 ? t("moreItems", { count: order.itemCount - 1 }) : ""}
                       </p>
                       <p className="mt-0.5 text-xs text-zinc-500">
                         {order.vendorName} ·{" "}
@@ -97,13 +96,13 @@ export default async function AccountOrdersPage({
             {orders.totalPages > 1 && (
               <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">
                 <PageLink page={orders.page - 1} disabled={!orders.hasPrev}>
-                  ← Previous
+                  {t("prev")}
                 </PageLink>
                 <span className="text-sm text-zinc-500">
-                  Page {orders.page} of {orders.totalPages}
+                  {t("pageOf", { page: orders.page, totalPages: orders.totalPages })}
                 </span>
                 <PageLink page={orders.page + 1} disabled={!orders.hasNext}>
-                  Next →
+                  {t("next")}
                 </PageLink>
               </nav>
             )}

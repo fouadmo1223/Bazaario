@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   addAddressAction,
@@ -42,6 +43,7 @@ const EMPTY: AddressRow = {
  * sits next to "Set default", which is not.
  */
 export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
+  const t = useTranslations("Account");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<AddressRow | null>(null);
@@ -107,14 +109,14 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Addresses</h2>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{t("addresses")}</h2>
         {!editing ? (
           <button
             type="button"
             onClick={() => setEditing(EMPTY)}
             className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
           >
-            Add address
+            {t("addAddress")}
           </button>
         ) : null}
       </div>
@@ -132,54 +134,54 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="addr-label" className={label}>Label</label>
+              <label htmlFor="addr-label" className={label}>{t("label")}</label>
               <input id="addr-label" name="label" defaultValue={editing.label} className={field} />
             </div>
             <div>
-              <label htmlFor="addr-recipient" className={label}>Recipient</label>
+              <label htmlFor="addr-recipient" className={label}>{t("recipient")}</label>
               <input id="addr-recipient" name="recipient" defaultValue={editing.recipient} required className={field} />
               {fieldErrors.recipient ? (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.recipient[0]}</p>
               ) : null}
             </div>
             <div>
-              <label htmlFor="addr-phone" className={label}>Phone</label>
+              <label htmlFor="addr-phone" className={label}>{t("phone")}</label>
               <input id="addr-phone" name="phone" defaultValue={editing.phone} required className={field} />
               {fieldErrors.phone ? (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.phone[0]}</p>
               ) : null}
             </div>
             <div>
-              <label htmlFor="addr-country" className={label}>Country</label>
+              <label htmlFor="addr-country" className={label}>{t("country")}</label>
               <input id="addr-country" name="country" defaultValue={editing.country} required className={field} />
               {fieldErrors.country ? (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.country[0]}</p>
               ) : null}
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="addr-line1" className={label}>Address line 1</label>
+              <label htmlFor="addr-line1" className={label}>{t("addressLine1")}</label>
               <input id="addr-line1" name="line1" defaultValue={editing.line1} required className={field} />
               {fieldErrors.line1 ? (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.line1[0]}</p>
               ) : null}
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="addr-line2" className={label}>Address line 2 (optional)</label>
+              <label htmlFor="addr-line2" className={label}>{t("addressLine2")}</label>
               <input id="addr-line2" name="line2" defaultValue={editing.line2 ?? ""} className={field} />
             </div>
             <div>
-              <label htmlFor="addr-city" className={label}>City</label>
+              <label htmlFor="addr-city" className={label}>{t("city")}</label>
               <input id="addr-city" name="city" defaultValue={editing.city} required className={field} />
               {fieldErrors.city ? (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.city[0]}</p>
               ) : null}
             </div>
             <div>
-              <label htmlFor="addr-region" className={label}>Region (optional)</label>
+              <label htmlFor="addr-region" className={label}>{t("region")}</label>
               <input id="addr-region" name="region" defaultValue={editing.region ?? ""} className={field} />
             </div>
             <div>
-              <label htmlFor="addr-postalCode" className={label}>Postal code (optional)</label>
+              <label htmlFor="addr-postalCode" className={label}>{t("postalCode")}</label>
               <input id="addr-postalCode" name="postalCode" defaultValue={editing.postalCode ?? ""} className={field} />
             </div>
           </div>
@@ -191,7 +193,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
               defaultChecked={editing.isDefault}
               className="h-4 w-4 accent-indigo-600"
             />
-            Use as my default delivery address
+            {t("useAsDefault")}
           </label>
 
           <div className="mt-4 flex items-center gap-2">
@@ -200,14 +202,14 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
               disabled={pending}
               className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
             >
-              {pending ? "Saving…" : editing.id ? "Save address" : "Add address"}
+              {pending ? t("saving") : editing.id ? t("saveAddress") : t("addAddress")}
             </button>
             <button
               type="button"
               onClick={close}
               className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
             >
-              Cancel
+              {t("cancel")}
             </button>
           </div>
         </form>
@@ -215,7 +217,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
 
       {addresses.length === 0 && !editing ? (
         <div className="mt-4 rounded-2xl border border-dashed border-zinc-300 py-10 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">No saved addresses yet.</p>
+          <p className="text-sm text-zinc-500">{t("noAddresses")}</p>
         </div>
       ) : (
         <ul className="mt-4 space-y-3">
@@ -232,7 +234,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                     </span>
                     {address.isDefault ? (
                       <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        Default
+                        {t("default")}
                       </span>
                     ) : null}
                   </div>
@@ -254,7 +256,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       onClick={() => run(() => setDefaultAddressAction({ addressId: address.id }))}
                       className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                     >
-                      Set default
+                      {t("setDefault")}
                     </button>
                   ) : null}
                   <button
@@ -262,7 +264,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                     onClick={() => setEditing(address)}
                     className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                   >
-                    Edit
+                    {t("edit")}
                   </button>
 
                   {confirmingDelete === address.id ? (
@@ -273,14 +275,14 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                         onClick={() => run(() => deleteAddressAction({ addressId: address.id }))}
                         className="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
                       >
-                        Confirm
+                        {t("confirm")}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmingDelete(null)}
                         className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
                       >
-                        Cancel
+                        {t("cancel")}
                       </button>
                     </>
                   ) : (
@@ -289,7 +291,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       onClick={() => setConfirmingDelete(address.id)}
                       className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40"
                     >
-                      Delete
+                      {t("delete")}
                     </button>
                   )}
                 </div>

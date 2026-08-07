@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
 import Image from "next/image";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { getCurrentUser } from "@/server/security/current-user";
@@ -27,6 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CustomerOrderPage({ params }: { params: Promise<Params> }) {
   const locale = await getLocale();
+  const t = await getTranslations("OrderDetail");
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
@@ -54,7 +55,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
       <div className="mx-auto max-w-3xl px-6 py-10">
         <nav className="mb-6 text-sm text-zinc-500">
           <Link href="/account/orders" className="hover:text-indigo-600">
-            Your orders
+            {t("yourOrders")}
           </Link>
           <span className="mx-2">/</span>
           <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
@@ -63,7 +64,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Order #{order.number}
+              {t("order", { number: order.number })}
             </h1>
             <p className="mt-1 text-sm text-zinc-500">
               {order.vendorName} · {placedAt}
@@ -80,7 +81,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
               href={`/account/orders/${order.id}/contact`}
               className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
             >
-              Message store
+              {t("messageStore")}
             </Link>
             <OrderStatusBadge status={order.status} />
           </div>
@@ -92,18 +93,18 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
             href={`/account/orders/${order.id}/invoice`}
             className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            Download invoice
+            {t("downloadInvoice")}
           </Link>
         </div>
 
         {order.refundedTotal > 0 && (
           <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-            {formatMoney(order.refundedTotal, order.currency)} refunded
+            {t("refunded", { amount: formatMoney(order.refundedTotal, order.currency) })}
           </p>
         )}
 
         <section className="mt-8" aria-label="Items">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Items</h2>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
           <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
             {order.items.map((item, i) => (
               <li key={i} className="flex items-center gap-4 py-3">
@@ -128,15 +129,15 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
 
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Delivery</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress address={order.shipping.address} />
             </div>
-            <p className="mt-2 text-xs text-zinc-500">Method: {order.shipping.method}</p>
+            <p className="mt-2 text-xs text-zinc-500">{t("method", { method: order.shipping.method })}</p>
           </section>
 
           <section aria-label="History">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">History</h2>
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("history")}</h2>
             <OrderTimeline entries={order.timeline} />
           </section>
         </div>

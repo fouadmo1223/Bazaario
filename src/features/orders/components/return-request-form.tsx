@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { requestReturnAction } from "../actions";
 
@@ -19,6 +20,7 @@ type ReturnRequest = {
  * both. A rejected request doesn't block trying again with a different reason.
  */
 export function ReturnRequestForm({ orderId, returns }: { orderId: string; returns: ReturnRequest[] }) {
+  const t = useTranslations("ReturnRequest");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -31,7 +33,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
   if (latest?.status === "requested") {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Return requested ({latest.reason}) — waiting on the store.
+        {t("requestedWaiting", { reason: latest.reason })}
       </p>
     );
   }
@@ -56,7 +58,9 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
     <div>
       {latest?.status === "rejected" && !open && (
         <p className="mb-2 text-sm text-zinc-500">
-          Previous return request declined{latest.resolutionNote ? `: ${latest.resolutionNote}` : "."}
+          {latest.resolutionNote
+            ? t("previousDeclinedWithNote", { note: latest.resolutionNote })
+            : t("previousDeclined")}
         </p>
       )}
 
@@ -66,13 +70,13 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
           onClick={() => setOpen(true)}
           className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
         >
-          Request a return
+          {t("requestAReturn")}
         </button>
       ) : (
         <form onSubmit={submit} noValidate className="space-y-3">
           <div>
             <label htmlFor="return-reason" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Reason
+              {t("reason")}
             </label>
             <input
               id="return-reason"
@@ -84,7 +88,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
           </div>
           <div>
             <label htmlFor="return-note" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Details (optional)
+              {t("detailsOptional")}
             </label>
             <textarea
               id="return-note"
@@ -107,7 +111,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               disabled={pending || !reason.trim()}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
             >
-              {pending ? "Sending…" : "Submit request"}
+              {pending ? t("sending") : t("submitRequest")}
             </button>
             <button
               type="button"
@@ -115,7 +119,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               disabled={pending}
               className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
             >
-              Cancel
+              {t("cancel")}
             </button>
           </div>
         </form>

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { profileService } from "@/server/services/profile.service";
-import { requireUser } from "@/server/security/current-user";
+import { requireUser, getCurrentUser } from "@/server/security/current-user";
+import { isLocale } from "@/i18n/locales";
 import { ok, toFailure, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
 import {
@@ -118,4 +119,17 @@ export async function setDefaultAddressAction(input: unknown): Promise<ApiResult
   } catch (err) {
     return toFailure(err);
   }
+}
+
+/**
+ * Fire-and-forget: called by the language switcher on every locale change so
+ * a signed-in account remembers it. A no-op for guests (nothing to attach it
+ * to) and never surfaces an error — losing this write means a notification
+ * goes out in the wrong language next time, not a broken page.
+ */
+export async function rememberLocaleAction(locale: string): Promise<void> {
+  if (!isLocale(locale)) return;
+  const user = await getCurrentUser();
+  if (!user) return;
+  await profileService.updateLocale(user.id, locale).catch(() => {});
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
 import Image from "next/image";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Types } from "mongoose";
 import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
@@ -32,6 +32,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardOrderPage({ params }: { params: Promise<Params> }) {
   const locale = await getLocale();
+  const t = await getTranslations("DashboardOrderDetail");
   const { id } = await params;
   if (!Types.ObjectId.isValid(id)) notFound();
 
@@ -70,7 +71,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
     <div className="mx-auto max-w-5xl px-6 py-10">
       <nav className="mb-6 text-sm text-zinc-500">
         <Link href="/dashboard/orders" className="hover:text-indigo-600">
-          Orders
+          {t("orders")}
         </Link>
         <span className="mx-2">/</span>
         <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
@@ -79,7 +80,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Order #{order.number}
+            {t("order", { number: order.number })}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
             {new Date(order.createdAt).toLocaleString(undefined, {
@@ -95,7 +96,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           <section aria-label="Items">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Items</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
             <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
               {order.items.map((item, i) => (
                 <li key={i} className="flex items-center gap-4 py-3">
@@ -122,7 +123,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           {canFulfil && (
             <section aria-label="Fulfilment">
               <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Fulfilment
+                {t("fulfilment")}
               </h2>
               <StatusActions vendorId={vendorId} orderId={order.id} allowed={transitions} />
             </section>
@@ -130,7 +131,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canFulfil && (
             <section aria-label="Driver">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Driver</h2>
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("driver")}</h2>
               <DriverAssignForm
                 vendorId={vendorId}
                 orderId={order.id}
@@ -142,7 +143,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canRefund && order.paymentStatus === "paid" && (
             <section aria-label="Refund">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Refund</h2>
+              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("refund")}</h2>
               <RefundForm
                 vendorId={vendorId}
                 orderId={order.id}
@@ -155,7 +156,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           {canRefund && order.customerId && (
             <section aria-label="Store credit">
               <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Store credit
+                {t("storeCredit")}
               </h2>
               <WalletCreditForm vendorId={vendorId} orderId={order.id} customerId={order.customerId} />
             </section>
@@ -164,7 +165,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           {canRefund && order.returns.some((r) => r.status === "requested") && (
             <section aria-label="Return requests">
               <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Return requests
+                {t("returnRequests")}
               </h2>
               <div className="space-y-3">
                 {order.returns
@@ -179,7 +180,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           {order.returns.some((r) => r.status !== "requested") && (
             <section aria-label="Return history">
               <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Return history
+                {t("returnHistory")}
               </h2>
               <ul className="space-y-2 text-sm">
                 {order.returns
@@ -202,7 +203,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           {order.refunds.length > 0 && (
             <section aria-label="Refunds issued">
               <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Refunds issued
+                {t("refundsIssued")}
               </h2>
               <ul className="space-y-2 text-sm">
                 {order.refunds.map((r, i) => (
@@ -223,18 +224,18 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
         <aside className="space-y-8 lg:col-span-1">
           <section aria-label="Payment">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Payment</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("payment")}</h2>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
               {order.paymentProvider} · {order.paymentStatus}
             </p>
           </section>
 
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Delivery</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress address={order.shipping.address} />
             </div>
-            <p className="mt-2 text-xs text-zinc-500">Method: {order.shipping.method}</p>
+            <p className="mt-2 text-xs text-zinc-500">{t("method", { method: order.shipping.method })}</p>
           </section>
 
           <section aria-label="Totals">
@@ -244,7 +245,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
           </section>
 
           <section aria-label="History">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">History</h2>
+            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("history")}</h2>
             <OrderTimeline entries={order.timeline} />
           </section>
         </aside>

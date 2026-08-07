@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { OrderStatus } from "@/server/database/models/order.model";
 
 /**
@@ -16,29 +17,24 @@ const STYLES: Record<OrderStatus, string> = {
   refunded: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
 };
 
-const LABELS: Record<OrderStatus, string> = {
-  pending: "Pending",
-  paid: "Paid",
-  processing: "Processing",
-  shipped: "Shipped",
-  out_for_delivery: "Out for delivery",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-  refunded: "Refunded",
-};
-
-export function orderStatusLabel(status: OrderStatus): string {
-  return LABELS[status] ?? status;
+/**
+ * A plain function, not a hook, so callers outside a component render (or in
+ * a different component's own `useTranslations` scope) can still label a
+ * status — pass the `t` from `useTranslations("OrderStatus")`.
+ */
+export function orderStatusLabel(status: OrderStatus, t: (key: string) => string): string {
+  return t(status) ?? status;
 }
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
+  const t = useTranslations("OrderStatus");
   return (
     <span
       className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
         STYLES[status] ?? STYLES.pending
       }`}
     >
-      {orderStatusLabel(status)}
+      {orderStatusLabel(status, t)}
     </span>
   );
 }

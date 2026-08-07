@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { LOCALES, type Locale } from "@/i18n/locales";
 import { Select } from "@/shared/components/select";
+import { rememberLocaleAction } from "@/features/profile/actions";
 
 /**
  * Switches the URL's `[locale]` segment in place — `usePathname()` here is
@@ -21,6 +22,7 @@ export function LanguageSwitcher() {
 
   function change(next: Locale) {
     if (next === locale) return;
+    void rememberLocaleAction(next);
     startTransition(() => router.replace(pathname, { locale: next }));
   }
 

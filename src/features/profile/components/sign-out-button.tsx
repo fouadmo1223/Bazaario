@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { logoutAction } from "@/features/auth/actions";
 
@@ -17,6 +18,7 @@ import { logoutAction } from "@/features/auth/actions";
  * something else invalidates them.
  */
 export function SignOutButton() {
+  const t = useTranslations("Account");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -33,7 +35,7 @@ export function SignOutButton() {
       }
       className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
     >
-      {pending ? "Signing out…" : "Sign out"}
+      {pending ? t("signingOut") : t("signOut")}
     </button>
   );
 }

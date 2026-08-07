@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { updateProfileAction } from "../actions";
 import { AvatarUpload } from "./avatar-upload";
@@ -26,6 +27,7 @@ export function ProfileForm({
   initial: { name: string; phone: string; avatar: string };
   email: string;
 }) {
+  const t = useTranslations("Account");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [avatar, setAvatar] = useState(initial.avatar);
@@ -55,7 +57,7 @@ export function ProfileForm({
         if (details?.fieldErrors) setFieldErrors(details.fieldErrors);
         return;
       }
-      setMessage("Profile updated.");
+      setMessage(t("profileUpdated"));
       router.refresh();
     });
   }
@@ -78,7 +80,7 @@ export function ProfileForm({
       ) : null}
 
       <div>
-        <span className={label}>Photo</span>
+        <span className={label}>{t("photo")}</span>
         <div className="mt-2">
           <AvatarUpload value={avatar} onChange={setAvatar} disabled={pending} />
         </div>
@@ -89,7 +91,7 @@ export function ProfileForm({
 
       <div>
         <label htmlFor="name" className={label}>
-          Name
+          {t("name")}
         </label>
         <input id="name" name="name" defaultValue={initial.name} required maxLength={120} className={field} />
         {fieldErrors.name ? (
@@ -99,14 +101,14 @@ export function ProfileForm({
 
       <div>
         <label htmlFor="phone" className={label}>
-          Phone <span className="font-normal text-zinc-400">(optional)</span>
+          {t("phone")} <span className="font-normal text-zinc-400">{t("optional")}</span>
         </label>
         <input id="phone" name="phone" defaultValue={initial.phone} maxLength={30} className={field} />
       </div>
 
       <div>
         <label htmlFor="email" className={label}>
-          Email
+          {t("email")}
         </label>
         <input
           id="email"
@@ -115,9 +117,7 @@ export function ProfileForm({
           disabled
           className={`${field} cursor-not-allowed opacity-60`}
         />
-        <p className="mt-1 text-xs text-zinc-400">
-          Your email is your sign-in and can&apos;t be changed here.
-        </p>
+        <p className="mt-1 text-xs text-zinc-400">{t("emailHint")}</p>
       </div>
 
       <button
@@ -125,7 +125,7 @@ export function ProfileForm({
         disabled={pending}
         className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
       >
-        {pending ? "Saving…" : "Save changes"}
+        {pending ? t("saving") : t("saveChanges")}
       </button>
     </form>
   );

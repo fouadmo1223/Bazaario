@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getWalletView } from "@/features/wallet/queries";
 import { TopUpForm } from "@/features/wallet/components/top-up-form";
@@ -22,6 +22,7 @@ type Search = { status?: string };
  */
 export default async function WalletPage({ searchParams }: { searchParams: Promise<Search> }) {
   const locale = await getLocale();
+  const t = await getTranslations("Wallet");
   const { status } = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/wallet")}`, locale });
@@ -32,38 +33,35 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-2xl px-6 py-10">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Wallet
+          {t("title")}
         </h1>
 
         {status === "success" && (
           <p className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-            Payment received — your balance updates as soon as it&apos;s confirmed, usually
-            within a few seconds.
+            {t("paymentReceived")}
           </p>
         )}
         {status === "cancelled" && (
           <p className="mt-4 rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-            Checkout was cancelled — nothing was charged.
+            {t("checkoutCancelled")}
           </p>
         )}
 
         <div className="mt-6 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">Balance</p>
+          <p className="text-sm text-zinc-500">{t("balance")}</p>
           <p className="mt-1 text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
             {formatMoney(balance, "USD")}
           </p>
-          <p className="mt-2 text-xs text-zinc-500">
-            Store credit, usable at checkout with any store.
-          </p>
+          <p className="mt-2 text-xs text-zinc-500">{t("storeCredit")}</p>
           <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
             <TopUpForm />
           </div>
         </div>
 
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Activity</h2>
+          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("activity")}</h2>
           {history.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nothing yet.</p>
+            <p className="text-sm text-zinc-500">{t("nothingYet")}</p>
           ) : (
             <ul className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
               {history.map((txn) => (

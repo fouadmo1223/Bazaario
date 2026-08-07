@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { NewConversationForm } from "@/features/messages/components/new-conversation-form";
 
@@ -21,6 +21,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function NewSupportThreadPage() {
   const locale = await getLocale();
+  const t = await getTranslations("ContactSupport");
   const user = await getCurrentUser();
   if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/messages/new")}`, locale });
 
@@ -28,16 +29,13 @@ export default async function NewSupportThreadPage() {
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-2xl px-6 py-10">
         <Link href="/account/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
-          ← Messages
+          {t("backToMessages")}
         </Link>
 
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Contact support
+          {t("title")}
         </h1>
-        <p className="mt-1 mb-6 text-sm text-zinc-500">
-          For questions about a specific order, message the store from the order page — they can act
-          on it directly.
-        </p>
+        <p className="mt-1 mb-6 text-sm text-zinc-500">{t("hint")}</p>
 
         <NewConversationForm kind="admin_customer" basePath="/account/messages" />
       </div>

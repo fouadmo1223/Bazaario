@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useConversation } from "@/shared/hooks/use-socket";
 import {
   markConversationReadAction,
@@ -25,6 +26,7 @@ import type { Thread } from "../queries";
  * quiet status line rather than disabling the form.
  */
 export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: string }) {
+  const t = useTranslations("ThreadView");
   const { messages, append, typingUsers, connected, setTyping, reads, emitRead } = useConversation(
     thread.id,
     thread.messages,
@@ -182,10 +184,12 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-800">
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {thread.subject || thread.vendorName || thread.counterparties.join(", ") || "Conversation"}
+            {thread.subject || thread.vendorName || thread.counterparties.join(", ") || t("conversation")}
           </h1>
           <p className="mt-0.5 text-xs text-zinc-500">
-            {thread.counterparties.length > 0 ? `with ${thread.counterparties.join(", ")}` : "No one else has replied yet"}
+            {thread.counterparties.length > 0
+              ? t("withNames", { names: thread.counterparties.join(", ") })
+              : t("noOneReplied")}
             {" · "}
             <span>{thread.status}</span>
           </p>
@@ -200,7 +204,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 disabled={pending}
                 className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
               >
-                Reopen
+                {t("reopen")}
               </button>
             ) : (
               <>
@@ -210,7 +214,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   disabled={pending}
                   className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                 >
-                  Mark resolved
+                  {t("markResolved")}
                 </button>
                 <button
                   type="button"
@@ -218,7 +222,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   disabled={pending}
                   className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                 >
-                  Close
+                  {t("close")}
                 </button>
               </>
             )}
@@ -228,7 +232,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
 
       <div className="flex-1 space-y-3 overflow-y-auto py-6">
         {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-zinc-500">No messages yet.</p>
+          <p className="py-10 text-center text-sm text-zinc-500">{t("noMessagesYet")}</p>
         ) : null}
 
         {messages.map((message) => {
@@ -272,11 +276,11 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   <p className="px-1 text-right text-[11px] text-zinc-400" aria-live="polite">
                     {seenByNames.length > 0
                       ? thread.others.length > 1
-                        ? `Seen by ${seenByNames.join(", ")}`
-                        : "Seen"
+                        ? t("seenBy", { names: seenByNames.join(", ") })
+                        : t("seen")
                       : connected
-                        ? "Sent"
-                        : "Sending…"}
+                        ? t("sent")
+                        : t("sending")}
                   </p>
                 ) : null}
               </div>
@@ -294,9 +298,9 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
             <span className="text-xs text-zinc-400">
               {(() => {
                 const names = typingUsers.map((id) => nameById.get(id)).filter(Boolean) as string[];
-                if (names.length === 0) return "Typing…";
-                if (names.length === 1) return `${names[0]} is typing…`;
-                return `${names.join(", ")} are typing…`;
+                if (names.length === 0) return t("typing");
+                if (names.length === 1) return t("oneTyping", { name: names[0] });
+                return t("multipleTyping", { names: names.join(", ") });
               })()}
             </span>
           </div>
@@ -313,9 +317,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
         ) : null}
 
         {readOnly ? (
-          <p className="py-3 text-center text-sm text-zinc-500">
-            This conversation is closed.
-          </p>
+          <p className="py-3 text-center text-sm text-zinc-500">{t("closedNotice")}</p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-2">
             {(attachments.length > 0 || uploading > 0) && (
@@ -329,7 +331,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 ))}
                 {uploading > 0 ? (
                   <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-[10px] text-zinc-400 dark:border-zinc-700">
-                    Uploading…
+                    {t("uploading")}
                   </div>
                 ) : null}
               </div>
@@ -349,7 +351,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                aria-label="Attach image or video"
+                aria-label={t("attachLabel")}
                 className="rounded-lg px-2 py-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden>
@@ -358,7 +360,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
               </button>
 
               <label htmlFor="chat-body" className="sr-only">
-                Message
+                {t("messageLabel")}
               </label>
               <textarea
                 id="chat-body"
@@ -375,7 +377,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 }}
                 rows={2}
                 maxLength={5000}
-                placeholder="Write a message…"
+                placeholder={t("writeMessage")}
                 className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
               />
               <button
@@ -383,15 +385,13 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 disabled={pending || uploading > 0 || (body.trim().length === 0 && attachments.length === 0)}
                 className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
               >
-                {pending ? "Sending…" : "Send"}
+                {pending ? t("sending") : t("send")}
               </button>
             </div>
           </form>
         )}
 
-        <p className="mt-2 text-[11px] text-zinc-400">
-          {connected ? "Connected — new replies appear instantly." : "Offline — replies appear on refresh."}
-        </p>
+        <p className="mt-2 text-[11px] text-zinc-400">{connected ? t("connected") : t("offline")}</p>
       </div>
     </div>
   );
@@ -457,6 +457,7 @@ function AttachmentPreview({
   attachment: ChatAttachment;
   onRemove: () => void;
 }) {
+  const t = useTranslations("ThreadView");
   const kind = attachmentKind(attachment);
   return (
     <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -471,7 +472,7 @@ function AttachmentPreview({
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${attachment.name}`}
+        aria-label={t("removeAttachment", { name: attachment.name })}
         className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white transition hover:bg-black/80"
       >
         ✕

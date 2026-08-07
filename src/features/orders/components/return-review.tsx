@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { resolveReturnAction } from "../actions";
 
@@ -23,6 +24,7 @@ export function ReturnReview({
   orderId: string;
   request: ReturnRequest;
 }) {
+  const t = useTranslations("ReturnReview");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [rejecting, setRejecting] = useState(false);
@@ -49,7 +51,7 @@ export function ReturnReview({
       {rejecting ? (
         <div className="mt-3 space-y-2">
           <label htmlFor="return-decline-note" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
-            Reason for declining (optional)
+            {t("declineReason")}
           </label>
           <input
             id="return-decline-note"
@@ -64,7 +66,7 @@ export function ReturnReview({
               disabled={pending}
               className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
             >
-              {pending ? "Declining…" : "Confirm decline"}
+              {pending ? t("declining") : t("confirmDecline")}
             </button>
             <button
               type="button"
@@ -72,7 +74,7 @@ export function ReturnReview({
               disabled={pending}
               className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
             >
-              Back
+              {t("back")}
             </button>
           </div>
         </div>
@@ -84,7 +86,7 @@ export function ReturnReview({
             disabled={pending}
             className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
           >
-            {pending ? "Approving…" : "Approve"}
+            {pending ? t("approving") : t("approve")}
           </button>
           <button
             type="button"
@@ -92,7 +94,7 @@ export function ReturnReview({
             disabled={pending}
             className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300"
           >
-            Decline
+            {t("decline")}
           </button>
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { creditWalletAction } from "../actions";
 
@@ -14,6 +15,7 @@ export function WalletCreditForm({
   orderId: string;
   customerId: string;
 }) {
+  const t = useTranslations("WalletCreditForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -28,7 +30,7 @@ export function WalletCreditForm({
 
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter an amount greater than zero.");
+      setError(t("amountError"));
       return;
     }
 
@@ -54,10 +56,10 @@ export function WalletCreditForm({
           onClick={() => setOpen(true)}
           className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
         >
-          Credit wallet…
+          {t("creditWallet")}
         </button>
         {done != null && (
-          <p className="mt-2 text-sm text-zinc-500">New balance: {done.toFixed(2)}</p>
+          <p className="mt-2 text-sm text-zinc-500">{t("newBalance", { balance: done.toFixed(2) })}</p>
         )}
       </div>
     );
@@ -67,7 +69,7 @@ export function WalletCreditForm({
     <form onSubmit={submit} noValidate className="space-y-3">
       <div>
         <label htmlFor="wallet-amount" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Amount
+          {t("amount")}
         </label>
         <input
           id="wallet-amount"
@@ -82,7 +84,7 @@ export function WalletCreditForm({
 
       <div>
         <label htmlFor="wallet-reason" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Reason (optional)
+          {t("reasonOptional")}
         </label>
         <input
           id="wallet-reason"
@@ -104,7 +106,7 @@ export function WalletCreditForm({
           disabled={pending}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
         >
-          {pending ? "Crediting…" : "Confirm credit"}
+          {pending ? t("crediting") : t("confirmCredit")}
         </button>
         <button
           type="button"
@@ -112,7 +114,7 @@ export function WalletCreditForm({
           disabled={pending}
           className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

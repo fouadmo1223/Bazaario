@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 type Address = {
   recipient: string | null;
   phone: string | null;
@@ -14,7 +16,8 @@ type Address = {
  * blanks are skipped rather than printed as gaps or stray punctuation.
  */
 export function ShippingAddress({ address }: { address: Address | null }) {
-  if (!address) return <p className="text-sm text-zinc-500">No address on file.</p>;
+  const t = useTranslations("ShippingAddress");
+  if (!address) return <p className="text-sm text-zinc-500">{t("noAddress")}</p>;
 
   const cityLine = [address.city, address.region].filter(Boolean).join(", ");
   const lines = [
@@ -26,7 +29,7 @@ export function ShippingAddress({ address }: { address: Address | null }) {
     address.country,
   ].filter((l): l is string => Boolean(l && l.trim()));
 
-  if (lines.length === 0) return <p className="text-sm text-zinc-500">No address on file.</p>;
+  if (lines.length === 0) return <p className="text-sm text-zinc-500">{t("noAddress")}</p>;
 
   return (
     <address className="text-sm not-italic leading-relaxed text-zinc-600 dark:text-zinc-400">

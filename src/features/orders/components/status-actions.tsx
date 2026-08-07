@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { updateOrderStatusAction } from "../actions";
 import { orderStatusLabel } from "./order-status-badge";
@@ -22,13 +23,15 @@ export function StatusActions({
   orderId: string;
   allowed: readonly OrderStatus[];
 }) {
+  const t = useTranslations("OrderStatus");
+  const tActions = useTranslations("StatusActions");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [target, setTarget] = useState<OrderStatus | null>(null);
 
   if (allowed.length === 0) {
-    return <p className="text-sm text-zinc-500">This order is in a final state.</p>;
+    return <p className="text-sm text-zinc-500">{tActions("finalState")}</p>;
   }
 
   function move(status: OrderStatus) {
@@ -60,7 +63,9 @@ export function StatusActions({
                 : "bg-indigo-600 text-white hover:bg-indigo-700"
             }`}
           >
-            {pending && target === status ? "Working…" : `Mark ${orderStatusLabel(status).toLowerCase()}`}
+            {pending && target === status
+              ? tActions("working")
+              : tActions("markAs", { status: orderStatusLabel(status, t) })}
           </button>
         ))}
       </div>

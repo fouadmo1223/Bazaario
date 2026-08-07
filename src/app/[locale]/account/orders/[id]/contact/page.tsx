@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getCustomerOrder } from "@/features/orders/queries";
@@ -23,6 +23,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function ContactVendorPage({ params }: { params: Promise<{ id: string }> }) {
   const locale = await getLocale();
+  const t = await getTranslations("ContactVendor");
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/account/orders/${id}/contact`)}`, locale });
@@ -42,15 +43,13 @@ export default async function ContactVendorPage({ params }: { params: Promise<{ 
           href={`/account/orders/${id}`}
           className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
         >
-          ← Order #{order.number}
+          {t("backToOrder", { number: order.number })}
         </Link>
 
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Message {order.vendorName}
+          {t("messageVendor", { vendor: order.vendorName })}
         </h1>
-        <p className="mt-1 mb-6 text-sm text-zinc-500">
-          About order #{order.number}. The store&apos;s team will see this and can reply here.
-        </p>
+        <p className="mt-1 mb-6 text-sm text-zinc-500">{t("aboutOrder", { number: order.number })}</p>
 
         <NewConversationForm
           kind="customer_vendor"

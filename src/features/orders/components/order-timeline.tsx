@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { orderStatusLabel } from "./order-status-badge";
 import type { OrderStatus } from "@/server/database/models/order.model";
 
@@ -7,6 +8,7 @@ export function OrderTimeline({
 }: {
   entries: { status: string; note: string | null; at: string }[];
 }) {
+  const t = useTranslations("OrderStatus");
   if (entries.length === 0) return null;
 
   return (
@@ -23,7 +25,7 @@ export function OrderTimeline({
             />
             <div className="min-w-0">
               <p className="text-sm text-zinc-900 dark:text-zinc-100">
-                {orderStatusLabel(entry.status as OrderStatus)}
+                {orderStatusLabel(entry.status as OrderStatus, t)}
               </p>
               {entry.note && <p className="text-xs text-zinc-500">{entry.note}</p>}
               <time

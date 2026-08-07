@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link, redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/server/security/current-user";
 import { getThread } from "@/features/messages/queries";
@@ -16,6 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AccountThreadPage({ params }: { params: Promise<{ id: string }> }) {
   const locale = await getLocale();
+  const t = await getTranslations("ThreadPage");
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/account/messages/${id}`)}`, locale });
@@ -36,7 +37,7 @@ export default async function AccountThreadPage({ params }: { params: Promise<{ 
     <div className="min-h-dvh bg-white dark:bg-black">
       <div className="mx-auto max-w-3xl px-6 py-6">
         <Link href="/account/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
-          ← Messages
+          {t("backToMessages")}
         </Link>
 
         {thread.orderId ? (
@@ -44,7 +45,7 @@ export default async function AccountThreadPage({ params }: { params: Promise<{ 
             href={`/account/orders/${thread.orderId}`}
             className="ml-4 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
           >
-            View related order
+            {t("viewRelatedOrder")}
           </Link>
         ) : null}
 

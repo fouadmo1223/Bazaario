@@ -42,6 +42,17 @@ export const profileService = {
   },
 
   /**
+   * Remembers which locale this account last used, so server-generated
+   * content created with no request to read a cookie from (a chat
+   * notification's title, for instance) can still go out in the right
+   * language. Best-effort — never worth failing a page over.
+   */
+  async updateLocale(userId: string, locale: string): Promise<void> {
+    await connectToDatabase();
+    await User.updateOne({ _id: userId }, { $set: { locale } });
+  },
+
+  /**
    * Update the fields a user owns.
    *
    * Deliberately narrow: `email`, `roles`, and `status` are not accepted. Email

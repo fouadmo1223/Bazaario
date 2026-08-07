@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/server/security/current-user";
 import { listInbox } from "@/features/messages/queries";
 import { ConversationList } from "@/features/messages/components/conversation-list";
@@ -22,6 +22,7 @@ export default async function AccountMessagesPage({
   searchParams: Promise<Search>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("AccountMessages");
   const user = await getCurrentUser();
   if (!user) redirect({ href: `/login?next=${encodeURIComponent("/account/messages")}`, locale });
 
@@ -34,25 +35,23 @@ export default async function AccountMessagesPage({
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Messages
+              {t("title")}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">
-              {inbox.total} {inbox.total === 1 ? "conversation" : "conversations"}
-            </p>
+            <p className="mt-1 text-sm text-zinc-500">{t("count", { count: inbox.total })}</p>
           </div>
 
           <Link
             href="/account/messages/new"
             className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500"
           >
-            Contact support
+            {t("contactSupport")}
           </Link>
         </div>
 
         <ConversationList
           items={inbox.items}
           basePath="/account/messages"
-          emptyMessage="No conversations yet. Message a store from its page, or contact support."
+          emptyMessage={t("emptyMessage")}
         />
 
         {inbox.totalPages > 1 ? (
@@ -62,18 +61,18 @@ export default async function AccountMessagesPage({
                 href={`/account/messages?page=${inbox.page - 1}`}
                 className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
               >
-                Previous
+                {t("prev")}
               </Link>
             ) : null}
             <span className="text-sm text-zinc-500">
-              Page {inbox.page} of {inbox.totalPages}
+              {t("pageOf", { page: inbox.page, totalPages: inbox.totalPages })}
             </span>
             {inbox.page < inbox.totalPages ? (
               <Link
                 href={`/account/messages?page=${inbox.page + 1}`}
                 className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
               >
-                Next
+                {t("next")}
               </Link>
             ) : null}
           </nav>

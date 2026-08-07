@@ -17,6 +17,10 @@ const userSchema = new Schema({
   name: { type: String, required: true, trim: true },
   avatar: { type: String, default: null },
   phone: { type: String, default: null, trim: true },
+  /** Last locale this account was seen using — lets server-generated content
+   *  (e.g. a chat notification's title) go out in the right language even
+   *  though it's created without a request/cookie to read from. */
+  locale: { type: String, default: null },
 
   // Global roles (platform-level, e.g. super_admin/customer). Vendor-scoped
   // roles live in the Membership collection.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { reorderAction, type ReorderResult } from "../actions";
 
@@ -12,6 +13,7 @@ import { reorderAction, type ReorderResult } from "../actions";
  * why the result is a summary panel rather than a redirect straight to cart.
  */
 export function ReorderButton({ orderId }: { orderId: string }) {
+  const t = useTranslations("Reorder");
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<ReorderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function ReorderButton({ orderId }: { orderId: string }) {
         disabled={pending}
         className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
       >
-        {pending ? "Adding to cart…" : "Buy again"}
+        {pending ? t("addingToCart") : t("buyAgain")}
       </button>
 
       {error && (
@@ -50,16 +52,16 @@ export function ReorderButton({ orderId }: { orderId: string }) {
         <div className="mt-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800">
           {result.added > 0 ? (
             <p className="text-zinc-700 dark:text-zinc-300">
-              Added {result.added} item{result.added === 1 ? "" : "s"} to your cart.{" "}
+              {t("addedItems", { count: result.added })}{" "}
               <Link
                 href={`/v/${result.vendorSlug}/cart`}
                 className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                View cart
+                {t("viewCart")}
               </Link>
             </p>
           ) : (
-            <p className="text-zinc-500">None of these items are available anymore.</p>
+            <p className="text-zinc-500">{t("noneAvailable")}</p>
           )}
           {result.skipped.length > 0 && (
             <ul className="mt-2 space-y-0.5 text-xs text-zinc-500">

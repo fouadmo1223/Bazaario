@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { initiateTopUpAction } from "../actions";
 
 /**
@@ -9,6 +10,7 @@ import { initiateTopUpAction } from "../actions";
  * here but "funds are on the way" copy on the ?status=success bounce-back.
  */
 export function TopUpForm() {
+  const t = useTranslations("TopUpForm");
   const [pending, startTransition] = useTransition();
   const [amount, setAmount] = useState("25");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export function TopUpForm() {
 
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter an amount greater than zero.");
+      setError(t("amountError"));
       return;
     }
 
@@ -37,7 +39,7 @@ export function TopUpForm() {
     <form onSubmit={submit} noValidate className="flex flex-wrap items-end gap-3">
       <div>
         <label htmlFor="topup-amount" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Add funds
+          {t("addFunds")}
         </label>
         <div className="mt-1 flex items-center gap-2">
           <span className="text-sm text-zinc-500">$</span>
@@ -57,7 +59,7 @@ export function TopUpForm() {
         disabled={pending}
         className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
       >
-        {pending ? "Redirecting…" : "Pay with card"}
+        {pending ? t("redirecting") : t("payWithCard")}
       </button>
       {error && (
         <p role="alert" className="w-full text-sm text-red-600 dark:text-red-400">

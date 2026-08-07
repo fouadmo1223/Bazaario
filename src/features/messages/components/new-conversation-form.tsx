@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { startConversationAction } from "../actions";
 import type { ConversationKind } from "@/server/database/models/conversation.model";
@@ -21,7 +22,7 @@ export function NewConversationForm({
   productId,
   basePath,
   defaultSubject = "",
-  submitLabel = "Send message",
+  submitLabel,
 }: {
   kind: ConversationKind;
   vendorId?: string;
@@ -33,6 +34,7 @@ export function NewConversationForm({
   defaultSubject?: string;
   submitLabel?: string;
 }) {
+  const t = useTranslations("NewConversationForm");
   const router = useRouter();
   const [subject, setSubject] = useState(defaultSubject);
   const [body, setBody] = useState("");
@@ -73,21 +75,21 @@ export function NewConversationForm({
 
       <div>
         <label htmlFor="subject" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Subject <span className="font-normal text-zinc-400">(optional)</span>
+          {t("subject")} <span className="font-normal text-zinc-400">{t("optional")}</span>
         </label>
         <input
           id="subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           maxLength={200}
-          placeholder="What is this about?"
+          placeholder={t("subjectPlaceholder")}
           className="mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
 
       <div>
         <label htmlFor="body" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Message
+          {t("message")}
         </label>
         <textarea
           id="body"
@@ -96,7 +98,7 @@ export function NewConversationForm({
           rows={6}
           required
           maxLength={5000}
-          placeholder="Write your message…"
+          placeholder={t("bodyPlaceholder")}
           className="mt-1 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
         />
       </div>
@@ -106,7 +108,7 @@ export function NewConversationForm({
         disabled={pending || body.trim().length === 0}
         className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:opacity-50"
       >
-        {pending ? "Sending…" : submitLabel}
+        {pending ? t("sending") : (submitLabel ?? t("sendMessage"))}
       </button>
     </form>
   );

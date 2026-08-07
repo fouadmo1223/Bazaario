@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { customerCancelOrderAction } from "../actions";
 
@@ -10,6 +11,7 @@ import { customerCancelOrderAction } from "../actions";
  * that has since shipped.
  */
 export function CancelOrderButton({ orderId }: { orderId: string }) {
+  const t = useTranslations("CancelOrder");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
@@ -32,14 +34,14 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
     <div>
       {confirming ? (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Cancel this order?</p>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("cancelThisOrder")}</p>
           <button
             type="button"
             onClick={cancel}
             disabled={pending}
             className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
           >
-            {pending ? "Cancelling…" : "Yes, cancel"}
+            {pending ? t("cancelling") : t("yesCancel")}
           </button>
           <button
             type="button"
@@ -47,7 +49,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
             disabled={pending}
             className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
           >
-            Keep it
+            {t("keepIt")}
           </button>
         </div>
       ) : (
@@ -56,7 +58,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
           onClick={() => setConfirming(true)}
           className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
         >
-          Cancel order
+          {t("cancelOrder")}
         </button>
       )}
 

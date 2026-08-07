@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { refundOrderAction } from "../actions";
 import { formatMoney } from "@/shared/lib/format";
@@ -23,6 +24,7 @@ export function RefundForm({
   currency: string;
   remaining: number;
 }) {
+  const t = useTranslations("RefundForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -31,7 +33,7 @@ export function RefundForm({
   const [error, setError] = useState<string | null>(null);
 
   if (remaining <= 0) {
-    return <p className="text-sm text-zinc-500">Fully refunded.</p>;
+    return <p className="text-sm text-zinc-500">{t("fullyRefunded")}</p>;
   }
 
   function submit(e: React.FormEvent) {
@@ -40,7 +42,7 @@ export function RefundForm({
 
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter a refund amount greater than zero.");
+      setError(t("amountError"));
       return;
     }
 
@@ -66,7 +68,7 @@ export function RefundForm({
         onClick={() => setOpen(true)}
         className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
       >
-        Refund…
+        {t("refundEllipsis")}
       </button>
     );
   }
@@ -75,7 +77,7 @@ export function RefundForm({
     <form onSubmit={submit} noValidate className="space-y-3">
       <div>
         <label htmlFor="refund-amount" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Amount
+          {t("amount")}
         </label>
         <input
           id="refund-amount"
@@ -88,13 +90,13 @@ export function RefundForm({
           className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
         />
         <p className="mt-1 text-xs text-zinc-500">
-          Up to {formatMoney(remaining, currency)} remaining.
+          {t("upToRemaining", { amount: formatMoney(remaining, currency) })}
         </p>
       </div>
 
       <div>
         <label htmlFor="refund-reason" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Reason (optional)
+          {t("reasonOptional")}
         </label>
         <input
           id="refund-reason"
@@ -116,7 +118,7 @@ export function RefundForm({
           disabled={pending}
           className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
         >
-          {pending ? "Refunding…" : "Confirm refund"}
+          {pending ? t("refunding") : t("confirmRefund")}
         </button>
         <button
           type="button"
@@ -124,7 +126,7 @@ export function RefundForm({
           disabled={pending}
           className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

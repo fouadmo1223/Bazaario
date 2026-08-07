@@ -306,12 +306,24 @@ export const conversationService = {
         .map((p) => String(p.user));
       if (!recipients.length) return;
 
+      // Each recipient's own last-seen locale decides their title — this
+      // notification is created once but read by whoever it's for, not the
+      // sender, so there's no single request/cookie locale to read here.
+      const recipientLocales = new Map(
+        (await User.find({ _id: { $in: recipients } }).select("locale")).map((u) => [
+          String(u._id),
+          u.locale,
+        ]),
+      );
+      const newMessageTitle = (userId: string) =>
+        recipientLocales.get(userId) === "ar" ? "رسالة جديدة" : "New message";
+
       await notificationService.createMany(
         recipients.map((userId) => ({
           userId,
           vendorId: conversation.vendor ? String(conversation.vendor) : null,
           type: "ticket_reply" as const,
-          title: conversation.subject || "New message",
+          title: conversation.subject || newMessageTitle(userId),
           body: preview.slice(0, 140),
           link: `/account/messages/${String(conversation._id)}`,
           // A reply while the recipient has no open tab is easy to miss entirely.
