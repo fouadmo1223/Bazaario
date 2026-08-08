@@ -12,7 +12,7 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
   return (
     <Link
       href="/auth/google"
-      className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+      className="flex w-full items-center justify-center gap-2 rounded-btn border border-border-default bg-surface px-4 py-2.5 text-sm font-medium text-text-secondary shadow-xs transition hover:bg-surface-raised"
     >
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"/>
@@ -28,9 +28,9 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
 export function OrDivider() {
   return (
     <div className="my-5 flex items-center gap-3">
-      <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-      <span className="text-xs uppercase tracking-wide text-zinc-400">or</span>
-      <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+      <span className="h-px flex-1 bg-border-subtle" />
+      <span className="text-xs uppercase tracking-wide text-text-tertiary">or</span>
+      <span className="h-px flex-1 bg-border-subtle" />
     </div>
   );
 }

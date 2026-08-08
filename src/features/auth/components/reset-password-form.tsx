@@ -20,7 +20,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <ResultBanner state={state} />
         <Link
           href="/login"
-          className="flex w-full items-center justify-center rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
+          className="flex w-full items-center justify-center rounded-btn bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-sm"
         >
           {t("continueToSignIn")}
         </Link>
@@ -34,7 +34,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <input type="hidden" name="token" value={token} />
       <Field label={t("newPassword")} name="password" type="password" autoComplete="new-password" required
         error={fieldError(state, "password")} />
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{t("passwordHint")}</p>
+      <p className="text-xs text-text-tertiary">{t("passwordHint")}</p>
       <SubmitButton>{t("updatePassword")}</SubmitButton>
     </form>
   );

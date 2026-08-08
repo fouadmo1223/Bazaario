@@ -30,7 +30,7 @@ export default async function LoginPage() {
         <LoginForm />
       </Suspense>
       <div className="mt-4 text-center">
-        <Link href="/forgot-password" className="text-sm text-zinc-500 hover:text-brand">
+        <Link href="/forgot-password" className="text-sm text-text-secondary hover:text-brand">
           {t("forgotPassword")}
         </Link>
       </div>

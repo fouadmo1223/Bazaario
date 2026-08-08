@@ -415,6 +415,7 @@
     "walletDescription": "ادفع من رصيد متجرك"
   },
   "Auth": {
+    "shellTagline": "سلة واحدة، لكل متجر مستقل تحبه.",
     "welcomeBack": "مرحبًا بعودتك",
     "signInToAccount": "سجّل الدخول إلى حسابك",
     "noAccount": "ليس لديك حساب؟",

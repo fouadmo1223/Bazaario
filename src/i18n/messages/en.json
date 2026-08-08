@@ -415,6 +415,7 @@
     "walletDescription": "Pay from your store credit balance"
   },
   "Auth": {
+    "shellTagline": "One cart, every independent store you love.",
     "welcomeBack": "Welcome back",
     "signInToAccount": "Sign in to your account",
     "noAccount": "Don't have an account?",

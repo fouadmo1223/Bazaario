@@ -40,9 +40,9 @@ export function LoginForm() {
         error={fieldError(state, "email")} />
       <Field label={t("password")} name="password" type="password" autoComplete="current-password" required
         error={fieldError(state, "password")} />
-      <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <label className="flex items-center gap-2 text-sm text-text-secondary">
         <input type="checkbox" name="rememberMe" value="true"
-          className="h-4 w-4 rounded border-zinc-300 text-brand" />
+          className="h-4 w-4 rounded border-border-default text-brand" />
         {t("rememberMe")}
       </label>
       <SubmitButton>{t("signIn")}</SubmitButton>

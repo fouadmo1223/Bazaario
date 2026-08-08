@@ -24,7 +24,7 @@ export function RegisterForm() {
         error={fieldError(state, "email")} />
       <Field label={t("password")} name="password" type="password" autoComplete="new-password" required
         error={fieldError(state, "password")} />
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{t("passwordHint")}</p>
+      <p className="text-xs text-text-tertiary">{t("passwordHint")}</p>
       <SubmitButton>{t("createAccountBtn")}</SubmitButton>
     </form>
   );
