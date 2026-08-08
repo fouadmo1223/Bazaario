@@ -23,6 +23,7 @@
     "wallet": "Wallet"
   },
   "Home": {
+    "heroEyebrow": "{count, plural, =0 {A marketplace of independent stores} one {# store on Bazaario} other {# stores on Bazaario}}",
     "heroTitle": "Every store, one place.",
     "heroSubtitle": "Browse independent vendors, save what you love, and check out securely — card, wallet, or cash on delivery.",
     "browseProducts": "Browse products",

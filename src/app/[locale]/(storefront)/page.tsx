@@ -56,51 +56,80 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <section className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-800">
-        {/* A single soft glow anchored top-start, not a scattered blob field —
-            it reads as one deliberate light source instead of decoration. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 start-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl dark:bg-brand/15"
-        />
-        <div className="relative mx-auto max-w-6xl px-6 py-20 sm:py-28">
-          {/* Slide only, no fade: this heading is the LCP candidate. */}
-          <Reveal immediate fade={false}>
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-balance text-zinc-900 dark:text-zinc-50 sm:text-6xl">
-              {t("heroTitle")}
-            </h1>
-          </Reveal>
+      <section className="relative overflow-hidden border-b border-border-subtle bg-background">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 py-16 sm:py-20 lg:grid-cols-12 lg:gap-10 lg:py-0">
+          {/* Text carries the LCP: the display headline paints before the
+              image below finishes decoding, so it's slide-only (no fade). */}
+          <div className="lg:order-2 lg:col-span-7 lg:py-24">
+            <Reveal immediate fade={false}>
+              <p className="font-mono text-xs font-medium tracking-[0.15em] text-brand uppercase">
+                {t("heroEyebrow", { count: vendors.length })}
+              </p>
+            </Reveal>
 
-          <Reveal immediate delay={0.1}>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              {t("heroSubtitle")}
-            </p>
-          </Reveal>
+            <Reveal immediate fade={false} delay={0.05}>
+              <h1 className="mt-3 max-w-xl font-display text-5xl leading-[0.98] font-medium tracking-[-0.02em] text-balance text-foreground sm:text-6xl lg:text-7xl">
+                {t("heroTitle")}
+              </h1>
+            </Reveal>
 
-          <Reveal immediate delay={0.2} className="mt-9 flex flex-wrap gap-3">
-            <Link
-              href="/products"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md"
-            >
-              {t("browseProducts")}
-            </Link>
-            <Link
-              href="/categories"
-              className="rounded-xl border border-zinc-300 bg-white/60 px-5 py-3 text-sm font-medium text-zinc-700 backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
-              {t("shopByCategory")}
-            </Link>
+            <Reveal immediate delay={0.15}>
+              <p className="mt-6 max-w-md text-lg leading-8 text-text-secondary">{t("heroSubtitle")}</p>
+            </Reveal>
+
+            <Reveal immediate delay={0.25} className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href="/products"
+                className="rounded-btn bg-brand px-5 py-3 text-sm font-semibold text-white shadow-xs transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-sm"
+              >
+                {t("browseProducts")}
+              </Link>
+              <Link
+                href="/categories"
+                className="rounded-btn border border-border-default px-5 py-3 text-sm font-medium text-foreground transition hover:-translate-y-0.5 hover:border-brand"
+              >
+                {t("shopByCategory")}
+              </Link>
+            </Reveal>
+          </div>
+
+          <Reveal
+            immediate
+            delay={0.1}
+            from="right"
+            as="div"
+            className="relative order-first aspect-[4/3] w-full overflow-hidden rounded-card lg:order-1 lg:col-span-5 lg:aspect-auto lg:h-[32rem]"
+          >
+            {featured[0]?.image ? (
+              <>
+                <Image
+                  src={featured[0].image}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 42vw"
+                  className="object-cover grayscale-[35%] contrast-[1.05]"
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-brand-900/45 via-brand-700/10 to-transparent mix-blend-multiply"
+                />
+                <div aria-hidden className="absolute inset-0 bg-brand/15 mix-blend-color" />
+              </>
+            ) : (
+              <div className="h-full w-full bg-brand/10" />
+            )}
           </Reveal>
         </div>
       </section>
 
       {categories.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 py-12" aria-labelledby="home-categories">
-          <div className="mb-5 flex items-baseline justify-between">
-            <h2 id="home-categories" className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby="home-categories">
+          <div className="mb-8 flex items-baseline justify-between">
+            <h2 id="home-categories" className="text-2xl font-semibold text-foreground">
               {t("categories")}
             </h2>
-            <Link href="/categories" className="text-sm text-brand hover:underline dark:text-brand">
+            <Link href="/categories" className="text-sm font-medium text-brand hover:underline">
               {t("allCategories")}
             </Link>
           </div>
@@ -109,9 +138,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <li key={c.slug}>
                 <Link
                   href={`/categories/${c.slug}`}
-                  className="flex h-24 items-end rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm font-medium text-zinc-800 transition hover:border-brand dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                  className="group relative flex h-28 items-end overflow-hidden rounded-card border border-border-subtle p-3 transition hover:border-border-default hover:shadow-xs"
                 >
-                  {localized(locale as Locale, c.name, c.nameAr)}
+                  {c.image ? (
+                    <Image
+                      src={c.image}
+                      alt=""
+                      fill
+                      sizes="200px"
+                      className="object-cover grayscale-[50%] transition duration-300 group-hover:scale-105 group-hover:grayscale-0"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-surface-raised" />
+                  )}
+                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+                  <span className="relative text-sm font-medium text-white">
+                    {localized(locale as Locale, c.name, c.nameAr)}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -140,8 +183,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       )}
 
       {vendors.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 py-12" aria-labelledby="home-vendors">
-          <h2 id="home-vendors" className="mb-5 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby="home-vendors">
+          <h2 id="home-vendors" className="mb-8 text-2xl font-semibold text-foreground">
             {t("stores")}
           </h2>
           <Reveal as="ul" stagger className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -149,23 +192,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <li key={v.id}>
                 <Link
                   href={`/v/${v.slug}`}
-                  className="flex items-center gap-3 rounded-xl border border-zinc-200 p-4 transition hover:border-brand dark:border-zinc-800"
+                  className="flex items-center gap-3 rounded-card border border-border-subtle p-4 transition hover:-translate-y-0.5 hover:border-border-default hover:shadow-xs"
                 >
-                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-raised">
                     {v.logo ? (
                       <Image src={v.logo} alt="" fill sizes="40px" className="object-cover" />
                     ) : (
-                      <span className="flex h-full items-center justify-center text-sm font-semibold text-zinc-400">
+                      <span className="flex h-full items-center justify-center text-sm font-semibold text-text-tertiary">
                         {v.name.charAt(0)}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {localized(locale as Locale, v.name, v.nameAr)}
                     </p>
                     {v.description && (
-                      <p className="truncate text-xs text-zinc-500">
+                      <p className="truncate text-xs text-text-tertiary">
                         {localized(locale as Locale, v.description, v.descriptionAr)}
                       </p>
                     )}
@@ -194,19 +237,19 @@ function ProductRail({
   emptyNote?: string;
 }) {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12" aria-labelledby={id}>
-      <div className="mb-5 flex items-baseline justify-between">
-        <h2 id={id} className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+    <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby={id}>
+      <div className="mb-8 flex items-baseline justify-between">
+        <h2 id={id} className="text-2xl font-semibold text-foreground">
           {title}
         </h2>
-        <Link href="/products" className="text-sm text-brand hover:underline dark:text-brand">
+        <Link href="/products" className="text-sm font-medium text-brand hover:underline">
           {seeAllLabel}
         </Link>
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{emptyNote ?? "Nothing here yet."}</p>
+        <div className="rounded-card border border-dashed border-border-default p-12 text-center">
+          <p className="text-sm text-text-secondary">{emptyNote ?? "Nothing here yet."}</p>
         </div>
       ) : (
         <Reveal stagger className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
