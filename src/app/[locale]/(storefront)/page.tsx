@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { catalogService, type CatalogProduct } from "@/server/services/catalog.service";
 import { CatalogProductCard } from "@/features/storefront/components/catalog-product-card";
 import { Reveal } from "@/shared/components/reveal";
+import { Marquee } from "@/shared/components/marquee";
+import { HorizontalGallery, HorizontalGalleryItem } from "@/shared/components/horizontal-gallery";
 import { localized } from "@/shared/lib/localized";
 import type { Locale } from "@/i18n/locales";
 
@@ -123,9 +125,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
+      {vendors.length > 0 && (
+        <div className="border-y border-border-subtle py-5">
+          <Marquee>
+            {vendors.map((v) => (
+              <span key={v.id} className="font-display text-lg text-text-tertiary">
+                {localized(locale as Locale, v.name, v.nameAr)}
+              </span>
+            ))}
+          </Marquee>
+        </div>
+      )}
+
       {categories.length > 0 && (
-        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby="home-categories">
-          <div className="mb-8 flex items-baseline justify-between">
+        <section className="py-16 md:py-24" aria-labelledby="home-categories">
+          <div className="mx-auto mb-8 flex max-w-6xl items-baseline justify-between px-6">
             <h2 id="home-categories" className="text-2xl font-semibold text-foreground">
               {t("categories")}
             </h2>
@@ -133,32 +147,34 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {t("allCategories")}
             </Link>
           </div>
-          <Reveal as="ul" stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {categories.slice(0, 6).map((c) => (
-              <li key={c.slug}>
+          {/* Editorial horizontal gallery, not a grid — native scroll-snap, no
+              scroll-jacking (see horizontal-gallery.tsx for why). */}
+          <HorizontalGallery className="px-6 sm:px-[max(1.5rem,calc((100vw-72rem)/2))]">
+            {categories.map((c) => (
+              <HorizontalGalleryItem key={c.slug} className="w-56 sm:w-64">
                 <Link
                   href={`/categories/${c.slug}`}
-                  className="group relative flex h-28 items-end overflow-hidden rounded-card border border-border-subtle p-3 transition hover:border-border-default hover:shadow-xs"
+                  className="group relative flex aspect-[3/4] items-end overflow-hidden rounded-card border border-border-subtle p-4 transition hover:border-border-default hover:shadow-xs"
                 >
                   {c.image ? (
                     <Image
                       src={c.image}
                       alt=""
                       fill
-                      sizes="200px"
+                      sizes="256px"
                       className="object-cover grayscale-[50%] transition duration-300 group-hover:scale-105 group-hover:grayscale-0"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-surface-raised" />
                   )}
                   <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-                  <span className="relative text-sm font-medium text-white">
+                  <span className="relative font-display text-lg font-medium text-white">
                     {localized(locale as Locale, c.name, c.nameAr)}
                   </span>
                 </Link>
-              </li>
+              </HorizontalGalleryItem>
             ))}
-          </Reveal>
+          </HorizontalGallery>
         </section>
       )}
 
@@ -181,6 +197,45 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {bestSellers.length > 0 && (
         <ProductRail id="home-best" title={t("bestSellers")} seeAllLabel={t("seeAll")} products={bestSellers} />
       )}
+
+      {/* Sticky storytelling: the image holds position while the three
+          points scroll past beside it — native `position: sticky`, not a
+          GSAP pin/scrub. See horizontal-gallery.tsx's comment for why this
+          codebase avoids that technique. */}
+      <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby="home-story">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-card lg:sticky lg:top-24 lg:aspect-auto lg:h-[28rem] lg:self-start">
+            {(featured[1] ?? featured[0])?.image ? (
+              <Image
+                src={(featured[1] ?? featured[0])!.image!}
+                alt=""
+                fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="object-cover grayscale-[35%] contrast-[1.05]"
+              />
+            ) : (
+              <div className="h-full w-full bg-brand/10" />
+            )}
+            <div aria-hidden className="absolute inset-0 bg-accent/15 mix-blend-color" />
+          </div>
+
+          <div className="space-y-12">
+            <Reveal>
+              <h2 id="home-story" className="font-display text-3xl font-medium text-balance text-foreground">
+                {t("storyTitle")}
+              </h2>
+            </Reveal>
+            {(["curated", "secure", "delivery"] as const).map((key) => (
+              <Reveal key={key}>
+                <h3 className="text-lg font-semibold text-foreground">{t(`story_${key}Title`)}</h3>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
+                  {t(`story_${key}Body`)}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {vendors.length > 0 && (
         <section className="mx-auto max-w-6xl px-6 py-16 md:py-24" aria-labelledby="home-vendors">

@@ -36,7 +36,14 @@
     "bestSellers": "Best sellers",
     "deals": "Today's deals",
     "stores": "Stores",
-    "seeAll": "See all"
+    "seeAll": "See all",
+    "storyTitle": "A marketplace built around real stores, not listings.",
+    "story_curatedTitle": "Curated, independent stores",
+    "story_curatedBody": "Every vendor runs their own storefront, sets their own tone, and stands behind what they sell.",
+    "story_secureTitle": "Checkout you can trust",
+    "story_secureBody": "Card, wallet, or cash on delivery — every payment is verified before an order ever leaves the queue.",
+    "story_deliveryTitle": "Tracked from click to doorstep",
+    "story_deliveryBody": "Follow your order in real time, from the moment a store confirms it to the driver at your door."
   },
   "Language": {
     "label": "Language",

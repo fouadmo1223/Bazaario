@@ -173,3 +173,21 @@ html {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
+
+/* Marquee (src/shared/components/marquee.tsx) — a plain CSS loop, not GSAP,
+   so it needs no scroll math and can't go stale the way ScrollTrigger did. */
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
