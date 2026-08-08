@@ -1,14 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #18181b;
+  /* Canvas & surface — a warm off-white/near-black pairing (not pure
+     #fff/#000) so bordered panels read as depth against the page rather than
+     everything looking like the same flat white sheet. */
+  --background: #fdfcfb;
+  --foreground: #211c17;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border-subtle: #e7e2dd;
+  --border-default: #d9d2ca;
+  --text-secondary: #6b6058;
+  --text-tertiary: #948a80;
 
-  /* Brand accent — a slightly deeper, less saturated indigo than Tailwind's
-     stock 600 reads calmer at large sizes (hero CTAs, focus rings) without
-     losing the "this is a live product" energy a pure neutral palette lacks. */
-  --brand: #4338ca;
-  --brand-hover: #3730a3;
+  /* Brand — warm terracotta/clay. Deliberately not another purple/blue:
+     reads as crafted (ceramics, textiles, a marketplace of goods) and is
+     rare enough in SaaS/template palettes to feel like an actual choice. */
+  --brand: #c85a34;
+  --brand-hover: #a8482a;
+  --brand-50: #fdf4f0;
+  --brand-100: #fbe4da;
+  --brand-200: #f5c4b0;
+  --brand-300: #ec9b7d;
+  --brand-400: #e17750;
+  --brand-500: #c85a34;
+  --brand-600: #a8482a;
+  --brand-700: #863822;
+  --brand-800: #672a19;
+  --brand-900: #4a1e12;
+
+  /* Secondary accent — deep ink teal. A second pole, not a second brand:
+     used sparingly (secondary buttons, tags, chart series 2). */
+  --accent: #1f5f5b;
+  --accent-hover: #17504c;
+
+  /* Semantic */
+  --success: #2f7a4a;
+  --warning: #b5790a;
+  --error: #b8382a;
+  --info: #2b6ca3;
 
   /*
    * Lets the browser theme what CSS cannot reach: <select> option lists, the
@@ -22,18 +52,94 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Editorial display face — hero headline / campaign headlines / storefront
+     section dividers only. Never dashboard/account/platform, never body copy. */
+  --font-display: var(--font-fraunces);
+
+  /* One deliberately off-scale text size: SKUs, timestamps, order IDs — always
+     paired with `font-mono uppercase tracking-wide`, never used for prose. */
+  --text-metadata: 0.6875rem;
+  --text-metadata--line-height: 1rem;
+
+  /* Named radius tiers, additive to Tailwind's own `rounded-*` scale (which
+     stays untouched so existing usage doesn't shift under this change).
+     rounded-md (Tailwind default, 6px) already covers the "sm" tier —
+     inputs/badges/pills/tooltips reuse it as-is. These three cover the tiers
+     with no stock Tailwind equivalent. */
+  --radius-btn: 0.625rem; /* 10px — buttons, selects, dropdowns */
+  --radius-card: 1rem; /* 16px — cards, panels, KPI tiles, media frames */
+  --radius-modal: 1.5rem; /* 24px — modals, hero-scale panels */
+}
+
+/* Warm-tinted elevation, replacing Tailwind's default cool-black shadow
+   palette. Borders remain the primary containment device site-wide; shadow
+   is reserved for genuine elevation (hover lift, dropdowns, modals, toasts,
+   hero media) — never a card's resting state. */
+@theme {
+  --shadow-xs: 0 1px 2px rgba(33, 28, 23, 0.04);
+  --shadow-sm: 0 2px 6px rgba(33, 28, 23, 0.06), 0 1px 1px rgba(33, 28, 23, 0.04);
+  --shadow-md: 0 8px 24px rgba(33, 28, 23, 0.1);
+  --shadow-lg: 0 24px 48px rgba(33, 28, 23, 0.14);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --brand: #818cf8;
-    --brand-hover: #a5b4fc;
+    --background: #0c0b0a;
+    --foreground: #f4f0ec;
+    --surface: #151312;
+    --surface-raised: #1c1a18;
+    --border-subtle: #2a2724;
+    --border-default: #3a3632;
+    --text-secondary: #a89e94;
+    --text-tertiary: #766c62;
+
+    /* Brand shifts lighter/warmer against near-black, not a flat invert. */
+    --brand: #e88a5f;
+    --brand-hover: #f0a57d;
+    --accent: #4fb3ac;
+    --accent-hover: #6ec4be;
+
+    --success: #5fbf7f;
+    --warning: #e0a83a;
+    --error: #e2685a;
+    --info: #6aa8db;
+  }
+
+  @theme {
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.32), 0 1px 1px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.5);
   }
 }
 

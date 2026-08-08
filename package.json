@@ -23,6 +23,7 @@
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.30.0",
     "mongoose": "^9.7.4",
     "next": "16.2.10",
     "next-intl": "^4.13.5",

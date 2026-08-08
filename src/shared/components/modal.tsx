@@ -69,17 +69,17 @@ export function Modal({
       // resets `margin: 0` on every element — which drops the dialog into the
       // top-left corner. `max-h`/`overflow-auto` keep a tall body inside the
       // viewport instead of running off the bottom.
-      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-auto ${width} rounded-2xl border border-zinc-200 bg-white p-0 text-zinc-900 shadow-xl backdrop:bg-black/50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100`}
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-auto ${width} rounded-modal border border-border-subtle bg-surface p-0 text-foreground shadow-md backdrop:bg-black/50`}
     >
       {/* Inner wrapper: clicks here must not reach the backdrop handler. */}
       <div onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
+        <div className="flex items-start justify-between gap-4 border-b border-border-subtle px-5 py-4">
           <div className="min-w-0">
             <h2 id="modal-title" className="text-base font-semibold">
               {title}
             </h2>
             {description && (
-              <p id="modal-description" className="mt-0.5 text-sm text-zinc-500">
+              <p id="modal-description" className="mt-0.5 text-sm text-text-secondary">
                 {description}
               </p>
             )}
@@ -88,7 +88,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            className="-me-1 -mt-1 shrink-0 rounded-btn p-1.5 text-text-tertiary transition hover:bg-surface-raised hover:text-foreground"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden>
               <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />

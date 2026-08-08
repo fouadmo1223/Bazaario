@@ -132,9 +132,9 @@ export function Select({
           }
         }}
         {...rest}
-        className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-start text-sm text-zinc-900 transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="flex w-full items-center justify-between gap-2 rounded-btn border border-border-default bg-surface px-3 py-2 text-start text-sm text-foreground transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span className={`truncate ${selected ? "" : "text-zinc-400"}`}>
+        <span className={`truncate ${selected ? "" : "text-text-tertiary"}`}>
           {selected ? selected.label : (placeholder ?? "Select…")}
         </span>
         <svg
@@ -142,7 +142,7 @@ export function Select({
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
-          className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 text-text-tertiary transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden
         >
           <path d="m5 7.5 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -157,7 +157,7 @@ export function Select({
           tabIndex={-1}
           aria-activedescendant={options[activeIndex] ? `${listboxId}-opt-${activeIndex}` : undefined}
           onKeyDown={onListKeyDown}
-          className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-lg outline-none dark:border-zinc-800 dark:bg-zinc-900"
+          className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-btn border border-border-default bg-surface-raised py-1 text-sm shadow-sm outline-none"
         >
           {options.map((o, i) => (
             <li
@@ -171,8 +171,8 @@ export function Select({
               className={[
                 "px-3 py-1.5",
                 o.disabled
-                  ? "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
-                  : "cursor-pointer text-zinc-700 dark:text-zinc-200",
+                  ? "cursor-not-allowed text-text-tertiary"
+                  : "cursor-pointer text-foreground",
                 !o.disabled && i === activeIndex
                   ? "bg-brand/10 text-brand"
                   : "",
