@@ -110,23 +110,23 @@ export function VariantPicker({
       <div className="mt-4 flex items-baseline gap-3">
         {price != null ? (
           <>
-            <span className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <span className="text-3xl font-semibold text-foreground">
               {formatMoney(price, currency)}
             </span>
             {onSale && (
-              <span className="text-lg text-zinc-400 line-through">
+              <span className="text-lg text-text-tertiary line-through">
                 {formatMoney(compareAt!, currency)}
               </span>
             )}
           </>
         ) : (
-          <span className="text-sm text-zinc-500">{t("selectOptionsToSeePrice")}</span>
+          <span className="text-sm text-text-secondary">{t("selectOptionsToSeePrice")}</span>
         )}
       </div>
 
       <p className="mt-2 text-sm">
         {!selected ? (
-          <span className="text-zinc-500">{t("chooseOption")}</span>
+          <span className="text-text-secondary">{t("chooseOption")}</span>
         ) : inStock ? (
           <span className="text-emerald-600 dark:text-emerald-400">
             {t("inStock")}
@@ -140,10 +140,10 @@ export function VariantPicker({
       <div className="mt-6 space-y-5">
         {attributes.map((attr) => (
           <fieldset key={attr.name}>
-            <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <legend className="text-sm font-medium text-text-secondary">
               {attr.name}
               {selection[attr.name] && (
-                <span className="ml-1 text-zinc-400">— {selection[attr.name]}</span>
+                <span className="ms-1 text-text-tertiary">— {selection[attr.name]}</span>
               )}
             </legend>
 
@@ -169,10 +169,10 @@ export function VariantPicker({
                       active
                         ? "border-brand bg-brand text-white"
                         : state === "none"
-                          ? "cursor-not-allowed border-zinc-200 text-zinc-300 dark:border-zinc-800 dark:text-zinc-700"
+                          ? "cursor-not-allowed border-border-subtle text-text-tertiary"
                           : state === "oos"
-                            ? "border-zinc-200 text-zinc-400 line-through dark:border-zinc-800"
-                            : "border-zinc-300 text-zinc-700 hover:border-brand dark:border-zinc-700 dark:text-zinc-300"
+                            ? "border-border-subtle text-text-tertiary line-through"
+                            : "border-border-default text-text-secondary hover:border-brand"
                     }`}
                   >
                     {value}
@@ -184,7 +184,7 @@ export function VariantPicker({
         ))}
       </div>
 
-      {selected?.sku && <p className="mt-4 text-xs text-zinc-500">{t("sku", { sku: selected.sku })}</p>}
+      {selected?.sku && <p className="mt-4 text-xs text-text-tertiary">{t("sku", { sku: selected.sku })}</p>}
 
       <div className="mt-8 flex items-center gap-3">
         <AddToCartButton

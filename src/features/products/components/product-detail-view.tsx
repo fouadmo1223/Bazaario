@@ -34,6 +34,11 @@ export type ProductDetailData = {
  * A client component because the gallery and the variant picker share state:
  * choosing "Red" should swap the main image. Everything it needs is passed in
  * already serialized — no Mongoose documents cross the boundary.
+ *
+ * The purchase block (title through add-to-cart) sits in its own `sticky`
+ * wrapper, separate from description/FAQs below it, so it stays reachable
+ * while a visitor scrolls a long description without following the whole
+ * right column.
  */
 export function ProductDetailView({
   product,
@@ -58,111 +63,103 @@ export function ProductDetailView({
         <ProductGallery media={product.media} title={product.title} activeUrl={activeImage} />
       </Reveal>
 
-      <Reveal immediate delay={0.1}>
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-balance text-zinc-900 dark:text-zinc-50">
-          {product.title}
-        </h1>
+        <Reveal immediate delay={0.1} className="lg:sticky lg:top-24 lg:self-start">
+          <h1 className="font-display text-3xl font-medium tracking-[-0.01em] text-balance text-foreground sm:text-4xl">
+            {product.title}
+          </h1>
 
-        {product.ratingCount > 0 && (
-          <p className="mt-2 text-sm text-zinc-500">
-            ★ {product.ratingAvg.toFixed(1)} · {t("reviews", { count: product.ratingCount })}
-          </p>
-        )}
-
-        {isVariable ? (
-          <VariantPicker
-            vendorId={vendorId}
-            vendorSlug={vendorSlug}
-            productId={product.id}
-            attributes={product.attributes}
-            variants={product.variants}
-            currency={currency}
-            onImageChange={setActiveImage}
-          />
-        ) : (
-          <>
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
-                {formatMoney(product.price, currency)}
-              </span>
-              {onSale && (
-                <span className="text-lg tabular-nums text-zinc-400 line-through">
-                  {formatMoney(product.compareAtPrice!, currency)}
-                </span>
-              )}
-            </div>
-
-            <p className="mt-2 text-sm">
-              {product.inStock ? (
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  {t("inStock")}
-                  {product.stock > 0 && product.stock <= 5 ? t("onlyLeft", { count: product.stock }) : ""}
-                </span>
-              ) : (
-                <span className="text-red-600 dark:text-red-400">{t("outOfStock")}</span>
-              )}
+          {product.ratingCount > 0 && (
+            <p className="mt-2 text-sm text-text-secondary">
+              ★ {product.ratingAvg.toFixed(1)} · {t("reviews", { count: product.ratingCount })}
             </p>
+          )}
 
-            {product.sku && <p className="mt-4 text-xs text-zinc-500">{t("sku", { sku: product.sku })}</p>}
+          {isVariable ? (
+            <VariantPicker
+              vendorId={vendorId}
+              vendorSlug={vendorSlug}
+              productId={product.id}
+              attributes={product.attributes}
+              variants={product.variants}
+              currency={currency}
+              onImageChange={setActiveImage}
+            />
+          ) : (
+            <>
+              <div className="mt-4 flex items-baseline gap-3">
+                <span className="text-3xl font-semibold tabular-nums text-foreground">
+                  {formatMoney(product.price, currency)}
+                </span>
+                {onSale && (
+                  <span className="text-lg tabular-nums text-text-tertiary line-through">
+                    {formatMoney(product.compareAtPrice!, currency)}
+                  </span>
+                )}
+              </div>
 
-            <div className="mt-8 flex items-center gap-3">
-              <AddToCartButton
-                className="flex-1"
-                vendorId={vendorId}
-                vendorSlug={vendorSlug}
-                productId={product.id}
-                disabled={!product.inStock}
-              />
-              <WishlistButton productId={product.id} />
-            </div>
-          </>
-        )}
+              <p className="mt-2 text-sm">
+                {product.inStock ? (
+                  <span className="text-success">
+                    {t("inStock")}
+                    {product.stock > 0 && product.stock <= 5 ? t("onlyLeft", { count: product.stock }) : ""}
+                  </span>
+                ) : (
+                  <span className="text-error">{t("outOfStock")}</span>
+                )}
+              </p>
 
-        {/* A variable product with no variants configured cannot be bought;
-            say so rather than showing a button that always fails. */}
-        {product.type === "variable" && product.variants.length === 0 && (
-          <p
-            role="alert"
-            className="mt-8 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-          >
-            {t("noOptions")}
-          </p>
-        )}
+              {product.sku && <p className="mt-4 text-xs text-text-tertiary">{t("sku", { sku: product.sku })}</p>}
 
-        {product.shortDescription && (
-          <p className="mt-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {product.shortDescription}
-          </p>
-        )}
+              <div className="mt-8 flex items-center gap-3">
+                <AddToCartButton
+                  className="flex-1"
+                  vendorId={vendorId}
+                  vendorSlug={vendorSlug}
+                  productId={product.id}
+                  disabled={!product.inStock}
+                />
+                <WishlistButton productId={product.id} />
+              </div>
+            </>
+          )}
+
+          {/* A variable product with no variants configured cannot be bought;
+              say so rather than showing a button that always fails. */}
+          {product.type === "variable" && product.variants.length === 0 && (
+            <p role="alert" className="mt-8 rounded-btn bg-warning/10 px-3 py-2 text-sm text-warning">
+              {t("noOptions")}
+            </p>
+          )}
+
+          {product.shortDescription && (
+            <p className="mt-6 text-sm leading-relaxed text-text-secondary">{product.shortDescription}</p>
+          )}
+        </Reveal>
 
         {product.description && (
-          <div className="mt-10 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("description")}</h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <div className="mt-10 border-t border-border-subtle pt-6">
+            <h2 className="text-sm font-semibold text-foreground">{t("description")}</h2>
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
               {product.description}
             </p>
           </div>
         )}
 
         {product.faqs.length > 0 && (
-          <div className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("faqs")}</h2>
+          <div className="mt-8 border-t border-border-subtle pt-6">
+            <h2 className="text-sm font-semibold text-foreground">{t("faqs")}</h2>
             <dl className="mt-3 space-y-3">
               {product.faqs.map((f, i) => (
                 <div key={i}>
-                  <dt className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                    {f.question}
-                  </dt>
-                  <dd className="text-sm text-zinc-600 dark:text-zinc-400">{f.answer}</dd>
+                  <dt className="text-sm font-medium text-foreground">{f.question}</dt>
+                  <dd className="text-sm text-text-secondary">{f.answer}</dd>
                 </div>
               ))}
             </dl>
           </div>
         )}
       </div>
-      </Reveal>
     </div>
   );
 }
-

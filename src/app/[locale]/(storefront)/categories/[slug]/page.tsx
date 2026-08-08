@@ -7,6 +7,7 @@ import { CatalogProductCard } from "@/features/storefront/components/catalog-pro
 import { ProductFilters } from "@/features/storefront/components/product-filters";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { localized } from "@/shared/lib/localized";
+import { Breadcrumbs } from "@/shared/ui/breadcrumbs";
 import type { Locale } from "@/i18n/locales";
 
 type Params = { locale: string; slug: string };
@@ -67,27 +68,22 @@ export default async function CategoryPage({
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <nav className="mb-6 text-sm text-zinc-500">
-        <Link href="/categories" className="hover:text-brand">
-          {t("title")}
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">{categoryName}</span>
-      </nav>
+      <Breadcrumbs
+        className="mb-6"
+        items={[{ label: t("title"), href: "/categories" }, { label: categoryName }]}
+      />
 
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {categoryName}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("productCount", { count: result.total })}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{categoryName}</h1>
+        <p className="mt-1 text-sm text-text-secondary">{t("productCount", { count: result.total })}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />}>
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-card bg-surface-raised" />}>
             <ProductFilters
               hideCategory
               facets={{
@@ -101,20 +97,22 @@ export default async function CategoryPage({
 
         <div className="lg:col-span-3">
           {result.items.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
-              <p className="text-sm text-zinc-500">{t("emptyCategory")}</p>
-              <Link
-                href="/products"
-                className="mt-3 inline-block text-sm text-brand hover:underline dark:text-brand"
-              >
+            <div className="rounded-card border border-dashed border-border-default p-16 text-center">
+              <p className="text-sm text-text-secondary">{t("emptyCategory")}</p>
+              <Link href="/products" className="mt-3 inline-block text-sm text-brand hover:underline">
                 {t("browseAll")}
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              {result.items.map((p) => (
-                <CatalogProductCard key={p.id} product={p} />
-              ))}
+              {result.items.map((p, i) => {
+                const isLead = i === 0 && result.items.length > 4;
+                return (
+                  <div key={p.id} className={isLead ? "col-span-2" : undefined}>
+                    <CatalogProductCard product={p} featured={isLead} />
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

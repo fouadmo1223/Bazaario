@@ -35,7 +35,7 @@ export function StorefrontHeader() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-zinc-200/80 bg-white/85 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:border-zinc-800/80 dark:bg-black/85 dark:supports-[backdrop-filter]:bg-black/70">
+    <header className="sticky top-0 z-30 border-b border-border-subtle/80 bg-surface/85 backdrop-blur-md supports-[backdrop-filter]:bg-surface/70">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
         <button
           type="button"
@@ -43,7 +43,7 @@ export function StorefrontHeader() {
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={t("menu")}
-          className="-ms-1.5 me-0.5 flex shrink-0 items-center justify-center rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 sm:hidden dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+          className="-ms-1.5 me-0.5 flex shrink-0 items-center justify-center rounded-lg p-2 text-text-secondary transition hover:bg-surface-raised hover:text-foreground sm:hidden"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
             {menuOpen ? (
@@ -60,7 +60,7 @@ export function StorefrontHeader() {
           </span>
           {/* Wordmark waits for `sm` — on a phone the icon alone still reads as
               "home," and dropping the text keeps the row down to menu/wishlist/cart. */}
-          <span className="hidden text-base font-semibold tracking-tight text-zinc-900 sm:inline dark:text-zinc-50">
+          <span className="hidden text-base font-semibold tracking-tight text-foreground sm:inline">
             Bazaario
           </span>
         </Link>
@@ -103,7 +103,7 @@ export function StorefrontHeader() {
           <Link
             href="/account/profile"
             aria-label={t("account")}
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 sm:block dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised hover:text-foreground sm:block"
           >
             {t("account")}
           </Link>
@@ -111,7 +111,7 @@ export function StorefrontHeader() {
       </div>
 
       {menuOpen && (
-        <div id="mobile-nav" className="border-t border-zinc-200/80 px-4 py-3 sm:hidden dark:border-zinc-800/80">
+        <div id="mobile-nav" className="border-t border-border-subtle/80 px-4 py-3 sm:hidden/80">
           <SearchBox id="storefront-search-mobile" />
 
           <nav aria-label="Browse" className="mt-2">
@@ -129,10 +129,10 @@ export function StorefrontHeader() {
             </ul>
           </nav>
 
-          <div className="mt-3 flex items-center justify-between border-t border-zinc-200/80 pt-3 dark:border-zinc-800/80">
+          <div className="mt-3 flex items-center justify-between border-t border-border-subtle/80 pt-3/80">
             <Link
               href="/account/profile"
-              className="rounded-lg px-3 py-2.5 text-base font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-lg px-3 py-2.5 text-base font-medium text-text-secondary transition hover:bg-surface-raised"
             >
               {t("account")}
             </Link>
@@ -165,8 +165,8 @@ function HeaderLink({
       aria-current={active ? "page" : undefined}
       className={`rounded-lg font-medium transition ${block ? "block px-3 py-2.5 text-base" : "px-3 py-1.5 text-sm"} ${
         active
-          ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          ? "bg-surface-raised text-foreground"
+          : "text-text-secondary hover:text-foreground"
       }`}
     >
       {children}
@@ -261,16 +261,16 @@ function SearchBox({ id = "storefront-search" }: { id?: string }) {
           onFocus={() => setOpen(true)}
           placeholder={t("searchPlaceholder")}
           autoComplete="off"
-          className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:bg-zinc-950"
+          className="w-full rounded-lg border border-border-subtle bg-surface-raised px-3 py-2 text-sm text-foreground placeholder:text-text-tertiary focus:border-brand focus:bg-surface focus:outline-none"
         />
       </form>
 
       {open && value.trim() && (
-        <div className="absolute z-40 mt-1 w-full overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="absolute z-40 mt-1 w-full overflow-hidden rounded-lg border border-border-subtle bg-surface shadow-lg">
           {loading ? (
-            <p className="px-3 py-4 text-sm text-zinc-500">{t("searching")}</p>
+            <p className="px-3 py-4 text-sm text-text-tertiary">{t("searching")}</p>
           ) : results.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-zinc-500">{t("noQuickResults")}</p>
+            <p className="px-3 py-4 text-sm text-text-tertiary">{t("noQuickResults")}</p>
           ) : (
             <ul>
               {results.map((r) => (
@@ -278,17 +278,17 @@ function SearchBox({ id = "storefront-search" }: { id?: string }) {
                   <Link
                     href={`/v/${r.vendorSlug}/p/${r.slug}`}
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 transition hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                    className="flex items-center gap-3 px-3 py-2 transition hover:bg-surface-raised"
                   >
-                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                       {r.image ? (
                         <Image src={r.image} alt="" fill sizes="40px" className="object-cover" />
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">{r.title}</p>
+                      <p className="truncate text-sm text-foreground">{r.title}</p>
                     </div>
-                    <span className="shrink-0 text-sm tabular-nums text-zinc-500">
+                    <span className="shrink-0 text-sm tabular-nums text-text-tertiary">
                       {r.priceRange ? `${formatMoney(r.priceRange.min, "USD")}+` : formatMoney(r.price, "USD")}
                     </span>
                   </Link>
@@ -317,7 +317,7 @@ function IconLink({
     <Link
       href={href}
       aria-label={count > 0 ? `${label} (${count})` : label}
-      className="relative rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+      className="relative rounded-lg p-2 text-text-secondary transition hover:bg-surface-raised hover:text-foreground"
     >
       {children}
       {count > 0 && (

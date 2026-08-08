@@ -43,10 +43,10 @@ export async function OrderSummary({
               : t("free")
             : t("calculatedAtCheckout")
         }
-        className={shippingKnown ? undefined : "text-zinc-500"}
+        className={shippingKnown ? undefined : "text-text-tertiary"}
       />
 
-      <div className="flex justify-between border-t border-zinc-200 pt-3 text-base font-semibold text-zinc-900 dark:border-zinc-800 dark:text-zinc-50">
+      <div className="flex justify-between border-t border-border-subtle pt-3 text-base font-semibold text-foreground">
         <dt>{t("total")}</dt>
         <dd className="tabular-nums">{money(totals.grandTotal)}</dd>
       </div>
@@ -64,7 +64,7 @@ function Row({
   className?: string;
 }) {
   return (
-    <div className={`flex justify-between text-zinc-600 dark:text-zinc-400 ${className ?? ""}`}>
+    <div className={`flex justify-between text-text-secondary ${className ?? ""}`}>
       <dt>{label}</dt>
       <dd className="tabular-nums">{value}</dd>
     </div>

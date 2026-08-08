@@ -78,12 +78,12 @@ export function CouponForm({
           onChange={(e) => setCode(e.target.value)}
           placeholder={t("couponCode")}
           autoComplete="off"
-          className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="min-w-0 flex-1 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-tertiary focus:border-brand focus:outline-none"
         />
         <button
           type="submit"
           disabled={pending || code.trim().length === 0}
-          className="shrink-0 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="shrink-0 rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-40"
         >
           {pending ? t("applying") : t("apply")}
         </button>

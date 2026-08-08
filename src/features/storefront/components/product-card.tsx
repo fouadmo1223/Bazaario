@@ -37,9 +37,9 @@ export async function ProductCard({
   return (
     <Link
       href={`/v/${vendorSlug}/p/${product.slug}`}
-      className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950"
+      className="group block overflow-hidden rounded-xl border border-border-subtle bg-surface transition hover:shadow-md"
     >
-      <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+      <div className="relative aspect-square overflow-hidden bg-surface-raised">
         {product.image ? (
           <Image
             src={product.image}
@@ -49,7 +49,7 @@ export async function ProductCard({
             className="object-cover transition duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
+          <div className="flex h-full items-center justify-center text-xs text-text-tertiary">
             {t("noImageShort")}
           </div>
         )}
@@ -60,27 +60,27 @@ export async function ProductCard({
           </span>
         )}
         {soldOut && (
-          <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-semibold text-zinc-700 dark:bg-black/60 dark:text-zinc-200">
+          <span className="absolute inset-0 flex items-center justify-center bg-surface/70 text-sm font-semibold text-text-secondary/60">
             {t("soldOut")}
           </span>
         )}
       </div>
 
       <div className="p-3">
-        <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <h3 className="line-clamp-2 text-sm font-medium text-foreground">
           {title}
         </h3>
         {product.ratingCount ? (
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-text-tertiary">
             ★ {product.ratingAvg?.toFixed(1)} ({product.ratingCount})
           </p>
         ) : null}
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-semibold text-zinc-900 dark:text-zinc-50">
+          <span className="font-semibold text-foreground">
             {formatMoney(product.price, currency)}
           </span>
           {onSale && (
-            <span className="text-xs text-zinc-400 line-through">
+            <span className="text-xs text-text-tertiary line-through">
               {formatMoney(product.compareAtPrice!, currency)}
             </span>
           )}

@@ -37,26 +37,24 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
   const cart = await getCartView(vendor);
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-background">
       <div className="mx-auto max-w-5xl px-6 py-10">
-        <nav className="mb-6 text-sm text-zinc-500">
+        <nav className="mb-6 text-sm text-text-secondary">
           <Link href={`/v/${vendorSlug}`} className="hover:text-brand">
             {vendor.name}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">{t("cart")}</span>
+          <span className="text-foreground">{t("cart")}</span>
         </nav>
 
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {tCart("title")}
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{tCart("title")}</h1>
 
         {cart.items.length === 0 ? (
           <EmptyCart vendorSlug={vendorSlug} t={tCart} />
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
             <section className="lg:col-span-2" aria-label="Cart items">
-              <ul className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+              <ul className="divide-y divide-border-subtle border-y border-border-subtle">
                 {cart.items.map((line) => (
                   <CartLineItem
                     key={`${line.productId}:${line.variantId ?? ""}`}
@@ -68,31 +66,31 @@ export default async function CartPage({ params }: { params: Promise<Params> }) 
                 ))}
               </ul>
 
-              <p className="mt-4 text-sm text-zinc-500">{tCart("items", { count: cart.itemCount })}</p>
+              <p className="mt-4 text-sm text-text-secondary">{tCart("items", { count: cart.itemCount })}</p>
             </section>
 
             <aside className="lg:col-span-1" aria-label="Order summary">
-              <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("summary")}</h2>
+              <div className="rounded-card border border-border-subtle p-5">
+                <h2 className="text-sm font-semibold text-foreground">{t("summary")}</h2>
 
                 <div className="mt-4">
                   <CouponForm vendorId={vendorId} vendorSlug={vendorSlug} applied={cart.coupon} />
                 </div>
 
-                <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-zinc-800">
+                <div className="mt-5 border-t border-border-subtle pt-5">
                   <OrderSummary totals={cart.totals} currency={cart.currency} />
                 </div>
 
                 <Link
                   href={`/v/${vendorSlug}/checkout`}
-                  className="mt-6 block rounded-xl bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md"
+                  className="mt-6 block rounded-btn bg-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-xs transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-sm"
                 >
                   {t("checkout")}
                 </Link>
 
                 <Link
                   href={`/v/${vendorSlug}`}
-                  className="mt-3 block text-center text-sm text-zinc-500 underline-offset-4 hover:underline"
+                  className="mt-3 block text-center text-sm text-text-secondary underline-offset-4 hover:underline"
                 >
                   {t("continueShopping")}
                 </Link>
@@ -113,11 +111,11 @@ function EmptyCart({
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
   return (
-    <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-      <p className="text-sm text-zinc-500">{t("empty")}</p>
+    <div className="mt-10 rounded-card border border-dashed border-border-default py-20 text-center">
+      <p className="text-sm text-text-secondary">{t("empty")}</p>
       <Link
         href={`/v/${vendorSlug}`}
-        className="mt-4 inline-block rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
+        className="mt-4 inline-block rounded-btn bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
       >
         {t("browseProducts")}
       </Link>

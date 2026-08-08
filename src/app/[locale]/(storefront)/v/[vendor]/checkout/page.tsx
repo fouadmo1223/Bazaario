@@ -94,9 +94,9 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
   const paymentOptions = availablePayments(vendor, walletBalance, cart.currency, t);
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-background">
       <div className="mx-auto max-w-5xl px-6 py-10">
-        <nav className="mb-6 text-sm text-zinc-500">
+        <nav className="mb-6 text-sm text-text-secondary">
           <Link href={`/v/${vendorSlug}`} className="hover:text-brand">
             {vendor.name}
           </Link>
@@ -105,20 +105,15 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
             {t("cart")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">{t("checkout")}</span>
+          <span className="text-foreground">{t("checkout")}</span>
         </nav>
 
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {t("checkout")}
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t("checkout")}</h1>
 
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {paymentOptions.length === 0 ? (
-              <p
-                role="alert"
-                className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-              >
+              <p role="alert" className="rounded-btn bg-warning/10 px-4 py-3 text-sm text-warning">
                 {t("noPaymentMethods")}
               </p>
             ) : (
@@ -134,18 +129,18 @@ export default async function CheckoutPage({ params }: { params: Promise<Params>
           </div>
 
           <aside className="lg:col-span-1" aria-label="Order summary">
-            <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-card border border-border-subtle p-5">
+              <h2 className="text-sm font-semibold text-foreground">
                 {t("items", { count: cart.itemCount })}
               </h2>
 
-              <ul className="mt-4 space-y-3 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+              <ul className="mt-4 space-y-3 border-b border-border-subtle pb-4">
                 {cart.items.map((line) => (
                   <li
                     key={`${line.productId}:${line.variantId ?? ""}`}
                     className="flex justify-between gap-3 text-sm"
                   >
-                    <span className="min-w-0 truncate text-zinc-600 dark:text-zinc-400">
+                    <span className="min-w-0 truncate text-text-secondary">
                       {line.quantity} × {line.title}
                     </span>
                   </li>

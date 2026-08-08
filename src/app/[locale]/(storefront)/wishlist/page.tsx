@@ -19,15 +19,15 @@ export default async function WishlistPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         {t("title")}
       </h1>
-      <p className="mt-1 text-sm text-zinc-500">{t("count", { count: items.length })}</p>
+      <p className="mt-1 text-sm text-text-tertiary">{t("count", { count: items.length })}</p>
 
       {items.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("empty")}</p>
-          <p className="mt-1 text-xs text-zinc-400">{t("emptyHint")}</p>
+        <div className="mt-10 rounded-2xl border border-dashed border-border-default py-20 text-center">
+          <p className="text-sm text-text-tertiary">{t("empty")}</p>
+          <p className="mt-1 text-xs text-text-tertiary">{t("emptyHint")}</p>
           <Link
             href="/products"
             className="mt-4 inline-block rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
@@ -36,7 +36,7 @@ export default async function WishlistPage() {
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ul className="mt-6 divide-y divide-border-subtle border-y border-border-subtle">
           {items.map((item) => (
             <WishlistItem key={item.productId} item={item} />
           ))}

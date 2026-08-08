@@ -77,18 +77,18 @@ export default async function GlobalCartPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         {t("title")}
       </h1>
       {carts.length > 0 && (
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-text-tertiary">
           {t("summary", { items: total, stores: carts.length })}
         </p>
       )}
 
       {carts.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("empty")}</p>
+        <div className="mt-10 rounded-2xl border border-dashed border-border-default py-20 text-center">
+          <p className="text-sm text-text-tertiary">{t("empty")}</p>
           <Link
             href="/products"
             className="mt-4 inline-block rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
@@ -102,52 +102,52 @@ export default async function GlobalCartPage() {
             <section
               key={cart.vendorSlug}
               aria-label={t("cartAt", { vendor: cart.vendorName })}
-              className="rounded-2xl border border-zinc-200 dark:border-zinc-800"
+              className="rounded-2xl border border-border-subtle"
             >
-              <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
+              <header className="flex items-center justify-between gap-4 border-b border-border-subtle px-5 py-3">
                 <Link
                   href={`/v/${cart.vendorSlug}`}
-                  className="text-sm font-semibold text-zinc-900 hover:text-brand dark:text-zinc-100"
+                  className="text-sm font-semibold text-foreground hover:text-brand"
                 >
                   {cart.vendorName}
                 </Link>
-                <span className="text-sm text-zinc-500">{t("items", { count: cart.itemCount })}</span>
+                <span className="text-sm text-text-tertiary">{t("items", { count: cart.itemCount })}</span>
               </header>
 
-              <ul className="divide-y divide-zinc-100 px-5 dark:divide-zinc-900">
+              <ul className="divide-y divide-border-subtle px-5">
                 {cart.items.slice(0, 3).map((item, i) => (
                   <li key={i} className="flex items-center gap-3 py-3">
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                       {item.image ? (
                         <Image src={item.image} alt="" fill sizes="48px" className="object-cover" />
                       ) : null}
                     </div>
-                    <p className="min-w-0 flex-1 truncate text-sm text-zinc-700 dark:text-zinc-300">
+                    <p className="min-w-0 flex-1 truncate text-sm text-text-secondary">
                       {item.quantity} × {item.title}
                     </p>
-                    <span className="shrink-0 text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
+                    <span className="shrink-0 text-sm tabular-nums text-text-secondary">
                       {formatMoney(item.unitPrice * item.quantity, cart.currency)}
                     </span>
                   </li>
                 ))}
                 {cart.items.length > 3 && (
-                  <li className="py-3 text-xs text-zinc-500">
+                  <li className="py-3 text-xs text-text-tertiary">
                     {t("more", { count: cart.items.length - 3 })}
                   </li>
                 )}
               </ul>
 
-              <footer className="flex items-center justify-between gap-4 border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
+              <footer className="flex items-center justify-between gap-4 border-t border-border-subtle px-5 py-3">
+                <span className="text-sm text-text-secondary">
                   {t("subtotal")}{" "}
-                  <span className="font-semibold text-zinc-900 tabular-nums dark:text-zinc-50">
+                  <span className="font-semibold text-foreground tabular-nums">
                     {formatMoney(cart.subtotal, cart.currency)}
                   </span>
                 </span>
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/v/${cart.vendorSlug}/cart`}
-                    className="text-sm text-zinc-500 hover:underline"
+                    className="text-sm text-text-tertiary hover:underline"
                   >
                     {t("edit")}
                   </Link>

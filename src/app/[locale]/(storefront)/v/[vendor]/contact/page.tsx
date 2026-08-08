@@ -49,19 +49,19 @@ export default async function ContactStorePage({
   if (!user) redirect({ href: `/login?next=${encodeURIComponent(`/v/${slug}/contact`)}`, locale });
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-2xl px-6 py-10">
         <Link
           href={`/v/${slug}`}
-          className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+          className="text-sm text-text-tertiary hover:text-foreground"
         >
           ← {vendor.name}
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
           {t("messageVendor", { vendor: vendor.name })}
         </h1>
-        <p className="mt-1 mb-6 text-sm text-zinc-500">
+        <p className="mt-1 mb-6 text-sm text-text-tertiary">
           {t("askAbout")}{" "}
           <Link href="/account/messages" className="underline">
             {t("messages")}

@@ -31,7 +31,7 @@ export function ProductGallery({
 
   if (media.length === 0) {
     return (
-      <div className="flex aspect-square items-center justify-center rounded-2xl bg-zinc-100 text-sm text-zinc-400 dark:bg-zinc-900">
+      <div className="flex aspect-square items-center justify-center rounded-card bg-surface-raised text-sm text-text-tertiary">
         No image
       </div>
     );
@@ -46,7 +46,7 @@ export function ProductGallery({
 
   return (
     <div>
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+      <div className="relative aspect-square overflow-hidden rounded-card bg-surface-raised">
         {current.type === "video" ? (
           <video
             src={current.url}
@@ -85,7 +85,7 @@ export function ProductGallery({
                 className={`relative aspect-square overflow-hidden rounded-lg border-2 transition ${
                   selected
                     ? "border-brand"
-                    : "border-transparent hover:border-zinc-300 dark:hover:border-zinc-700"
+                    : "border-transparent hover:border-border-default"
                 }`}
               >
                 <Image

@@ -63,11 +63,11 @@ export function CartLineItem({
       aria-busy={pending}
       data-pending={pending ? "" : undefined}
     >
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
         {line.image ? (
           <Image src={line.image} alt={line.title} fill sizes="96px" className="object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
+          <div className="flex h-full items-center justify-center text-xs text-text-tertiary">
             {t("noImage")}
           </div>
         )}
@@ -76,34 +76,34 @@ export function CartLineItem({
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <h3 className="truncate text-sm font-medium text-foreground">
               {line.title}
             </h3>
-            {line.sku && <p className="mt-0.5 text-xs text-zinc-500">{t("sku", { sku: line.sku })}</p>}
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            {line.sku && <p className="mt-0.5 text-xs text-text-tertiary">{t("sku", { sku: line.sku })}</p>}
+            <p className="mt-1 text-sm text-text-secondary">
               {t("each", { price: formatMoney(line.unitPrice, currency) })}
             </p>
           </div>
 
-          <p className="shrink-0 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <p className="shrink-0 text-sm font-semibold text-foreground">
             {formatMoney(line.lineTotal, currency)}
           </p>
         </div>
 
         <div className="mt-auto flex items-center gap-4 pt-3">
-          <div className="inline-flex items-center rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <div className="inline-flex items-center rounded-lg border border-border-subtle">
             <button
               type="button"
               onClick={() => setQuantity(line.quantity - 1)}
               disabled={pending || line.quantity <= 1}
               aria-label={t("decreaseQty", { title: line.title })}
-              className="px-3 py-1.5 text-sm text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="px-3 py-1.5 text-sm text-text-secondary transition hover:text-foreground disabled:opacity-40"
             >
               −
             </button>
             <span
               aria-live="polite"
-              className="min-w-10 border-x border-zinc-200 px-3 py-1.5 text-center text-sm tabular-nums dark:border-zinc-800"
+              className="min-w-10 border-x border-border-subtle px-3 py-1.5 text-center text-sm tabular-nums"
             >
               {line.quantity}
             </span>
@@ -112,7 +112,7 @@ export function CartLineItem({
               onClick={() => setQuantity(line.quantity + 1)}
               disabled={pending}
               aria-label={t("increaseQty", { title: line.title })}
-              className="px-3 py-1.5 text-sm text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40 dark:text-zinc-400 dark:hover:text-zinc-100"
+              className="px-3 py-1.5 text-sm text-text-secondary transition hover:text-foreground disabled:opacity-40"
             >
               +
             </button>
@@ -122,7 +122,7 @@ export function CartLineItem({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="text-sm text-zinc-500 underline-offset-4 transition hover:text-red-600 hover:underline disabled:opacity-40"
+            className="text-sm text-text-tertiary underline-offset-4 transition hover:text-red-600 hover:underline disabled:opacity-40"
           >
             {t("remove")}
           </button>

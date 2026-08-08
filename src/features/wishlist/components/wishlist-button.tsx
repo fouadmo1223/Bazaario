@@ -80,7 +80,7 @@ export function WishlistButton({
       className={`inline-flex ${box} items-center justify-center rounded-full border transition disabled:opacity-60 ${
         saved
           ? "border-red-200 bg-red-50 text-red-600 dark:border-red-900 dark:bg-red-950/60"
-          : "border-zinc-200 bg-white/90 text-zinc-500 hover:text-red-600 dark:border-zinc-700 dark:bg-zinc-900/90"
+          : "border-border-subtle bg-surface/90 text-text-tertiary hover:text-red-600/90"
       } ${className ?? ""}`}
     >
       <svg

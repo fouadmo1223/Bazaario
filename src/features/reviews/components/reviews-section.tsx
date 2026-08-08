@@ -56,14 +56,14 @@ export function ReviewsSection({
   }
 
   return (
-    <section className="mt-14 border-t border-zinc-200 pt-10 dark:border-zinc-800">
-      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-        {t("title")} {reviews.total > 0 ? <span className="text-zinc-400">({reviews.total})</span> : null}
+    <section className="mt-14 border-t border-border-subtle pt-10">
+      <h2 className="text-xl font-semibold text-foreground">
+        {t("title")} {reviews.total > 0 ? <span className="text-text-tertiary">({reviews.total})</span> : null}
       </h2>
 
       {reviews.canWrite ? (
-        <form onSubmit={submit} className="mt-6 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+        <form onSubmit={submit} className="mt-6 rounded-2xl border border-border-subtle p-5">
+          <p className="text-sm font-medium text-foreground">
             {editing ? t("updateYourReview") : t("writeReview")}
           </p>
 
@@ -78,7 +78,7 @@ export function ReviewsSection({
                 aria-label={`${n} star${n === 1 ? "" : "s"}`}
                 aria-pressed={rating === n}
                 className={`text-2xl leading-none transition ${
-                  (hover || rating) >= n ? "text-amber-400" : "text-zinc-300 dark:text-zinc-700"
+                  (hover || rating) >= n ? "text-amber-400" : "text-text-tertiary"
                 }`}
               >
                 ★
@@ -91,7 +91,7 @@ export function ReviewsSection({
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder={t("titlePlaceholder")}
-            className="mt-3 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-3 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand"
           />
           <textarea
             value={body}
@@ -99,7 +99,7 @@ export function ReviewsSection({
             rows={3}
             maxLength={2000}
             placeholder={t("bodyPlaceholder")}
-            className="mt-2 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-brand dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-2 w-full resize-none rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-brand"
           />
 
           {error ? (
@@ -120,7 +120,7 @@ export function ReviewsSection({
           </button>
         </form>
       ) : (
-        <p className="mt-4 text-sm text-zinc-500">
+        <p className="mt-4 text-sm text-text-tertiary">
           <Link
             href={`/login?next=${encodeURIComponent(`/v/${vendorSlug}/p/${productSlug}`)}`}
             className="text-brand hover:underline dark:text-brand"
@@ -133,27 +133,27 @@ export function ReviewsSection({
 
       <div className="mt-8 space-y-6">
         {reviews.items.length === 0 ? (
-          <p className="text-sm text-zinc-500">{t("noReviews")}</p>
+          <p className="text-sm text-text-tertiary">{t("noReviews")}</p>
         ) : (
           reviews.items.map((r) => (
-            <article key={r.id} className="border-b border-zinc-100 pb-6 last:border-0 dark:border-zinc-900">
+            <article key={r.id} className="border-b border-border-subtle pb-6 last:border-0">
               <div className="flex items-center gap-2">
                 <Stars value={r.rating} />
-                <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{r.author}</span>
+                <span className="text-sm font-medium text-foreground">{r.author}</span>
                 {r.mine ? (
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 dark:bg-zinc-800">
+                  <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[11px] text-text-tertiary">
                     {t("you")}
                   </span>
                 ) : null}
-                <span className="ml-auto text-xs text-zinc-400">
+                <span className="ml-auto text-xs text-text-tertiary">
                   {new Date(r.createdAt).toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" })}
                 </span>
               </div>
               {r.title ? (
-                <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{r.title}</p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{r.title}</p>
               ) : null}
               {r.body ? (
-                <p className="mt-1 text-sm whitespace-pre-wrap text-zinc-600 dark:text-zinc-400">{r.body}</p>
+                <p className="mt-1 text-sm whitespace-pre-wrap text-text-secondary">{r.body}</p>
               ) : null}
             </article>
           ))
@@ -168,7 +168,7 @@ function Stars({ value }: { value: number }) {
   return (
     <span aria-label={`${value} out of 5`} className="text-sm">
       {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= value ? "text-amber-400" : "text-zinc-300 dark:text-zinc-700"}>
+        <span key={n} className={n <= value ? "text-amber-400" : "text-text-tertiary"}>
           ★
         </span>
       ))}

@@ -62,7 +62,7 @@ export function ProductFilters({
   return (
     <aside aria-label={t("title")} className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("title")}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("title")}</h2>
         {activeCount > 0 && (
           <button
             type="button"
@@ -71,7 +71,7 @@ export function ProductFilters({
               const search = params.get("search");
               router.push(search ? `${pathname}?search=${encodeURIComponent(search)}` : pathname);
             }}
-            className="text-xs text-brand hover:underline dark:text-brand"
+            className="text-xs text-brand hover:underline"
           >
             {t("clear", { count: activeCount })}
           </button>
@@ -131,9 +131,9 @@ export function ProductFilters({
             onChange={(e) => setMinPrice(e.target.value)}
             placeholder={String(facets.priceBounds.min)}
             aria-label={t("minPrice")}
-            className="w-full min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full min-w-0 rounded-btn border border-border-default bg-surface px-2 py-1.5 text-sm tabular-nums"
           />
-          <span aria-hidden className="text-zinc-400">–</span>
+          <span aria-hidden className="text-text-tertiary">–</span>
           <input
             type="number"
             inputMode="decimal"
@@ -142,11 +142,11 @@ export function ProductFilters({
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder={String(facets.priceBounds.max)}
             aria-label={t("maxPrice")}
-            className="w-full min-w-0 rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm tabular-nums dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full min-w-0 rounded-btn border border-border-default bg-surface px-2 py-1.5 text-sm tabular-nums"
           />
           <button
             type="submit"
-            className="shrink-0 rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-medium dark:border-zinc-700"
+            className="shrink-0 rounded-btn border border-border-default px-2.5 py-1.5 text-xs font-medium"
           >
             {t("go")}
           </button>
@@ -163,10 +163,8 @@ export function ProductFilters({
                 type="button"
                 onClick={() => apply({ minRating: active ? null : String(r) })}
                 aria-pressed={active}
-                className={`block w-full rounded-lg px-2 py-1.5 text-left text-sm transition ${
-                  active
-                    ? "bg-brand/10 text-brand"
-                    : "text-zinc-600 hover:bg-zinc-50 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                className={`block w-full rounded-btn px-2 py-1.5 text-left text-sm transition ${
+                  active ? "bg-brand/10 text-brand" : "text-text-secondary hover:bg-surface-raised"
                 }`}
               >
                 {t("ratingUp", { stars: r })}
@@ -177,7 +175,7 @@ export function ProductFilters({
       </Group>
 
       <Group label={t("availability")}>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary">
           <input
             type="checkbox"
             checked={params.get("inStock") === "true"}
@@ -194,7 +192,7 @@ export function ProductFilters({
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</h3>
+      <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-text-tertiary">{label}</h3>
       {children}
     </div>
   );

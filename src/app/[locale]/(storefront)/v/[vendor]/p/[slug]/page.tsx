@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Link } from "@/i18n/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
 import {
@@ -8,6 +7,7 @@ import {
   type ProductDetailData,
 } from "@/features/products/components/product-detail-view";
 import type { VariantView } from "@/features/products/components/variant-picker";
+import { Breadcrumbs } from "@/shared/ui/breadcrumbs";
 import { ReviewsSection } from "@/features/reviews/components/reviews-section";
 import { getProductReviews } from "@/features/reviews/queries";
 import { ProductCard, type ProductCardData } from "@/features/storefront/components/product-card";
@@ -190,13 +190,13 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
-      <nav className="mb-6 text-sm text-zinc-500">
-        <Link href={`/v/${vendorSlug}`} className="hover:text-brand">
-          {localized(locale as Locale, vendor.name, vendor.nameAr)}
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">{detail.title}</span>
-      </nav>
+      <Breadcrumbs
+        className="mb-6"
+        items={[
+          { label: localized(locale as Locale, vendor.name, vendor.nameAr), href: `/v/${vendorSlug}` },
+          { label: detail.title },
+        ]}
+      />
 
       <ProductDetailView
         product={detail}
@@ -206,8 +206,8 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       />
 
       {moreFromStore.length > 0 && (
-        <section className="mt-14 border-t border-zinc-200 pt-10 dark:border-zinc-800" aria-labelledby="more-from-store">
-          <h2 id="more-from-store" className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <section className="mt-14 border-t border-border-subtle pt-10" aria-labelledby="more-from-store">
+          <h2 id="more-from-store" className="text-2xl font-semibold text-foreground">
             {t("moreFromStore")}
           </h2>
           <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">

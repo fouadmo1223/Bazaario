@@ -49,18 +49,18 @@ export default async function ProductsPage({
   const search = params.search?.trim();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10 md:py-16">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {search ? t("resultsFor", { search }) : t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: result.total })}</p>
+        <p className="mt-1 text-sm text-text-secondary">{t("count", { count: result.total })}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />}>
+          <div className="rounded-card border border-border-subtle p-5">
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-card bg-surface-raised" />}>
             <ProductFilters
               facets={{
                 categories: categories.map((c) => ({
@@ -77,12 +77,9 @@ export default async function ProductsPage({
 
         <div className="lg:col-span-3">
           {result.items.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-zinc-300 p-16 text-center dark:border-zinc-800">
-              <p className="text-sm text-zinc-500">{t("empty")}</p>
-              <Link
-                href="/products"
-                className="mt-3 inline-block text-sm text-brand hover:underline dark:text-brand"
-              >
+            <div className="rounded-card border border-dashed border-border-default p-16 text-center">
+              <p className="text-sm text-text-secondary">{t("empty")}</p>
+              <Link href="/products" className="mt-3 inline-block text-sm text-brand hover:underline">
                 {t("clearFilters")}
               </Link>
             </div>
@@ -90,23 +87,30 @@ export default async function ProductsPage({
             <>
               {/* `key` on the filter state so a new result set replays the
                   reveal — otherwise filtered-in products appear with no motion
-                  while the rest stay put, which reads as a rendering glitch. */}
+                  while the rest stay put, which reads as a rendering glitch.
+                  The first item on an unfiltered first page spans two columns
+                  as a lead card — variety instead of a uniform grid. */}
               <Reveal
                 key={`${result.page}:${JSON.stringify(params)}`}
                 stagger
                 className="grid grid-cols-2 gap-4 md:grid-cols-3"
               >
-                {result.items.map((p) => (
-                  <CatalogProductCard key={p.id} product={p} />
-                ))}
+                {result.items.map((p, i) => {
+                  const isLead = result.page === 1 && i === 0 && result.items.length > 4;
+                  return (
+                    <div key={p.id} className={isLead ? "col-span-2" : undefined}>
+                      <CatalogProductCard product={p} featured={isLead} />
+                    </div>
+                  );
+                })}
               </Reveal>
 
               {result.totalPages > 1 && (
-                <nav className="mt-10 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800" aria-label="Pagination">
+                <nav className="mt-10 flex items-center justify-between border-t border-border-subtle pt-6" aria-label="Pagination">
                   <PageLink params={params} page={result.page - 1} disabled={!result.hasPrev}>
                     {t("prev")}
                   </PageLink>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-text-secondary">
                     {t("pageOf", { page: result.page, totalPages: result.totalPages })}
                   </span>
                   <PageLink params={params} page={result.page + 1} disabled={!result.hasNext}>
@@ -135,9 +139,7 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return (
-      <span className="rounded-lg px-3 py-2 text-sm text-zinc-300 dark:text-zinc-700">{children}</span>
-    );
+    return <span className="rounded-btn px-3 py-2 text-sm text-text-tertiary">{children}</span>;
   }
 
   const query = new URLSearchParams();
@@ -149,7 +151,7 @@ function PageLink({
   return (
     <Link
       href={`/products?${query.toString()}`}
-      className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+      className="rounded-btn px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-raised"
     >
       {children}
     </Link>

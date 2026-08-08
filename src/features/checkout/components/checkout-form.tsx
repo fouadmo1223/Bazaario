@@ -159,7 +159,7 @@ export function CheckoutForm({
       </Section>
 
       {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p role="alert" className="rounded-btn bg-error/10 px-3 py-2 text-sm text-error">
           {error}
         </p>
       )}
@@ -168,7 +168,7 @@ export function CheckoutForm({
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="w-full rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-md disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
+        className="w-full rounded-btn bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-xs transition hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-sm disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50 disabled:shadow-none"
       >
         {pending ? t("placingOrder") : t("placeOrder")}
       </button>
@@ -179,7 +179,7 @@ export function CheckoutForm({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h2>
+      <h2 className="mb-3 text-sm font-semibold text-foreground">{title}</h2>
       {children}
     </section>
   );
@@ -204,7 +204,7 @@ function Field({
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label htmlFor={id} className="block text-sm font-medium text-text-secondary">
         {label}
       </label>
       <input
@@ -212,16 +212,16 @@ function Field({
         name={name}
         aria-invalid={errors?.length ? true : undefined}
         aria-describedby={describedBy}
-        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="mt-1 w-full rounded-btn border border-border-default bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-tertiary focus:border-brand focus:outline-none"
         {...input}
       />
       {hint && !errors?.length && (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-zinc-500">
+        <p id={`${id}-hint`} className="mt-1 text-xs text-text-tertiary">
           {hint}
         </p>
       )}
       {errors?.length ? (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-red-600 dark:text-red-400">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-error">
           {errors[0]}
         </p>
       ) : null}
@@ -248,10 +248,8 @@ function Choice({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
-        checked
-          ? "border-brand bg-brand/5 dark:bg-brand/10"
-          : "border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+      className={`flex cursor-pointer items-center gap-3 rounded-card border p-3 transition ${
+        checked ? "border-brand bg-brand/5" : "border-border-subtle hover:bg-surface-raised"
       }`}
     >
       <input
@@ -263,11 +261,11 @@ function Choice({
         className="h-4 w-4 accent-brand"
       />
       <span className="flex-1">
-        <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
-        <span className="block text-xs text-zinc-500">{description}</span>
+        <span className="block text-sm font-medium text-foreground">{label}</span>
+        <span className="block text-xs text-text-tertiary">{description}</span>
       </span>
       {trailing && (
-        <span className="text-sm font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+        <span className="text-sm font-medium tabular-nums text-foreground">
           {trailing}
         </span>
       )}

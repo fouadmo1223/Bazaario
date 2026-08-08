@@ -60,7 +60,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   };
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-12">
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950">
           <h1 className="text-xl font-semibold text-emerald-900 dark:text-emerald-100">
@@ -72,17 +72,17 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
         </div>
 
         <section className="mt-8" aria-label="Items">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
-          <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <h2 className="text-sm font-semibold text-foreground">{t("items")}</h2>
+          <ul className="mt-3 divide-y divide-border-subtle border-y border-border-subtle">
             {order.items.map((item, i) => (
               <li key={i} className="flex justify-between gap-4 py-3 text-sm">
                 <span className="min-w-0">
-                  <span className="block truncate text-zinc-900 dark:text-zinc-100">{item.title}</span>
-                  <span className="text-xs text-zinc-500">
+                  <span className="block truncate text-foreground">{item.title}</span>
+                  <span className="text-xs text-text-tertiary">
                     {item.quantity} × {formatMoney(item.unitPrice, currency)}
                   </span>
                 </span>
-                <span className="shrink-0 font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                <span className="shrink-0 font-medium tabular-nums text-foreground">
                   {formatMoney(item.total, currency)}
                 </span>
               </li>
@@ -92,7 +92,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress
                 address={
@@ -111,17 +111,17 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                 }
               />
             </div>
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-2 text-xs text-text-tertiary">
               {t("method", { method: order.shipping?.method ?? "standard" })}
             </p>
           </section>
 
           <section aria-label="Payment">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("payment")}</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <h2 className="text-sm font-semibold text-foreground">{t("payment")}</h2>
+            <p className="mt-2 text-sm text-text-secondary">
               {paymentNote[order.payment.provider] ?? order.payment.provider}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-text-tertiary">
               {t("statusLine", { paymentStatus: order.payment.status, orderStatus: order.status })}
             </p>
           </section>
@@ -129,7 +129,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
         {order.status === "out_for_delivery" && (
           <section className="mt-8" aria-label="Track your delivery">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="mb-3 text-sm font-semibold text-foreground">
               {t("trackDelivery")}
             </h2>
             <DeliveryMap
@@ -143,13 +143,13 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           </section>
         )}
 
-        <div className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+        <div className="mt-8 rounded-2xl border border-border-subtle p-5">
           <OrderSummary totals={order.totals} currency={currency} shippingKnown />
         </div>
 
         <Link
           href={`/v/${vendorSlug}`}
-          className="mt-8 inline-block rounded-lg border border-zinc-300 px-5 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="mt-8 inline-block rounded-lg border border-border-default px-5 py-2.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised"
         >
           {t("continueShopping")}
         </Link>

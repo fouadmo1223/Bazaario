@@ -46,7 +46,7 @@ export function QuickViewModal({
   return (
     <Modal open={open} onClose={onClose} title={title} description={vendorName} size="lg">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-surface-raised">
           {product.image ? (
             <Image
               src={product.image}
@@ -56,7 +56,7 @@ export function QuickViewModal({
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-full items-center justify-center text-sm text-text-tertiary">
               {t("noImageShort")}
             </div>
           )}
@@ -78,14 +78,14 @@ export function QuickViewModal({
               <span className="text-2xl font-semibold">{formatMoney(product.price, currency)}</span>
             )}
             {onSale && !spansRange && (
-              <span className="text-sm text-zinc-400 line-through">
+              <span className="text-sm text-text-tertiary line-through">
                 {formatMoney(product.compareAtPrice!, currency)}
               </span>
             )}
           </div>
 
           {product.ratingCount > 0 && (
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-text-tertiary">
               ★ {product.ratingAvg.toFixed(1)} · {t("reviews", { count: product.ratingCount })}
             </p>
           )}

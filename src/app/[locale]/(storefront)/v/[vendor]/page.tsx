@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { vendorService } from "@/server/services/vendor.service";
 import { productService } from "@/server/services/product.service";
@@ -94,7 +95,7 @@ export default async function VendorPage({
   };
 
   return (
-    <div className="min-h-dvh bg-zinc-50 dark:bg-black">
+    <div className="min-h-dvh bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -104,22 +105,31 @@ export default async function VendorPage({
         <div className="bg-brand px-6 py-2 text-center text-sm text-white">
           {banner.message}
           {banner.linkUrl && (
-            <a href={banner.linkUrl} className="ml-2 font-semibold underline underline-offset-2">
+            <a href={banner.linkUrl} className="ms-2 font-semibold underline underline-offset-2">
               {banner.linkLabel || t("learnMore")}
             </a>
           )}
         </div>
       )}
 
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-4 px-6 py-8">
+      <header className="relative overflow-hidden border-b border-border-subtle">
+        {vendor.banner && (
+          <>
+            <div className="absolute inset-0">
+              <Image src={vendor.banner} alt="" fill sizes="100vw" className="object-cover grayscale-[30%]" />
+            </div>
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40"
+            />
+          </>
+        )}
+        <div className="relative mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-6 py-10 md:py-14">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="font-display text-3xl font-medium tracking-[-0.01em] text-foreground">
               {vendorName}
             </h1>
-            {vendorDescription && (
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{vendorDescription}</p>
-            )}
+            {vendorDescription && <p className="mt-1 text-sm text-text-secondary">{vendorDescription}</p>}
           </div>
 
           {/*
@@ -130,7 +140,7 @@ export default async function VendorPage({
           */}
           <Link
             href={`/v/${slug}/contact`}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-btn border border-border-default bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:border-brand"
           >
             {t("messageStore")}
           </Link>
@@ -138,14 +148,14 @@ export default async function VendorPage({
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <p className="mb-4 text-sm text-zinc-500">
+        <p className="mb-4 text-sm text-text-secondary">
           {t("products", { count: result.total })}
           {search ? t("resultsFor", { search }) : ""}
         </p>
 
         {products.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-            <p className="text-sm text-zinc-500">{t("noProducts")}</p>
+          <div className="rounded-card border border-dashed border-border-default p-12 text-center">
+            <p className="text-sm text-text-secondary">{t("noProducts")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
