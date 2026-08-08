@@ -33,7 +33,7 @@ export function SignOutButton() {
           router.refresh();
         })
       }
-      className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+      className="rounded-xl border border-border-default px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
     >
       {pending ? t("signingOut") : t("signOut")}
     </button>

@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
-import { DashboardNav } from "@/features/dashboard/components/dashboard-nav";
+import { DashboardSidebar, DashboardMobileNav } from "@/features/dashboard/components/dashboard-nav";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { getCurrentUser } from "@/server/security/current-user";
 import { notificationService } from "@/server/services/notification.service";
@@ -23,22 +23,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const unread = user ? await notificationService.unreadCount(user.id) : 0;
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
-          >
-            {t("title")}
-          </Link>
-          <div className="flex items-center gap-3">
-            <DashboardNav />
+    <div className="flex min-h-dvh bg-background">
+      <DashboardSidebar />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="border-b border-border-subtle">
+          <div className="flex items-center justify-between gap-6 px-4 py-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <DashboardMobileNav />
+              <Link href="/dashboard" className="text-sm font-semibold text-foreground lg:hidden">
+                {t("title")}
+              </Link>
+            </div>
             {user ? <NotificationBell initialUnread={unread} /> : null}
           </div>
-        </div>
-      </header>
-      {children}
+        </header>
+        <main className="flex-1">{children}</main>
+      </div>
     </div>
   );
 }

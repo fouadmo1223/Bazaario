@@ -38,11 +38,11 @@ export function TopUpForm() {
   return (
     <form onSubmit={submit} noValidate className="flex flex-wrap items-end gap-3">
       <div>
-        <label htmlFor="topup-amount" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="topup-amount" className="block text-sm font-medium text-text-secondary">
           {t("addFunds")}
         </label>
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-sm text-zinc-500">$</span>
+          <span className="text-sm text-text-tertiary">$</span>
           <input
             id="topup-amount"
             type="number"
@@ -50,7 +50,7 @@ export function TopUpForm() {
             min="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-28 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="w-28 rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm tabular-nums text-foreground focus:border-brand focus:outline-none"
           />
         </div>
       </div>

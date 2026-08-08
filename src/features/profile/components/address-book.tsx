@@ -103,18 +103,18 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
   }
 
   const field =
-    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
-  const label = "block text-xs font-medium text-zinc-600 dark:text-zinc-400";
+    "mt-1 w-full rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand";
+  const label = "block text-xs font-medium text-text-secondary";
 
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{t("addresses")}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{t("addresses")}</h2>
         {!editing ? (
           <button
             type="button"
             onClick={() => setEditing(EMPTY)}
-            className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised"
           >
             {t("addAddress")}
           </button>
@@ -124,7 +124,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
       {editing ? (
         <form
           onSubmit={onSubmit}
-          className="mt-4 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800"
+          className="mt-4 rounded-2xl border border-border-subtle p-4"
         >
           {error ? (
             <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">
@@ -186,7 +186,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
             </div>
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+          <label className="mt-4 flex items-center gap-2 text-sm text-text-secondary">
             <input
               type="checkbox"
               name="isDefault"
@@ -207,7 +207,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
             <button
               type="button"
               onClick={close}
-              className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="rounded-xl border border-border-default px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised"
             >
               {t("cancel")}
             </button>
@@ -216,20 +216,20 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
       ) : null}
 
       {addresses.length === 0 && !editing ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-zinc-300 py-10 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("noAddresses")}</p>
+        <div className="mt-4 rounded-2xl border border-dashed border-border-default py-10 text-center">
+          <p className="text-sm text-text-tertiary">{t("noAddresses")}</p>
         </div>
       ) : (
         <ul className="mt-4 space-y-3">
           {addresses.map((address) => (
             <li
               key={address.id}
-              className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800"
+              className="rounded-2xl border border-border-subtle p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <span className="text-sm font-medium text-foreground">
                       {address.label}
                     </span>
                     {address.isDefault ? (
@@ -238,10 +238,10 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-text-secondary">
                     {address.recipient} · {address.phone}
                   </p>
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-text-tertiary">
                     {[address.line1, address.line2, address.city, address.region, address.postalCode, address.country]
                       .filter(Boolean)
                       .join(", ")}
@@ -254,7 +254,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       type="button"
                       disabled={pending}
                       onClick={() => run(() => setDefaultAddressAction({ addressId: address.id }))}
-                      className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                      className="rounded-lg border border-border-default px-2.5 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
                     >
                       {t("setDefault")}
                     </button>
@@ -262,7 +262,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                   <button
                     type="button"
                     onClick={() => setEditing(address)}
-                    className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                    className="rounded-lg border border-border-default px-2.5 py-1 text-xs font-medium text-text-secondary transition hover:bg-surface-raised"
                   >
                     {t("edit")}
                   </button>
@@ -280,7 +280,7 @@ export function AddressBook({ addresses }: { addresses: AddressRow[] }) {
                       <button
                         type="button"
                         onClick={() => setConfirmingDelete(null)}
-                        className="rounded-lg border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+                        className="rounded-lg border border-border-default px-2.5 py-1 text-xs font-medium text-text-secondary"
                       >
                         {t("cancel")}
                       </button>

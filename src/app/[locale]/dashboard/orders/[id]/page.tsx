@@ -69,20 +69,20 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <nav className="mb-6 text-sm text-zinc-500">
+      <nav className="mb-6 text-sm text-text-tertiary">
         <Link href="/dashboard/orders" className="hover:text-brand">
           {t("orders")}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
+        <span className="text-text-secondary">#{order.number}</span>
       </nav>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             {t("order", { number: order.number })}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-text-tertiary">
             {new Date(order.createdAt).toLocaleString(undefined, {
               dateStyle: "long",
               timeStyle: "short",
@@ -96,23 +96,23 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           <section aria-label="Items">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
-            <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            <h2 className="text-sm font-semibold text-foreground">{t("items")}</h2>
+            <ul className="mt-3 divide-y divide-border-subtle border-y border-border-subtle">
               {order.items.map((item, i) => (
                 <li key={i} className="flex items-center gap-4 py-3">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                     {item.image ? (
                       <Image src={item.image} alt="" fill sizes="48px" className="object-cover" />
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">{item.title}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="truncate text-sm text-foreground">{item.title}</p>
+                    <p className="text-xs text-text-tertiary">
                       {item.sku ? `${item.sku} · ` : ""}
                       {item.quantity} × {formatMoney(item.unitPrice, order.currency)}
                     </p>
                   </div>
-                  <span className="shrink-0 text-sm font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                  <span className="shrink-0 text-sm font-medium tabular-nums text-foreground">
                     {formatMoney(item.total, order.currency)}
                   </span>
                 </li>
@@ -122,7 +122,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canFulfil && (
             <section aria-label="Fulfilment">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">
                 {t("fulfilment")}
               </h2>
               <StatusActions vendorId={vendorId} orderId={order.id} allowed={transitions} />
@@ -131,7 +131,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canFulfil && (
             <section aria-label="Driver">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("driver")}</h2>
+              <h2 className="mb-3 text-sm font-semibold text-foreground">{t("driver")}</h2>
               <DriverAssignForm
                 vendorId={vendorId}
                 orderId={order.id}
@@ -143,7 +143,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canRefund && order.paymentStatus === "paid" && (
             <section aria-label="Refund">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("refund")}</h2>
+              <h2 className="mb-3 text-sm font-semibold text-foreground">{t("refund")}</h2>
               <RefundForm
                 vendorId={vendorId}
                 orderId={order.id}
@@ -155,7 +155,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canRefund && order.customerId && (
             <section aria-label="Store credit">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">
                 {t("storeCredit")}
               </h2>
               <WalletCreditForm vendorId={vendorId} orderId={order.id} customerId={order.customerId} />
@@ -164,7 +164,7 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {canRefund && order.returns.some((r) => r.status === "requested") && (
             <section aria-label="Return requests">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">
                 {t("returnRequests")}
               </h2>
               <div className="space-y-3">
@@ -179,19 +179,19 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {order.returns.some((r) => r.status !== "requested") && (
             <section aria-label="Return history">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">
                 {t("returnHistory")}
               </h2>
               <ul className="space-y-2 text-sm">
                 {order.returns
                   .filter((r) => r.status !== "requested")
                   .map((r) => (
-                    <li key={r.id} className="flex justify-between gap-3 text-zinc-600 dark:text-zinc-400">
+                    <li key={r.id} className="flex justify-between gap-3 text-text-secondary">
                       <span>
                         {r.reason} — <span className="capitalize">{r.status}</span>
                         {r.resolutionNote ? ` (${r.resolutionNote})` : ""}
                       </span>
-                      <time dateTime={r.resolvedAt ?? undefined} className="shrink-0 text-xs text-zinc-400">
+                      <time dateTime={r.resolvedAt ?? undefined} className="shrink-0 text-xs text-text-tertiary">
                         {r.resolvedAt ? new Date(r.resolvedAt).toLocaleDateString() : ""}
                       </time>
                     </li>
@@ -202,17 +202,17 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
           {order.refunds.length > 0 && (
             <section aria-label="Refunds issued">
-              <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-3 text-sm font-semibold text-foreground">
                 {t("refundsIssued")}
               </h2>
               <ul className="space-y-2 text-sm">
                 {order.refunds.map((r, i) => (
-                  <li key={i} className="flex justify-between gap-3 text-zinc-600 dark:text-zinc-400">
+                  <li key={i} className="flex justify-between gap-3 text-text-secondary">
                     <span>
                       {formatMoney(r.amount, order.currency)}
                       {r.reason ? ` — ${r.reason}` : ""}
                     </span>
-                    <time dateTime={r.at} className="shrink-0 text-xs text-zinc-400">
+                    <time dateTime={r.at} className="shrink-0 text-xs text-text-tertiary">
                       {new Date(r.at).toLocaleDateString()}
                     </time>
                   </li>
@@ -224,28 +224,28 @@ export default async function DashboardOrderPage({ params }: { params: Promise<P
 
         <aside className="space-y-8 lg:col-span-1">
           <section aria-label="Payment">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("payment")}</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <h2 className="text-sm font-semibold text-foreground">{t("payment")}</h2>
+            <p className="mt-2 text-sm text-text-secondary">
               {order.paymentProvider} · {order.paymentStatus}
             </p>
           </section>
 
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress address={order.shipping.address} />
             </div>
-            <p className="mt-2 text-xs text-zinc-500">{t("method", { method: order.shipping.method })}</p>
+            <p className="mt-2 text-xs text-text-tertiary">{t("method", { method: order.shipping.method })}</p>
           </section>
 
           <section aria-label="Totals">
-            <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+            <div className="rounded-2xl border border-border-subtle p-4">
               <OrderSummary totals={order.totals} currency={order.currency} shippingKnown />
             </div>
           </section>
 
           <section aria-label="History">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("history")}</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">{t("history")}</h2>
             <OrderTimeline entries={order.timeline} />
           </section>
         </aside>

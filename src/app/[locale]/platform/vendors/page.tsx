@@ -23,19 +23,19 @@ export default async function PlatformVendorsPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-10 px-6 py-10">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t("title")}</h1>
+        <p className="mt-1 text-sm text-text-tertiary">{t("subtitle")}</p>
       </div>
 
-      <section className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{t("addTeamMember")}</h2>
+      <section className="rounded-2xl border border-border-subtle p-5">
+        <h2 className="text-sm font-semibold text-foreground">{t("addTeamMember")}</h2>
         <div className="mt-4">
           <CreateVendorUserForm vendors={vendors} />
         </div>
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="mb-4 text-sm font-semibold text-foreground">
           {t("currentAccess")}
         </h2>
         <VendorStaffList groups={groups} />

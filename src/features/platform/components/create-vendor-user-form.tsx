@@ -46,13 +46,13 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
       : undefined) ?? {};
 
   const field =
-    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
-  const label = "block text-sm font-medium text-zinc-700 dark:text-zinc-300";
+    "mt-1 w-full rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand";
+  const label = "block text-sm font-medium text-text-secondary";
   const errorText = "mt-1 text-xs text-red-600 dark:text-red-400";
 
   if (vendors.length === 0) {
     return (
-      <p className="rounded-xl border border-zinc-200 p-4 text-sm text-zinc-500 dark:border-zinc-800">
+      <p className="rounded-xl border border-border-subtle p-4 text-sm text-text-tertiary">
         {t("createVendorFirst")}
       </p>
     );
@@ -121,7 +121,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
           {fieldErrors.email ? (
             <p className={errorText}>{fieldErrors.email[0]}</p>
           ) : (
-            <p className="mt-1 text-xs text-zinc-400">{t("emailHint")}</p>
+            <p className="mt-1 text-xs text-text-tertiary">{t("emailHint")}</p>
           )}
         </div>
 
@@ -156,7 +156,7 @@ export function CreateVendorUserForm({ vendors }: { vendors: VendorOption[] }) {
           {fieldErrors.password ? (
             <p className={errorText}>{fieldErrors.password[0]}</p>
           ) : (
-            <p className="mt-1 text-xs text-zinc-400">{t("passwordHint")}</p>
+            <p className="mt-1 text-xs text-text-tertiary">{t("passwordHint")}</p>
           )}
         </div>
       </div>

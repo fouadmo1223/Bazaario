@@ -55,10 +55,10 @@ export default async function DashboardOrdersPage({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-text-tertiary">
           {t("count", { count: orders.total })}
           {active ? ` · ${orderStatusLabel(active, tStatus)}` : ""}
         </p>
@@ -77,13 +77,13 @@ export default async function DashboardOrdersPage({
       </nav>
 
       {orders.items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("noOrders")}</p>
+        <div className="rounded-2xl border border-dashed border-border-default p-12 text-center">
+          <p className="text-sm text-text-tertiary">{t("noOrders")}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-border-subtle">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
+            <thead className="border-b border-border-subtle bg-surface-raised text-left">
               <tr>
                 <Th>{t("colOrder")}</Th>
                 <Th>{t("colPlaced")}</Th>
@@ -96,7 +96,7 @@ export default async function DashboardOrdersPage({
               {orders.items.map((order) => (
                 <tr
                   key={order.id}
-                  className="border-b border-zinc-100 transition last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                  className="border-b border-border-subtle transition last:border-0 hover:bg-surface-raised"
                 >
                   <td className="px-4 py-3">
                     <Link
@@ -105,9 +105,9 @@ export default async function DashboardOrdersPage({
                     >
                       #{order.number}
                     </Link>
-                    <p className="text-xs text-zinc-500">{t("items", { count: order.itemCount })}</p>
+                    <p className="text-xs text-text-tertiary">{t("items", { count: order.itemCount })}</p>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-text-secondary">
                     {new Date(order.createdAt).toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",
@@ -117,10 +117,10 @@ export default async function DashboardOrdersPage({
                   <td className="px-4 py-3">
                     <OrderStatusBadge status={order.status} />
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-text-secondary">
                     {order.paymentProvider} · {order.paymentStatus}
                   </td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                  <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
                     {formatMoney(order.grandTotal, order.currency)}
                   </td>
                 </tr>
@@ -135,7 +135,7 @@ export default async function DashboardOrdersPage({
           <PageLink page={orders.page - 1} status={active} disabled={!orders.hasPrev}>
             {t("prev")}
           </PageLink>
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-text-tertiary">
             {t("pageOf", { page: orders.page, totalPages: orders.totalPages })}
           </span>
           <PageLink page={orders.page + 1} status={active} disabled={!orders.hasNext}>
@@ -149,7 +149,7 @@ export default async function DashboardOrdersPage({
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <th scope="col" className={`px-4 py-2.5 font-medium text-zinc-500 ${className ?? ""}`}>
+    <th scope="col" className={`px-4 py-2.5 font-medium text-text-tertiary ${className ?? ""}`}>
       {children}
     </th>
   );
@@ -163,7 +163,7 @@ function FilterChip({ label, href, active }: { label: string; href: string; acti
       className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
         active
           ? "bg-brand text-white"
-          : "border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          : "border border-border-subtle text-text-secondary hover:bg-surface-raised"
       }`}
     >
       {label}
@@ -183,7 +183,7 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return <span className="text-sm text-zinc-300 dark:text-zinc-700">{children}</span>;
+    return <span className="text-sm text-text-tertiary">{children}</span>;
   }
   const query = new URLSearchParams({ page: String(page), ...(status ? { status } : {}) });
   return (

@@ -26,12 +26,12 @@ export default async function AccountLayout({ children }: { children: React.Reac
   const unread = user ? await notificationService.unreadCount(user.id) : 0;
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
-      <header className="border-b border-zinc-200 print:hidden dark:border-zinc-800">
+    <div className="min-h-dvh bg-surface">
+      <header className="border-b border-border-subtle print:hidden">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-6 px-6 py-4">
           <Link
             href="/"
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
+            className="text-sm font-semibold text-foreground"
           >
             Bazaario
           </Link>

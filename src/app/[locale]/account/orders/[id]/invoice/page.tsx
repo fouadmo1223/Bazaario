@@ -50,10 +50,10 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
   );
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-10 print:px-0 print:py-6">
         <div className="flex items-center justify-between print:hidden">
-          <Link href={`/account/orders/${order.id}`} className="text-sm text-zinc-500 hover:text-brand">
+          <Link href={`/account/orders/${order.id}`} className="text-sm text-text-tertiary hover:text-brand">
             {t("backToOrder")}
           </Link>
           <InvoicePrintButton />
@@ -61,12 +61,12 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
 
         <div className="mt-8 flex items-start justify-between print:mt-0">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {t("invoice")}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">{order.vendorName}</p>
+            <p className="mt-1 text-sm text-text-tertiary">{order.vendorName}</p>
           </div>
-          <div className="text-right text-sm text-zinc-500">
+          <div className="text-right text-sm text-text-tertiary">
             <p>{t("order", { number: order.number })}</p>
             <p>{placedAt}</p>
             <p className="capitalize">{order.paymentStatus}</p>
@@ -74,10 +74,10 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
         </div>
 
         <div className="mt-8 text-sm">
-          <p className="font-semibold text-zinc-900 dark:text-zinc-100">{t("billTo")}</p>
-          <p className="mt-1 text-zinc-600 dark:text-zinc-400">{billTo}</p>
+          <p className="font-semibold text-foreground">{t("billTo")}</p>
+          <p className="mt-1 text-text-secondary">{billTo}</p>
           {addressLines.map((line, i) => (
-            <p key={i} className="text-zinc-600 dark:text-zinc-400">
+            <p key={i} className="text-text-secondary">
               {line}
             </p>
           ))}
@@ -85,7 +85,7 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
 
         <table className="mt-8 w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-500 dark:border-zinc-800">
+            <tr className="border-b border-border-subtle text-left text-xs uppercase tracking-wide text-text-tertiary">
               <th className="py-2 font-medium">{t("item")}</th>
               <th className="py-2 font-medium">{t("sku")}</th>
               <th className="py-2 text-right font-medium">{t("qty")}</th>
@@ -95,14 +95,14 @@ export default async function OrderInvoicePage({ params }: { params: Promise<Par
           </thead>
           <tbody>
             {order.items.map((item, i) => (
-              <tr key={i} className="border-b border-zinc-100 dark:border-zinc-900">
-                <td className="py-3 text-zinc-900 dark:text-zinc-100">{item.title}</td>
-                <td className="py-3 text-zinc-500">{item.sku ?? "—"}</td>
-                <td className="py-3 text-right tabular-nums text-zinc-600 dark:text-zinc-400">{item.quantity}</td>
-                <td className="py-3 text-right tabular-nums text-zinc-600 dark:text-zinc-400">
+              <tr key={i} className="border-b border-border-subtle">
+                <td className="py-3 text-foreground">{item.title}</td>
+                <td className="py-3 text-text-tertiary">{item.sku ?? "—"}</td>
+                <td className="py-3 text-right tabular-nums text-text-secondary">{item.quantity}</td>
+                <td className="py-3 text-right tabular-nums text-text-secondary">
                   {formatMoney(item.unitPrice, order.currency)}
                 </td>
-                <td className="py-3 text-right tabular-nums font-medium text-zinc-900 dark:text-zinc-50">
+                <td className="py-3 text-right tabular-nums font-medium text-foreground">
                   {formatMoney(item.total, order.currency)}
                 </td>
               </tr>

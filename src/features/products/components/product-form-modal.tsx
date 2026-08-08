@@ -194,15 +194,15 @@ export function ProductFormModal({
         </div>
 
         <fieldset>
-          <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("categories")}</legend>
+          <legend className="text-sm font-medium text-text-secondary">{t("categories")}</legend>
           {categories.length === 0 ? (
-            <p className="mt-1 text-xs text-zinc-500">{t("noCategoriesYet")}</p>
+            <p className="mt-1 text-xs text-text-tertiary">{t("noCategoriesYet")}</p>
           ) : (
             <div className="mt-2 flex flex-wrap gap-2">
               {categories.map((c) => (
                 <label
                   key={c.id}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-200 px-3 py-1.5 text-sm dark:border-zinc-800"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border-subtle px-3 py-1.5 text-sm"
                 >
                   <input
                     type="checkbox"
@@ -229,7 +229,7 @@ export function ProductFormModal({
           <div>
             <label
               htmlFor="field-description"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="block text-sm font-medium text-text-secondary"
             >
               {t("description")}
             </label>
@@ -238,13 +238,13 @@ export function ProductFormModal({
               name="description"
               rows={4}
               defaultValue={initial?.description}
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
             />
           </div>
           <div>
             <label
               htmlFor="field-descriptionAr"
-              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="block text-sm font-medium text-text-secondary"
             >
               {t("descriptionArLabel")}
             </label>
@@ -254,9 +254,9 @@ export function ProductFormModal({
               dir="rtl"
               rows={4}
               defaultValue={initial?.descriptionAr}
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
             />
-            <p className="mt-1 text-xs text-zinc-500">{t("descriptionArHint")}</p>
+            <p className="mt-1 text-xs text-text-tertiary">{t("descriptionArHint")}</p>
           </div>
         </div>
 
@@ -295,12 +295,12 @@ export function ProductFormModal({
           </p>
         )}
 
-        <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div className="flex items-center justify-end gap-3 border-t border-border-subtle pt-4">
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+            className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
           >
             {t("cancel")}
           </button>
@@ -345,7 +345,7 @@ function Field({
   const id = `field-${name}`;
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label htmlFor={id} className="block text-sm font-medium text-text-secondary">
         {label}
       </label>
       <input
@@ -353,11 +353,11 @@ function Field({
         name={name}
         aria-invalid={errors?.length ? true : undefined}
         aria-describedby={errors?.length ? `${id}-error` : hint ? `${id}-hint` : undefined}
-        className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
         {...input}
       />
       {hint && !errors?.length && (
-        <p id={`${id}-hint`} className="mt-1 text-xs text-zinc-500">
+        <p id={`${id}-hint`} className="mt-1 text-xs text-text-tertiary">
           {hint}
         </p>
       )}
@@ -390,7 +390,7 @@ function Select({
   const id = `field-${name}`;
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label htmlFor={id} className="block text-sm font-medium text-text-secondary">
         {label}
       </label>
       <StyledSelect
@@ -400,7 +400,7 @@ function Select({
         className="mt-1"
         {...(onChange ? { value, onChange } : { defaultValue })}
       />
-      {hint && <p className="mt-1 text-xs text-zinc-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-text-tertiary">{hint}</p>}
     </div>
   );
 }
@@ -415,7 +415,7 @@ function Check({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-text-secondary">
       <input
         type="checkbox"
         name={name}

@@ -53,7 +53,7 @@ export function LocationSharing({ orderId }: { orderId: string }) {
         onClick={sharing ? stop : start}
         className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
           sharing
-            ? "border border-zinc-300 text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+            ? "border border-border-default text-text-secondary hover:bg-surface-raised"
             : "bg-emerald-600 text-white hover:bg-emerald-500"
         }`}
       >

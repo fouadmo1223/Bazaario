@@ -157,6 +157,8 @@
   },
   "Dashboard": {
     "title": "Dashboard",
+    "collapseNav": "Collapse navigation",
+    "expandNav": "Expand navigation",
     "overview": "Overview",
     "products": "Products",
     "categories": "Categories",

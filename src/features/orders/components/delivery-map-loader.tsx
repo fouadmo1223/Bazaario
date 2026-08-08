@@ -10,5 +10,5 @@ import dynamic from "next/dynamic";
  */
 export const DeliveryMap = dynamic(() => import("./delivery-map").then((m) => m.DeliveryMap), {
   ssr: false,
-  loading: () => <div className="h-64 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900" />,
+  loading: () => <div className="h-64 animate-pulse rounded-xl bg-surface-raised" />,
 });

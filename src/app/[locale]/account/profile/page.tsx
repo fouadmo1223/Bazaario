@@ -25,26 +25,26 @@ export default async function ProfilePage() {
   const [profile, addresses] = await Promise.all([getProfile(user.id), getAddresses(user.id)]);
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             {t("yourProfile")}
           </h1>
           <SignOutButton />
         </div>
 
         <nav aria-label={t("sections")} className="mt-2 flex flex-wrap gap-4 text-sm">
-          <Link href="/account/orders" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+          <Link href="/account/orders" className="text-text-tertiary hover:text-foreground">
             {t("orders")}
           </Link>
-          <Link href="/account/messages" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+          <Link href="/account/messages" className="text-text-tertiary hover:text-foreground">
             {t("messages")}
           </Link>
-          <Link href="/account/wallet" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+          <Link href="/account/wallet" className="text-text-tertiary hover:text-foreground">
             {t("wallet")}
           </Link>
-          <Link href="/wishlist" className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+          <Link href="/wishlist" className="text-text-tertiary hover:text-foreground">
             {t("wishlist")}
           </Link>
         </nav>
@@ -56,7 +56,7 @@ export default async function ProfilePage() {
         ) : null}
 
         <section className="mt-8" aria-label="Personal details">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">{t("details")}</h2>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">{t("details")}</h2>
           <ProfileForm
             initial={{ name: profile.name, phone: profile.phone, avatar: profile.avatar }}
             email={profile.email}

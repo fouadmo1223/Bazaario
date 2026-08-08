@@ -32,16 +32,16 @@ export default async function AccountOrdersPage({
   const orders = await listCustomerOrders(user.id, { page });
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("count", { count: orders.total })}</p>
+        <p className="mt-1 text-sm text-text-tertiary">{t("count", { count: orders.total })}</p>
 
         {orders.items.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-dashed border-zinc-300 py-20 text-center dark:border-zinc-800">
-            <p className="text-sm text-zinc-500">{t("empty")}</p>
+          <div className="mt-10 rounded-2xl border border-dashed border-border-default py-20 text-center">
+            <p className="text-sm text-text-tertiary">{t("empty")}</p>
           </div>
         ) : (
           <>
@@ -50,9 +50,9 @@ export default async function AccountOrdersPage({
                 <li key={order.id}>
                   <Link
                     href={`/account/orders/${order.id}`}
-                    className="flex items-center gap-4 rounded-2xl border border-zinc-200 p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm dark:border-zinc-800"
+                    className="flex items-center gap-4 rounded-2xl border border-border-subtle p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm"
                   >
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                       {order.firstItemImage ? (
                         <Image
                           src={order.firstItemImage}
@@ -66,16 +66,16 @@ export default async function AccountOrdersPage({
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        <span className="text-sm font-medium text-foreground">
                           #{order.number}
                         </span>
                         <OrderStatusBadge status={order.status} />
                       </div>
-                      <p className="mt-0.5 truncate text-sm text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-0.5 truncate text-sm text-text-secondary">
                         {order.firstItemTitle}
                         {order.itemCount > 1 ? t("moreItems", { count: order.itemCount - 1 }) : ""}
                       </p>
-                      <p className="mt-0.5 text-xs text-zinc-500">
+                      <p className="mt-0.5 text-xs text-text-tertiary">
                         {order.vendorName} ·{" "}
                         {new Date(order.createdAt).toLocaleDateString(undefined, {
                           year: "numeric",
@@ -85,7 +85,7 @@ export default async function AccountOrdersPage({
                       </p>
                     </div>
 
-                    <span className="shrink-0 text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
                       {formatMoney(order.grandTotal, order.currency)}
                     </span>
                   </Link>
@@ -98,7 +98,7 @@ export default async function AccountOrdersPage({
                 <PageLink page={orders.page - 1} disabled={!orders.hasPrev}>
                   {t("prev")}
                 </PageLink>
-                <span className="text-sm text-zinc-500">
+                <span className="text-sm text-text-tertiary">
                   {t("pageOf", { page: orders.page, totalPages: orders.totalPages })}
                 </span>
                 <PageLink page={orders.page + 1} disabled={!orders.hasNext}>
@@ -123,7 +123,7 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return <span className="text-sm text-zinc-300 dark:text-zinc-700">{children}</span>;
+    return <span className="text-sm text-text-tertiary">{children}</span>;
   }
   return (
     <Link

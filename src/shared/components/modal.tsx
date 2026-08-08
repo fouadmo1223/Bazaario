@@ -69,7 +69,7 @@ export function Modal({
       // resets `margin: 0` on every element — which drops the dialog into the
       // top-left corner. `max-h`/`overflow-auto` keep a tall body inside the
       // viewport instead of running off the bottom.
-      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-auto ${width} rounded-modal border border-border-subtle bg-surface p-0 text-foreground shadow-md backdrop:bg-black/50`}
+      className={`m-auto max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] overflow-auto ${width} rounded-modal border border-border-subtle bg-surface p-0 text-foreground shadow-md backdrop:bg-background/50`}
     >
       {/* Inner wrapper: clicks here must not reach the backdrop handler. */}
       <div onClick={(e) => e.stopPropagation()}>

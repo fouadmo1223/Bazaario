@@ -17,7 +17,7 @@ type Address = {
  */
 export function ShippingAddress({ address }: { address: Address | null }) {
   const t = useTranslations("ShippingAddress");
-  if (!address) return <p className="text-sm text-zinc-500">{t("noAddress")}</p>;
+  if (!address) return <p className="text-sm text-text-tertiary">{t("noAddress")}</p>;
 
   const cityLine = [address.city, address.region].filter(Boolean).join(", ");
   const lines = [
@@ -29,16 +29,16 @@ export function ShippingAddress({ address }: { address: Address | null }) {
     address.country,
   ].filter((l): l is string => Boolean(l && l.trim()));
 
-  if (lines.length === 0) return <p className="text-sm text-zinc-500">{t("noAddress")}</p>;
+  if (lines.length === 0) return <p className="text-sm text-text-tertiary">{t("noAddress")}</p>;
 
   return (
-    <address className="text-sm not-italic leading-relaxed text-zinc-600 dark:text-zinc-400">
+    <address className="text-sm not-italic leading-relaxed text-text-secondary">
       {lines.map((line, i) => (
         <span key={i} className="block">
           {line}
         </span>
       ))}
-      {address.phone && <span className="mt-1 block text-xs text-zinc-500">{address.phone}</span>}
+      {address.phone && <span className="mt-1 block text-xs text-text-tertiary">{address.phone}</span>}
     </address>
   );
 }

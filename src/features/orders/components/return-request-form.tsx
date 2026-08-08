@@ -32,7 +32,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
 
   if (latest?.status === "requested") {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-text-secondary">
         {t("requestedWaiting", { reason: latest.reason })}
       </p>
     );
@@ -57,7 +57,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
   return (
     <div>
       {latest?.status === "rejected" && !open && (
-        <p className="mb-2 text-sm text-zinc-500">
+        <p className="mb-2 text-sm text-text-tertiary">
           {latest.resolutionNote
             ? t("previousDeclinedWithNote", { note: latest.resolutionNote })
             : t("previousDeclined")}
@@ -68,14 +68,14 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          className="rounded-xl border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised"
         >
           {t("requestAReturn")}
         </button>
       ) : (
         <form onSubmit={submit} noValidate className="space-y-3">
           <div>
-            <label htmlFor="return-reason" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="return-reason" className="block text-sm font-medium text-text-secondary">
               {t("reason")}
             </label>
             <input
@@ -83,11 +83,11 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
             />
           </div>
           <div>
-            <label htmlFor="return-note" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="return-note" className="block text-sm font-medium text-text-secondary">
               {t("detailsOptional")}
             </label>
             <textarea
@@ -95,7 +95,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              className="mt-1 w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="mt-1 w-full resize-none rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
             />
           </div>
 
@@ -117,7 +117,7 @@ export function ReturnRequestForm({ orderId, returns }: { orderId: string; retur
               type="button"
               onClick={() => setOpen(false)}
               disabled={pending}
-              className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+              className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
             >
               {t("cancel")}
             </button>

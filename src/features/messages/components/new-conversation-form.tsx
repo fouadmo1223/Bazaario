@@ -74,8 +74,8 @@ export function NewConversationForm({
       ) : null}
 
       <div>
-        <label htmlFor="subject" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {t("subject")} <span className="font-normal text-zinc-400">{t("optional")}</span>
+        <label htmlFor="subject" className="block text-sm font-medium text-text-secondary">
+          {t("subject")} <span className="font-normal text-text-tertiary">{t("optional")}</span>
         </label>
         <input
           id="subject"
@@ -83,12 +83,12 @@ export function NewConversationForm({
           onChange={(e) => setSubject(e.target.value)}
           maxLength={200}
           placeholder={t("subjectPlaceholder")}
-          className="mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand"
         />
       </div>
 
       <div>
-        <label htmlFor="body" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="body" className="block text-sm font-medium text-text-secondary">
           {t("message")}
         </label>
         <textarea
@@ -99,7 +99,7 @@ export function NewConversationForm({
           required
           maxLength={5000}
           placeholder={t("bodyPlaceholder")}
-          className="mt-1 w-full resize-y rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full resize-y rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand"
         />
       </div>
 

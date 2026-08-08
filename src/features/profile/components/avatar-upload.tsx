@@ -152,7 +152,7 @@ export function AvatarUpload({
           alt=""
           width={64}
           height={64}
-          className="h-16 w-16 rounded-full border border-zinc-200 object-cover dark:border-zinc-800"
+          className="h-16 w-16 rounded-full border border-border-subtle object-cover"
           onError={(e) => {
             e.currentTarget.src = "/avatar-placeholder.svg";
           }}
@@ -161,7 +161,7 @@ export function AvatarUpload({
           <span
             role="status"
             aria-label="Uploading"
-            className="absolute inset-0 grid place-items-center rounded-full bg-zinc-900/50 text-[10px] font-medium text-white"
+            className="absolute inset-0 grid place-items-center rounded-full bg-surface/50 text-[10px] font-medium text-white"
           >
             …
           </span>
@@ -185,7 +185,7 @@ export function AvatarUpload({
             type="button"
             disabled={disabled || uploading}
             onClick={() => inputRef.current?.click()}
-            className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
           >
             {uploading ? "Uploading…" : value ? "Change photo" : "Upload photo"}
           </button>
@@ -206,7 +206,7 @@ export function AvatarUpload({
                   router.refresh();
                 });
               }}
-              className="rounded-xl px-3 py-1.5 text-sm text-zinc-500 transition hover:text-red-600 disabled:opacity-50 dark:text-zinc-400"
+              className="rounded-xl px-3 py-1.5 text-sm text-text-tertiary transition hover:text-red-600 disabled:opacity-50"
             >
               {removing ? "Removing…" : "Remove"}
             </button>
@@ -218,7 +218,7 @@ export function AvatarUpload({
             {error}
           </p>
         ) : (
-          <p className="mt-1 text-xs text-zinc-400">JPEG, PNG, WebP, GIF or AVIF. Up to 5MB.</p>
+          <p className="mt-1 text-xs text-text-tertiary">JPEG, PNG, WebP, GIF or AVIF. Up to 5MB.</p>
         )}
       </div>
     </div>

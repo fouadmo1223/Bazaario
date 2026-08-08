@@ -157,6 +157,8 @@
   },
   "Dashboard": {
     "title": "لوحة التحكم",
+    "collapseNav": "طي القائمة",
+    "expandNav": "توسيع القائمة",
     "overview": "نظرة عامة",
     "products": "المنتجات",
     "categories": "الفئات",

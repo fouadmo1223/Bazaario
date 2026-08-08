@@ -34,7 +34,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
     <div>
       {confirming ? (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("cancelThisOrder")}</p>
+          <p className="text-sm text-text-secondary">{t("cancelThisOrder")}</p>
           <button
             type="button"
             onClick={cancel}
@@ -47,7 +47,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
             type="button"
             onClick={() => setConfirming(false)}
             disabled={pending}
-            className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+            className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
           >
             {t("keepIt")}
           </button>
@@ -56,7 +56,7 @@ export function CancelOrderButton({ orderId }: { orderId: string }) {
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
+          className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-red-400 hover:text-red-600"
         >
           {t("cancelOrder")}
         </button>

@@ -51,22 +51,22 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
   });
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-10">
-        <nav className="mb-6 text-sm text-zinc-500">
+        <nav className="mb-6 text-sm text-text-tertiary">
           <Link href="/account/orders" className="hover:text-brand">
             {t("yourOrders")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
+          <span className="text-text-secondary">#{order.number}</span>
         </nav>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {t("order", { number: order.number })}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-text-tertiary">
               {order.vendorName} · {placedAt}
             </p>
           </div>
@@ -79,7 +79,7 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
             */}
             <Link
               href={`/account/orders/${order.id}/contact`}
-              className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="rounded-xl border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised"
             >
               {t("messageStore")}
             </Link>
@@ -104,22 +104,22 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
         )}
 
         <section className="mt-8" aria-label="Items">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
-          <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <h2 className="text-sm font-semibold text-foreground">{t("items")}</h2>
+          <ul className="mt-3 divide-y divide-border-subtle border-y border-border-subtle">
             {order.items.map((item, i) => (
               <li key={i} className="flex items-center gap-4 py-3">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                   {item.image ? (
                     <Image src={item.image} alt="" fill sizes="56px" className="object-cover" />
                   ) : null}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">{item.title}</p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="truncate text-sm text-foreground">{item.title}</p>
+                  <p className="text-xs text-text-tertiary">
                     {item.quantity} × {formatMoney(item.unitPrice, order.currency)}
                   </p>
                 </div>
-                <span className="shrink-0 text-sm font-medium tabular-nums text-zinc-900 dark:text-zinc-50">
+                <span className="shrink-0 text-sm font-medium tabular-nums text-foreground">
                   {formatMoney(item.total, order.currency)}
                 </span>
               </li>
@@ -129,20 +129,20 @@ export default async function CustomerOrderPage({ params }: { params: Promise<Pa
 
         <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
           <section aria-label="Delivery">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("delivery")}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("delivery")}</h2>
             <div className="mt-2">
               <ShippingAddress address={order.shipping.address} />
             </div>
-            <p className="mt-2 text-xs text-zinc-500">{t("method", { method: order.shipping.method })}</p>
+            <p className="mt-2 text-xs text-text-tertiary">{t("method", { method: order.shipping.method })}</p>
           </section>
 
           <section aria-label="History">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("history")}</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">{t("history")}</h2>
             <OrderTimeline entries={order.timeline} />
           </section>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+        <div className="mt-8 rounded-2xl border border-border-subtle p-5">
           <OrderSummary totals={order.totals} currency={order.currency} shippingKnown />
         </div>
 

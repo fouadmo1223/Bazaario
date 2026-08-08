@@ -36,13 +36,13 @@ export default async function DashboardSettingsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{t("subtitle")}</p>
+        <p className="mt-1 text-sm text-text-tertiary">{t("subtitle")}</p>
       </header>
 
-      <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+      <div className="rounded-2xl border border-border-subtle p-5">
         <SettingsForm vendorId={vendorId} initial={toVendorSettingsView(vendor)} />
       </div>
     </div>

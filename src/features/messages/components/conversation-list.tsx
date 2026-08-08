@@ -5,8 +5,8 @@ import type { ConversationRow } from "../queries";
 const STATUS_STYLES: Record<string, string> = {
   open: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
   pending: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  resolved: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-  closed: "bg-zinc-100 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-500",
+  resolved: "bg-surface-raised text-text-secondary",
+  closed: "bg-surface-raised text-text-tertiary",
 };
 
 function relativeTime(iso: string, t: ReturnType<typeof useTranslations>): string {
@@ -45,8 +45,8 @@ export function ConversationList({
 
   if (items.length === 0) {
     return (
-      <div className="mt-8 rounded-2xl border border-dashed border-zinc-300 py-16 text-center dark:border-zinc-800">
-        <p className="text-sm text-zinc-500">{emptyMessage ?? t("noMessagesYet")}</p>
+      <div className="mt-8 rounded-2xl border border-dashed border-border-default py-16 text-center">
+        <p className="text-sm text-text-tertiary">{emptyMessage ?? t("noMessagesYet")}</p>
       </div>
     );
   }
@@ -60,14 +60,14 @@ export function ConversationList({
           <li key={row.id}>
             <Link
               href={`${basePath}/${row.id}`}
-              className="flex items-start gap-4 rounded-2xl border border-zinc-200 p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm dark:border-zinc-800"
+              className="flex items-start gap-4 rounded-2xl border border-border-subtle p-4 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <span className="truncate text-sm font-medium text-foreground">
                     {title}
                   </span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-medium text-text-secondary">
                     {KIND_LABELS[row.kind] ?? row.kind}
                   </span>
                   <span
@@ -80,18 +80,18 @@ export function ConversationList({
                 </div>
 
                 {row.counterparties.length > 0 && row.subject ? (
-                  <p className="mt-0.5 truncate text-xs text-zinc-400">
+                  <p className="mt-0.5 truncate text-xs text-text-tertiary">
                     {t("withNames", { names: row.counterparties.join(", ") })}
                   </p>
                 ) : null}
 
-                <p className="mt-1 line-clamp-1 text-sm text-zinc-500">
+                <p className="mt-1 line-clamp-1 text-sm text-text-tertiary">
                   {row.lastMessagePreview ?? t("noMessagesYet")}
                 </p>
               </div>
 
               <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <span className="text-xs text-zinc-400">{relativeTime(row.lastMessageAt, t)}</span>
+                <span className="text-xs text-text-tertiary">{relativeTime(row.lastMessageAt, t)}</span>
                 {row.unread > 0 ? (
                   <span
                     className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand px-1.5 py-0.5 text-[11px] font-semibold text-white"

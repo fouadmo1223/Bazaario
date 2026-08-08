@@ -182,12 +182,12 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="truncate text-lg font-semibold text-foreground">
             {thread.subject || thread.vendorName || thread.counterparties.join(", ") || t("conversation")}
           </h1>
-          <p className="mt-0.5 text-xs text-zinc-500">
+          <p className="mt-0.5 text-xs text-text-tertiary">
             {thread.counterparties.length > 0
               ? t("withNames", { names: thread.counterparties.join(", ") })
               : t("noOneReplied")}
@@ -203,7 +203,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 type="button"
                 onClick={() => onStatus("open")}
                 disabled={pending}
-                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
               >
                 {t("reopen")}
               </button>
@@ -213,7 +213,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   type="button"
                   onClick={() => onStatus("resolved")}
                   disabled={pending}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                  className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
                 >
                   {t("markResolved")}
                 </button>
@@ -221,7 +221,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   type="button"
                   onClick={() => onStatus("closed")}
                   disabled={pending}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                  className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
                 >
                   {t("close")}
                 </button>
@@ -233,13 +233,13 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
 
       <div className="flex-1 space-y-3 overflow-y-auto py-6">
         {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-zinc-500">{t("noMessagesYet")}</p>
+          <p className="py-10 text-center text-sm text-text-tertiary">{t("noMessagesYet")}</p>
         ) : null}
 
         {messages.map((message) => {
           if (message.system) {
             return (
-              <p key={message.id} className="py-1 text-center text-xs text-zinc-400">
+              <p key={message.id} className="py-1 text-center text-xs text-text-tertiary">
                 {message.body}
               </p>
             );
@@ -250,14 +250,14 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
             <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[75%] ${mine ? "items-end" : "items-start"}`}>
                 {!mine ? (
-                  <p className="mb-0.5 px-1 text-[11px] font-medium text-zinc-500">{message.senderName}</p>
+                  <p className="mb-0.5 px-1 text-[11px] font-medium text-text-tertiary">{message.senderName}</p>
                 ) : null}
                 {message.body ? (
                   <div
                     className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                       mine
                         ? "bg-brand text-white"
-                        : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                        : "bg-surface-raised text-foreground"
                     }`}
                   >
                     {message.body}
@@ -270,11 +270,11 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                     ))}
                   </div>
                 ) : null}
-                <p className={`mt-0.5 px-1 text-[11px] text-zinc-400 ${mine ? "text-right" : ""}`}>
+                <p className={`mt-0.5 px-1 text-[11px] text-text-tertiary ${mine ? "text-right" : ""}`}>
                   {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
                 {mine && message.id === myLastId ? (
-                  <p className="px-1 text-right text-[11px] text-zinc-400" aria-live="polite">
+                  <p className="px-1 text-right text-[11px] text-text-tertiary" aria-live="polite">
                     {seenByNames.length > 0
                       ? thread.others.length > 1
                         ? t("seenBy", { names: seenByNames.join(", ") })
@@ -296,7 +296,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
               <Dot delay="150ms" />
               <Dot delay="300ms" />
             </span>
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-text-tertiary">
               {(() => {
                 const names = typingUsers.map((id) => nameById.get(id)).filter(Boolean) as string[];
                 if (names.length === 0) return t("typing");
@@ -310,7 +310,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+      <div className="border-t border-border-subtle pt-4">
         {error ? (
           <p role="alert" className="mb-2 text-sm text-red-600 dark:text-red-400">
             {error}
@@ -318,7 +318,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
         ) : null}
 
         {readOnly ? (
-          <p className="py-3 text-center text-sm text-zinc-500">{t("closedNotice")}</p>
+          <p className="py-3 text-center text-sm text-text-tertiary">{t("closedNotice")}</p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-2">
             {(attachments.length > 0 || uploading > 0) && (
@@ -331,7 +331,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                   />
                 ))}
                 {uploading > 0 ? (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-[10px] text-zinc-400 dark:border-zinc-700">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-border-default text-[10px] text-text-tertiary">
                     {t("uploading")}
                   </div>
                 ) : null}
@@ -353,7 +353,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label={t("attachLabel")}
-                className="rounded-lg px-2 py-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                className="rounded-lg px-2 py-2 text-text-tertiary transition hover:bg-surface-raised hover:text-foreground"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden>
                   <path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24 4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49" strokeLinecap="round" strokeLinejoin="round" />
@@ -379,7 +379,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
                 rows={2}
                 maxLength={5000}
                 placeholder={t("writeMessage")}
-                className="flex-1 resize-none rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className="flex-1 resize-none rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand"
               />
               <button
                 type="submit"
@@ -392,7 +392,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
           </form>
         )}
 
-        <p className="mt-2 text-[11px] text-zinc-400">{connected ? t("connected") : t("offline")}</p>
+        <p className="mt-2 text-[11px] text-text-tertiary">{connected ? t("connected") : t("offline")}</p>
       </div>
     </div>
   );
@@ -402,7 +402,7 @@ export function ThreadView({ thread, viewerId }: { thread: Thread; viewerId: str
 function Dot({ delay }: { delay: string }) {
   return (
     <span
-      className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400"
+      className="h-1.5 w-1.5 animate-bounce rounded-full bg-surface-raised"
       style={{ animationDelay: delay }}
     />
   );
@@ -424,7 +424,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
         <img
           src={attachment.url}
           alt={attachment.name}
-          className="max-h-64 max-w-[16rem] rounded-xl border border-zinc-200 object-cover dark:border-zinc-800"
+          className="max-h-64 max-w-[16rem] rounded-xl border border-border-subtle object-cover"
         />
       </a>
     );
@@ -434,7 +434,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       <video
         src={attachment.url}
         controls
-        className="max-h-64 max-w-[16rem] rounded-xl border border-zinc-200 dark:border-zinc-800"
+        className="max-h-64 max-w-[16rem] rounded-xl border border-border-subtle"
       />
     );
   }
@@ -443,7 +443,7 @@ function Attachment({ attachment }: { attachment: ChatAttachment }) {
       href={attachment.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-2 text-xs text-brand hover:underline dark:border-zinc-800 dark:text-brand"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border-subtle px-3 py-2 text-xs text-brand hover:underline dark:text-brand"
     >
       📎 {attachment.name}
     </a>
@@ -461,7 +461,7 @@ function AttachmentPreview({
   const t = useTranslations("ThreadView");
   const kind = attachmentKind(attachment);
   return (
-    <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-border-subtle">
       {kind === "image" ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={attachment.url} alt={attachment.name} className="h-full w-full object-cover" />
@@ -474,7 +474,7 @@ function AttachmentPreview({
         type="button"
         onClick={onRemove}
         aria-label={t("removeAttachment", { name: attachment.name })}
-        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white transition hover:bg-black/80"
+        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-background/60 text-xs text-white transition hover:bg-background/80"
       >
         ✕
       </button>

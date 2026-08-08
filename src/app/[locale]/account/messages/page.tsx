@@ -30,14 +30,14 @@ export default async function AccountMessagesPage({
   const inbox = await listInbox(user, { page });
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {t("title")}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">{t("count", { count: inbox.total })}</p>
+            <p className="mt-1 text-sm text-text-tertiary">{t("count", { count: inbox.total })}</p>
           </div>
 
           <Link
@@ -59,18 +59,18 @@ export default async function AccountMessagesPage({
             {inbox.page > 1 ? (
               <Link
                 href={`/account/messages?page=${inbox.page - 1}`}
-                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
+                className="rounded-lg border border-border-default px-3 py-1.5 text-sm"
               >
                 {t("prev")}
               </Link>
             ) : null}
-            <span className="text-sm text-zinc-500">
+            <span className="text-sm text-text-tertiary">
               {t("pageOf", { page: inbox.page, totalPages: inbox.totalPages })}
             </span>
             {inbox.page < inbox.totalPages ? (
               <Link
                 href={`/account/messages?page=${inbox.page + 1}`}
-                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
+                className="rounded-lg border border-border-default px-3 py-1.5 text-sm"
               >
                 {t("next")}
               </Link>

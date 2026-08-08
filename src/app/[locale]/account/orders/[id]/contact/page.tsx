@@ -37,19 +37,19 @@ export default async function ContactVendorPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-2xl px-6 py-10">
         <Link
           href={`/account/orders/${id}`}
-          className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+          className="text-sm text-text-tertiary hover:text-foreground"
         >
           {t("backToOrder", { number: order.number })}
         </Link>
 
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
           {t("messageVendor", { vendor: order.vendorName })}
         </h1>
-        <p className="mt-1 mb-6 text-sm text-zinc-500">{t("aboutOrder", { number: order.number })}</p>
+        <p className="mt-1 mb-6 text-sm text-text-tertiary">{t("aboutOrder", { number: order.number })}</p>
 
         <NewConversationForm
           kind="customer_vendor"

@@ -15,7 +15,7 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
   return (
     <div>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">{t("shown", { count: banners.length })}</p>
+        <p className="text-sm text-text-tertiary">{t("shown", { count: banners.length })}</p>
         {!adding && (
           <button
             type="button"
@@ -28,20 +28,20 @@ export function BannerManager({ vendorId, banners }: { vendorId: string; banners
       </div>
 
       {adding && (
-        <div className="mb-6 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="mb-6 rounded-2xl border border-border-subtle p-4">
           <BannerForm vendorId={vendorId} onDone={() => setAdding(false)} />
         </div>
       )}
 
       {banners.length === 0 && !adding ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("noBanners")}</p>
+        <div className="rounded-2xl border border-dashed border-border-default p-12 text-center">
+          <p className="text-sm text-text-tertiary">{t("noBanners")}</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {banners.map((b) =>
             editing?.id === b.id ? (
-              <li key={b.id} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+              <li key={b.id} className="rounded-2xl border border-border-subtle p-4">
                 <BannerForm vendorId={vendorId} initial={b} onDone={() => setEditing(null)} />
               </li>
             ) : (
@@ -82,23 +82,23 @@ function BannerRow({
   }
 
   return (
-    <li className="rounded-2xl border border-zinc-200 p-4 transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800">
+    <li className="rounded-2xl border border-border-subtle p-4 transition hover:border-border-default hover:shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-zinc-900 dark:text-zinc-100">{banner.message}</p>
+          <p className="text-sm text-foreground">{banner.message}</p>
           {banner.linkUrl && (
-            <p className="mt-0.5 truncate text-xs text-zinc-500">
+            <p className="mt-0.5 truncate text-xs text-text-tertiary">
               {banner.linkLabel || banner.linkUrl} → {banner.linkUrl}
             </p>
           )}
-          <p className="mt-1 text-xs text-zinc-400">{windowLabel(banner, t)}</p>
+          <p className="mt-1 text-xs text-text-tertiary">{windowLabel(banner, t)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <span
             className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
               banner.isActive
                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                : "bg-surface-raised text-text-secondary"
             }`}
           >
             {banner.isActive ? t("active") : t("off")}
@@ -114,7 +114,7 @@ function BannerRow({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="text-xs text-zinc-500 hover:text-red-600 hover:underline disabled:opacity-50"
+            className="text-xs text-text-tertiary hover:text-red-600 hover:underline disabled:opacity-50"
           >
             {pending ? t("deleting") : t("delete")}
           </button>
@@ -180,7 +180,7 @@ function BannerForm({
   return (
     <form onSubmit={submit} noValidate className="space-y-3">
       <div>
-        <label htmlFor="banner-message" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="banner-message" className="block text-sm font-medium text-text-secondary">
           {t("message")}
         </label>
         <input
@@ -190,13 +190,13 @@ function BannerForm({
           maxLength={200}
           required
           placeholder={t("messagePlaceholder")}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="banner-link-url" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor="banner-link-url" className="block text-sm font-medium text-text-secondary">
             {t("linkOptional")}
           </label>
           <input
@@ -205,11 +205,11 @@ function BannerForm({
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             placeholder="https://…"
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="banner-link-label" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor="banner-link-label" className="block text-sm font-medium text-text-secondary">
             {t("linkTextOptional")}
           </label>
           <input
@@ -218,14 +218,14 @@ function BannerForm({
             onChange={(e) => setLinkLabel(e.target.value)}
             maxLength={40}
             placeholder={t("linkTextPlaceholder")}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="banner-starts" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor="banner-starts" className="block text-sm font-medium text-text-secondary">
             {t("startsOptional")}
           </label>
           <input
@@ -233,11 +233,11 @@ function BannerForm({
             type="date"
             value={startsAt}
             onChange={(e) => setStartsAt(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="banner-ends" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor="banner-ends" className="block text-sm font-medium text-text-secondary">
             {t("endsOptional")}
           </label>
           <input
@@ -245,17 +245,17 @@ function BannerForm({
             type="date"
             value={endsAt}
             onChange={(e) => setEndsAt(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
           />
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+      <label className="flex items-center gap-2 text-sm text-text-secondary">
         <input
           type="checkbox"
           checked={isActive}
           onChange={(e) => setIsActive(e.target.checked)}
-          className="rounded border-zinc-300 dark:border-zinc-700"
+          className="rounded border-border-default"
         />
         {t("activeLabel")}
       </label>
@@ -278,7 +278,7 @@ function BannerForm({
           type="button"
           onClick={onDone}
           disabled={pending}
-          className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+          className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
         >
           {t("cancel")}
         </button>

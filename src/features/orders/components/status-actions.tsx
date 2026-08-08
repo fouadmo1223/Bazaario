@@ -31,7 +31,7 @@ export function StatusActions({
   const [target, setTarget] = useState<OrderStatus | null>(null);
 
   if (allowed.length === 0) {
-    return <p className="text-sm text-zinc-500">{tActions("finalState")}</p>;
+    return <p className="text-sm text-text-tertiary">{tActions("finalState")}</p>;
   }
 
   function move(status: OrderStatus) {
@@ -59,7 +59,7 @@ export function StatusActions({
             disabled={pending}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
               status === "cancelled" || status === "refunded"
-                ? "border border-zinc-300 text-zinc-700 hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
+                ? "border border-border-default text-text-secondary hover:border-red-400 hover:text-red-600"
                 : "bg-brand text-white hover:bg-brand-hover"
             }`}
           >

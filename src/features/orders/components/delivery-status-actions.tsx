@@ -33,7 +33,7 @@ export function DeliveryStatusActions({
 
   if (!next) {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-text-tertiary">
         {t("nothingToUpdate", { status: orderStatusLabel(status, tStatus) })}
       </p>
     );

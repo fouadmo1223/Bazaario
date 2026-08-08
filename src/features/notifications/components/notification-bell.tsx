@@ -177,7 +177,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
         onClick={toggle}
         aria-label={unread > 0 ? t("labelUnread", { count: unread }) : t("label")}
         aria-expanded={open}
-        className="relative rounded-lg p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+        className="relative rounded-lg p-2 text-text-secondary transition hover:bg-surface-raised hover:text-foreground"
       >
         {/* Bell */}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
@@ -191,9 +191,9 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
       </button>
 
       {open && (
-        <div className="absolute end-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("label")}</p>
+        <div className="absolute end-0 z-40 mt-2 w-80 overflow-hidden rounded-xl border border-border-subtle bg-surface shadow-xl">
+          <div className="flex items-center justify-between border-b border-border-subtle px-3 py-2">
+            <p className="text-sm font-semibold text-foreground">{t("label")}</p>
             {unread > 0 && (
               <button
                 type="button"
@@ -207,13 +207,13 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
 
           <div className="max-h-96 overflow-y-auto">
             {loading && items === null ? (
-              <p className="px-3 py-8 text-center text-sm text-zinc-500">{t("loading")}</p>
+              <p className="px-3 py-8 text-center text-sm text-text-tertiary">{t("loading")}</p>
             ) : error ? (
               <p role="alert" className="px-3 py-8 text-center text-sm text-red-600 dark:text-red-400">
                 {error}
               </p>
             ) : !items || items.length === 0 ? (
-              <p className="px-3 py-8 text-center text-sm text-zinc-500">{t("empty")}</p>
+              <p className="px-3 py-8 text-center text-sm text-text-tertiary">{t("empty")}</p>
             ) : (
               <ul>
                 {items.map((item) => (
@@ -221,7 +221,7 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
                     <button
                       type="button"
                       onClick={() => openItem(item)}
-                      className={`flex w-full gap-2 border-b border-zinc-50 px-3 py-2.5 text-left transition last:border-0 hover:bg-zinc-50 dark:border-zinc-900 dark:hover:bg-zinc-900 ${
+                      className={`flex w-full gap-2 border-b border-border-subtle px-3 py-2.5 text-left transition last:border-0 hover:bg-surface-raised ${
                         item.readAt ? "" : "bg-brand/5 dark:bg-brand/10"
                       }`}
                     >
@@ -232,13 +232,13 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
                         }`}
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        <span className="block truncate text-sm font-medium text-foreground">
                           {item.title}
                         </span>
                         {item.body && (
-                          <span className="mt-0.5 block truncate text-xs text-zinc-500">{item.body}</span>
+                          <span className="mt-0.5 block truncate text-xs text-text-tertiary">{item.body}</span>
                         )}
-                        <span className="mt-0.5 block text-[11px] text-zinc-400">
+                        <span className="mt-0.5 block text-[11px] text-text-tertiary">
                           {new Date(item.createdAt).toLocaleString([], {
                             month: "short",
                             day: "numeric",

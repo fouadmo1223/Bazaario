@@ -34,9 +34,9 @@ export default async function AccountThreadPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-3xl px-6 py-6">
-        <Link href="/account/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+        <Link href="/account/messages" className="text-sm text-text-tertiary hover:text-foreground">
           {t("backToMessages")}
         </Link>
 

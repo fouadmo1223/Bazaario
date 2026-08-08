@@ -96,7 +96,7 @@ export function ProductGallery({
                   className="object-cover"
                 />
                 {m.type === "video" && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white">
+                  <span className="absolute inset-0 flex items-center justify-center bg-background/30 text-white">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden>
                       <path d="M8 5v14l11-7z" />
                     </svg>

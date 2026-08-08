@@ -98,22 +98,22 @@ export function ProductSearchBox({
           onFocus={() => setOpen(true)}
           autoComplete="off"
           placeholder={t("searchPlaceholder")}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none"
         />
         <button
           type="submit"
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="rounded-lg border border-border-default px-3 py-1.5 text-sm text-text-secondary transition hover:bg-surface-raised"
         >
           {t("search")}
         </button>
       </form>
 
       {open && value.trim() && (
-        <div className="absolute z-40 mt-1 w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="absolute z-40 mt-1 w-80 overflow-hidden rounded-lg border border-border-subtle bg-surface shadow-lg">
           {loading ? (
-            <p className="px-3 py-4 text-sm text-zinc-500">{t("loading")}</p>
+            <p className="px-3 py-4 text-sm text-text-tertiary">{t("loading")}</p>
           ) : results.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-zinc-500">{t("noProducts")}</p>
+            <p className="px-3 py-4 text-sm text-text-tertiary">{t("noProducts")}</p>
           ) : (
             <ul>
               {results.map((r) => (
@@ -121,17 +121,17 @@ export function ProductSearchBox({
                   <Link
                     href={`/dashboard/products/${r.id}`}
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 transition hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                    className="flex items-center gap-3 px-3 py-2 transition hover:bg-surface-raised"
                   >
-                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                       {r.image ? (
                         <Image src={r.image} alt="" fill sizes="40px" className="object-cover" />
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-zinc-900 dark:text-zinc-100">{r.title}</p>
+                      <p className="truncate text-sm text-foreground">{r.title}</p>
                     </div>
-                    <span className="shrink-0 text-sm tabular-nums text-zinc-500">
+                    <span className="shrink-0 text-sm tabular-nums text-text-tertiary">
                       {formatMoney(r.price, "USD")}
                     </span>
                   </Link>

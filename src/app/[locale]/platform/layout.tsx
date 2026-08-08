@@ -18,17 +18,17 @@ export default async function PlatformLayout({ children }: { children: React.Rea
   const t = await getTranslations("PlatformLayout");
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
+    <div className="min-h-dvh bg-surface">
+      <header className="border-b border-border-subtle">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-4">
-          <Link href="/platform/vendors" className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <Link href="/platform/vendors" className="text-sm font-semibold text-foreground">
             {t("platform")}
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-            <Link href="/platform/vendors" className="transition hover:text-zinc-900 dark:hover:text-zinc-100">
+          <nav className="flex items-center gap-4 text-sm text-text-secondary">
+            <Link href="/platform/vendors" className="transition hover:text-foreground">
               {t("vendorsAndStaff")}
             </Link>
-            <Link href="/" className="transition hover:text-zinc-900 dark:hover:text-zinc-100">
+            <Link href="/" className="transition hover:text-foreground">
               {t("storefront")}
             </Link>
           </nav>

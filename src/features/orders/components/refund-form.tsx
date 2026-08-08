@@ -33,7 +33,7 @@ export function RefundForm({
   const [error, setError] = useState<string | null>(null);
 
   if (remaining <= 0) {
-    return <p className="text-sm text-zinc-500">{t("fullyRefunded")}</p>;
+    return <p className="text-sm text-text-tertiary">{t("fullyRefunded")}</p>;
   }
 
   function submit(e: React.FormEvent) {
@@ -66,7 +66,7 @@ export function RefundForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-red-400 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-300"
+        className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-red-400 hover:text-red-600"
       >
         {t("refundEllipsis")}
       </button>
@@ -76,7 +76,7 @@ export function RefundForm({
   return (
     <form onSubmit={submit} noValidate className="space-y-3">
       <div>
-        <label htmlFor="refund-amount" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="refund-amount" className="block text-sm font-medium text-text-secondary">
           {t("amount")}
         </label>
         <input
@@ -87,22 +87,22 @@ export function RefundForm({
           max={remaining}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm tabular-nums text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm tabular-nums text-foreground focus:border-brand focus:outline-none"
         />
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-text-tertiary">
           {t("upToRemaining", { amount: formatMoney(remaining, currency) })}
         </p>
       </div>
 
       <div>
-        <label htmlFor="refund-reason" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor="refund-reason" className="block text-sm font-medium text-text-secondary">
           {t("reasonOptional")}
         </label>
         <input
           id="refund-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="mt-1 w-full rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground focus:border-brand focus:outline-none"
         />
       </div>
 
@@ -124,7 +124,7 @@ export function RefundForm({
           type="button"
           onClick={() => setOpen(false)}
           disabled={pending}
-          className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+          className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
         >
           {t("cancel")}
         </button>

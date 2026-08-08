@@ -54,10 +54,10 @@ export default async function DashboardProductsPage({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-text-tertiary">
           {t("count", { count: products.total, vendor: vendor.name })}
         </p>
       </header>
@@ -92,7 +92,7 @@ export default async function DashboardProductsPage({
           <PageLink page={products.page - 1} status={activeStatus} search={search} disabled={!products.hasPrev}>
             {t("prev")}
           </PageLink>
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-text-tertiary">
             {t("pageOf", { page: products.page, totalPages: products.totalPages })}
           </span>
           <PageLink page={products.page + 1} status={activeStatus} search={search} disabled={!products.hasNext}>
@@ -112,7 +112,7 @@ function Chip({ label, href, active }: { label: string; href: string; active: bo
       className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
         active
           ? "bg-brand text-white"
-          : "border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          : "border border-border-subtle text-text-secondary hover:bg-surface-raised"
       }`}
     >
       {label}
@@ -134,7 +134,7 @@ function PageLink({
   children: React.ReactNode;
 }) {
   if (disabled) {
-    return <span className="text-sm text-zinc-300 dark:text-zinc-700">{children}</span>;
+    return <span className="text-sm text-text-tertiary">{children}</span>;
   }
   const query = new URLSearchParams({
     page: String(page),

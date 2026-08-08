@@ -30,9 +30,9 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
   const { balance, history } = await getWalletView(user.id);
 
   return (
-    <div className="min-h-dvh bg-white dark:bg-black">
+    <div className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
 
@@ -42,33 +42,33 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
           </p>
         )}
         {status === "cancelled" && (
-          <p className="mt-4 rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <p className="mt-4 rounded-lg bg-surface-raised px-3 py-2 text-sm text-text-secondary">
             {t("checkoutCancelled")}
           </p>
         )}
 
-        <div className="mt-6 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("balance")}</p>
-          <p className="mt-1 text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+        <div className="mt-6 rounded-2xl border border-border-subtle p-6">
+          <p className="text-sm text-text-tertiary">{t("balance")}</p>
+          <p className="mt-1 text-3xl font-semibold tabular-nums text-foreground">
             {formatMoney(balance, "USD")}
           </p>
-          <p className="mt-2 text-xs text-zinc-500">{t("storeCredit")}</p>
-          <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <p className="mt-2 text-xs text-text-tertiary">{t("storeCredit")}</p>
+          <div className="mt-4 border-t border-border-subtle pt-4">
             <TopUpForm />
           </div>
         </div>
 
         <section className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("activity")}</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">{t("activity")}</h2>
           {history.length === 0 ? (
-            <p className="text-sm text-zinc-500">{t("nothingYet")}</p>
+            <p className="text-sm text-text-tertiary">{t("nothingYet")}</p>
           ) : (
-            <ul className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+            <ul className="divide-y divide-border-subtle border-y border-border-subtle">
               {history.map((txn) => (
                 <li key={txn.id} className="flex items-center justify-between gap-4 py-3">
                   <div className="min-w-0">
-                    <p className="text-sm text-zinc-900 dark:text-zinc-100">{txn.reason}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm text-foreground">{txn.reason}</p>
+                    <p className="text-xs text-text-tertiary">
                       {new Date(txn.createdAt).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
@@ -80,7 +80,7 @@ export default async function WalletPage({ searchParams }: { searchParams: Promi
                     className={`shrink-0 text-sm font-medium tabular-nums ${
                       txn.type === "credit"
                         ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-zinc-900 dark:text-zinc-100"
+                        : "text-foreground"
                     }`}
                   >
                     {txn.type === "credit" ? "+" : "−"}

@@ -13,7 +13,7 @@ import type { Option, ProductRow, VariantEditorData } from "../queries";
 
 const STATUS_STYLE: Record<ProductRow["status"], string> = {
   active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  draft: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  draft: "bg-surface-raised text-text-secondary",
   archived: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
 };
 
@@ -83,7 +83,7 @@ export function ProductTable({
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">{t("shown", { count: products.length })}</p>
+        <p className="text-sm text-text-tertiary">{t("shown", { count: products.length })}</p>
         <button
           type="button"
           onClick={() => setAdding(true)}
@@ -103,8 +103,8 @@ export function ProductTable({
       )}
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("noProducts")}</p>
+        <div className="rounded-2xl border border-dashed border-border-default p-12 text-center">
+          <p className="text-sm text-text-tertiary">{t("noProducts")}</p>
           <button
             type="button"
             onClick={() => setAdding(true)}
@@ -114,9 +114,9 @@ export function ProductTable({
           </button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-border-subtle">
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
+            <thead className="border-b border-border-subtle bg-surface-raised text-left">
               <tr>
                 <Th>{t("colProduct")}</Th>
                 <Th>{t("colStatus")}</Th>
@@ -129,20 +129,20 @@ export function ProductTable({
               {products.map((p) => (
                 <tr
                   key={p.id}
-                  className="border-b border-zinc-100 transition last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                  className="border-b border-border-subtle transition last:border-0 hover:bg-surface-raised"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-raised">
                         {p.image ? (
                           <Image src={p.image} alt="" fill sizes="40px" className="object-cover" />
                         ) : null}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className="truncate font-medium text-foreground">
                           {p.title}
                         </p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-text-tertiary">
                           {p.type === "variable"
                             ? t("variantCount", { count: p.variantCount })
                             : (p.sku ?? t("noSku"))}
@@ -157,9 +157,9 @@ export function ProductTable({
                       {t(p.status)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-zinc-700 dark:text-zinc-300">
+                  <td className="px-4 py-3 tabular-nums text-text-secondary">
                     {p.type === "variable" ? (
-                      <span className="text-zinc-500">
+                      <span className="text-text-tertiary">
                         {t("priceFrom", { price: formatMoney(p.price, currency) })}
                       </span>
                     ) : (
@@ -167,7 +167,7 @@ export function ProductTable({
                     )}
                   </td>
                   <td className="px-4 py-3 tabular-nums">
-                    <span className={p.stock <= 5 ? "text-amber-600 dark:text-amber-400" : "text-zinc-700 dark:text-zinc-300"}>
+                    <span className={p.stock <= 5 ? "text-amber-600 dark:text-amber-400" : "text-text-secondary"}>
                       {p.stock}
                     </span>
                   </td>
@@ -176,7 +176,7 @@ export function ProductTable({
                       {p.status === "active" && (
                         <Link
                           href={`/v/${vendorSlug}/p/${p.slug}`}
-                          className="text-xs text-zinc-500 hover:text-brand hover:underline"
+                          className="text-xs text-text-tertiary hover:text-brand hover:underline"
                         >
                           {t("view")}
                         </Link>
@@ -200,7 +200,7 @@ export function ProductTable({
                       <button
                         type="button"
                         onClick={() => setDeleting(p)}
-                        className="text-xs text-zinc-500 hover:text-red-600 hover:underline"
+                        className="text-xs text-text-tertiary hover:text-red-600 hover:underline"
                       >
                         {t("delete")}
                       </button>
@@ -239,13 +239,13 @@ export function ProductTable({
         description={deleting?.title}
         size="sm"
       >
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("deleteConfirm")}</p>
+        <p className="text-sm text-text-secondary">{t("deleteConfirm")}</p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => setDeleting(null)}
             disabled={pending}
-            className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+            className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
           >
             {t("cancel")}
           </button>
@@ -265,7 +265,7 @@ export function ProductTable({
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <th scope="col" className={`px-4 py-2.5 font-medium text-zinc-500 ${className ?? ""}`}>
+    <th scope="col" className={`px-4 py-2.5 font-medium text-text-tertiary ${className ?? ""}`}>
       {children}
     </th>
   );

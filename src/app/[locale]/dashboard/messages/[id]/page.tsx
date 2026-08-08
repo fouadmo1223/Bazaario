@@ -41,7 +41,7 @@ export default async function DashboardThreadPage({ params }: { params: Promise<
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-6">
-      <Link href="/dashboard/messages" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200">
+      <Link href="/dashboard/messages" className="text-sm text-text-tertiary hover:text-foreground">
         {t("backToMessages")}
       </Link>
 

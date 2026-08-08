@@ -13,15 +13,15 @@ export function KpiCard({
   icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700">
+    <div className="rounded-card border border-border-subtle bg-surface p-5 transition hover:border-border-default hover:shadow-xs">
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{label}</p>
-        {icon && <span className="text-zinc-400">{icon}</span>}
+        <p className="text-sm font-medium text-text-secondary">{label}</p>
+        {icon && <span className="text-text-tertiary">{icon}</span>}
       </div>
-      <p className="mt-2 text-[28px] leading-none font-semibold tracking-tight text-zinc-900 tabular-nums dark:text-zinc-50">
+      <p className="mt-2 text-2xl leading-none font-semibold tracking-tight text-foreground tabular-nums">
         {value}
       </p>
-      {hint && <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{hint}</p>}
+      {hint && <p className="mt-2 text-xs text-text-tertiary">{hint}</p>}
     </div>
   );
 }

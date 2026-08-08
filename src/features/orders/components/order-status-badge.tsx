@@ -7,13 +7,13 @@ import type { OrderStatus } from "@/server/database/models/order.model";
  */
 
 const STYLES: Record<OrderStatus, string> = {
-  pending: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  pending: "bg-surface-raised text-text-secondary",
   paid: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
   processing: "bg-brand/10 text-brand",
   shipped: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
   out_for_delivery: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
   delivered: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  cancelled: "bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  cancelled: "bg-surface-raised text-text-secondary",
   refunded: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
 };
 

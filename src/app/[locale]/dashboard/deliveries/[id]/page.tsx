@@ -56,35 +56,35 @@ export default async function DriverDeliveryPage({ params }: { params: Promise<P
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <nav className="mb-6 text-sm text-zinc-500">
+      <nav className="mb-6 text-sm text-text-tertiary">
         <Link href="/dashboard/deliveries" className="hover:text-brand">
           {t("deliveries")}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">#{order.number}</span>
+        <span className="text-text-secondary">#{order.number}</span>
       </nav>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("order", { number: order.number })}
         </h1>
         <OrderStatusBadge status={order.status} />
       </div>
 
       <section className="mt-8" aria-label="Deliver to">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("deliverTo")}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("deliverTo")}</h2>
         <div className="mt-2">
           <ShippingAddress address={order.shipping.address} />
         </div>
       </section>
 
       <section className="mt-8" aria-label="Items">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t("items")}</h2>
-        <ul className="mt-3 divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <h2 className="text-sm font-semibold text-foreground">{t("items")}</h2>
+        <ul className="mt-3 divide-y divide-border-subtle border-y border-border-subtle">
           {order.items.map((item, i) => (
             <li key={i} className="flex items-center justify-between gap-4 py-3 text-sm">
-              <span className="text-zinc-900 dark:text-zinc-100">{item.title}</span>
-              <span className="text-zinc-500">× {item.quantity}</span>
+              <span className="text-foreground">{item.title}</span>
+              <span className="text-text-tertiary">× {item.quantity}</span>
             </li>
           ))}
         </ul>

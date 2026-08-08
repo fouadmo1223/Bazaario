@@ -45,19 +45,19 @@ export default async function EditProductPage({ params }: { params: Promise<Para
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <nav className="mb-6 text-sm text-zinc-500">
+      <nav className="mb-6 text-sm text-text-tertiary">
         <Link href="/dashboard/products" className="hover:text-brand">
           {t("title")}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-zinc-700 dark:text-zinc-300">{product.title}</span>
+        <span className="text-text-secondary">{product.title}</span>
       </nav>
 
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("editProduct")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{product.title}</p>
+        <p className="mt-1 text-sm text-text-tertiary">{product.title}</p>
       </header>
 
       <EditProductForm

@@ -63,31 +63,27 @@ async function DashboardPanels({
         <KpiCard label={t("products")} value={productCount} />
       </section>
 
-      <section className="mt-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-          {t("revenueOverTime")}
-        </h2>
+      <section className="mt-8 rounded-card border border-border-subtle p-5">
+        <h2 className="mb-4 text-sm font-semibold text-text-secondary">{t("revenueOverTime")}</h2>
         <RevenueChart data={series} currency={currency} />
       </section>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            {t("topProducts")}
-          </h2>
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
+          <h2 className="mb-3 text-sm font-semibold text-text-secondary">{t("topProducts")}</h2>
+          <div className="overflow-hidden rounded-card border border-border-subtle">
             {top.length === 0 ? (
-              <p className="p-5 text-sm text-zinc-500">{t("noSales")}</p>
+              <p className="p-5 text-sm text-text-secondary">{t("noSales")}</p>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
                   {top.map((p) => (
-                    <tr key={p.productId} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-                      <td className="px-4 py-3 text-zinc-800 dark:text-zinc-200">{p.title}</td>
-                      <td className="px-4 py-3 text-right text-zinc-500 tabular-nums">
+                    <tr key={p.productId} className="border-b border-border-subtle last:border-0">
+                      <td className="px-4 py-3 text-foreground">{p.title}</td>
+                      <td className="px-4 py-3 text-right text-text-tertiary tabular-nums">
                         {t("unitsSold", { count: p.units })}
                       </td>
-                      <td className="px-4 py-3 text-right font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+                      <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
                         {money(p.revenue, currency)}
                       </td>
                     </tr>
@@ -99,20 +95,18 @@ async function DashboardPanels({
         </section>
 
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            {t("lowStock")}
-          </h2>
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800">
+          <h2 className="mb-3 text-sm font-semibold text-text-secondary">{t("lowStock")}</h2>
+          <div className="overflow-hidden rounded-card border border-border-subtle">
             {lowStock.length === 0 ? (
-              <p className="p-5 text-sm text-zinc-500">{t("wellStocked")}</p>
+              <p className="p-5 text-sm text-text-secondary">{t("wellStocked")}</p>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
                   {lowStock.map((p) => (
-                    <tr key={String(p._id)} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
-                      <td className="px-4 py-3 text-zinc-800 dark:text-zinc-200">{p.title}</td>
+                    <tr key={String(p._id)} className="border-b border-border-subtle last:border-0">
+                      <td className="px-4 py-3 text-foreground">{p.title}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                        <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
                           {t("left", { count: p.stock })}
                         </span>
                       </td>
@@ -158,13 +152,11 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8">
         <p className="text-sm font-medium text-brand capitalize">{role.replace(/_/g, " ")}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {vendor.name}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{t("last30Days")}</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">{vendor.name}</h1>
+        <p className="mt-1 text-sm text-text-secondary">{t("last30Days")}</p>
       </header>
 
-      <Suspense fallback={<div className="py-10 text-sm text-zinc-500">{t("loadingAnalytics")}</div>}>
+      <Suspense fallback={<div className="py-10 text-sm text-text-secondary">{t("loadingAnalytics")}</div>}>
         <DashboardPanels
           vendorId={String(vendor._id)}
           currency={vendor.settings.currency}

@@ -63,8 +63,8 @@ export function ProfileForm({
   }
 
   const field =
-    "mt-1 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition focus:border-brand dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
-  const label = "block text-sm font-medium text-zinc-700 dark:text-zinc-300";
+    "mt-1 w-full rounded-xl border border-border-default bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand";
+  const label = "block text-sm font-medium text-text-secondary";
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
@@ -101,7 +101,7 @@ export function ProfileForm({
 
       <div>
         <label htmlFor="phone" className={label}>
-          {t("phone")} <span className="font-normal text-zinc-400">{t("optional")}</span>
+          {t("phone")} <span className="font-normal text-text-tertiary">{t("optional")}</span>
         </label>
         <input id="phone" name="phone" defaultValue={initial.phone} maxLength={30} className={field} />
       </div>
@@ -117,7 +117,7 @@ export function ProfileForm({
           disabled
           className={`${field} cursor-not-allowed opacity-60`}
         />
-        <p className="mt-1 text-xs text-zinc-400">{t("emailHint")}</p>
+        <p className="mt-1 text-xs text-text-tertiary">{t("emailHint")}</p>
       </div>
 
       <button

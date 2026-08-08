@@ -44,20 +44,20 @@ export function ReturnReview({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
-      <p className="text-sm text-zinc-900 dark:text-zinc-100">{request.reason}</p>
-      {request.note && <p className="mt-0.5 text-xs text-zinc-500">{request.note}</p>}
+    <div className="rounded-xl border border-border-subtle p-3">
+      <p className="text-sm text-foreground">{request.reason}</p>
+      {request.note && <p className="mt-0.5 text-xs text-text-tertiary">{request.note}</p>}
 
       {rejecting ? (
         <div className="mt-3 space-y-2">
-          <label htmlFor="return-decline-note" className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label htmlFor="return-decline-note" className="block text-xs font-medium text-text-secondary">
             {t("declineReason")}
           </label>
           <input
             id="return-decline-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-brand focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="w-full rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-sm text-foreground focus:border-brand focus:outline-none"
           />
           <div className="flex gap-3">
             <button
@@ -72,7 +72,7 @@ export function ReturnReview({
               type="button"
               onClick={() => setRejecting(false)}
               disabled={pending}
-              className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+              className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
             >
               {t("back")}
             </button>
@@ -92,7 +92,7 @@ export function ReturnReview({
             type="button"
             onClick={() => setRejecting(true)}
             disabled={pending}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300"
+            className="rounded-lg border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
           >
             {t("decline")}
           </button>

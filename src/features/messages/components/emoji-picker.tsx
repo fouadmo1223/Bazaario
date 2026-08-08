@@ -76,14 +76,14 @@ export function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
         onClick={() => setOpen((v) => !v)}
         aria-label="Insert emoji"
         aria-expanded={open}
-        className="rounded-lg px-2 py-2 text-lg leading-none text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+        className="rounded-lg px-2 py-2 text-lg leading-none text-text-tertiary transition hover:bg-surface-raised hover:text-foreground"
       >
         😊
       </button>
 
       {open ? (
-        <div className="absolute bottom-full left-0 z-10 mb-2 w-64 rounded-xl border border-zinc-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="mb-2 flex gap-1 border-b border-zinc-100 pb-2 dark:border-zinc-800">
+        <div className="absolute bottom-full left-0 z-10 mb-2 w-64 rounded-xl border border-border-subtle bg-surface p-2 shadow-xl">
+          <div className="mb-2 flex gap-1 border-b border-border-subtle pb-2">
             {GROUPS.map((g, i) => (
               <button
                 key={g.label}
@@ -92,7 +92,7 @@ export function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
                 aria-label={g.label}
                 aria-pressed={group === i}
                 className={`rounded-md px-2 py-1 text-base transition ${
-                  group === i ? "bg-brand/10" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  group === i ? "bg-brand/10" : "hover:bg-surface-raised"
                 }`}
               >
                 {g.emoji}
@@ -105,7 +105,7 @@ export function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
                 key={`${e}-${i}`}
                 type="button"
                 onClick={() => onPick(e)}
-                className="rounded-md p-1 text-xl leading-none transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="rounded-md p-1 text-xl leading-none transition hover:bg-surface-raised"
               >
                 {e}
               </button>

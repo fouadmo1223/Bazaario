@@ -37,7 +37,7 @@ export function ReorderButton({ orderId }: { orderId: string }) {
         type="button"
         onClick={reorder}
         disabled={pending}
-        className="rounded-xl border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+        className="rounded-xl border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition hover:bg-surface-raised disabled:opacity-50"
       >
         {pending ? t("addingToCart") : t("buyAgain")}
       </button>
@@ -49,9 +49,9 @@ export function ReorderButton({ orderId }: { orderId: string }) {
       )}
 
       {result && (
-        <div className="mt-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-800">
+        <div className="mt-3 rounded-xl border border-border-subtle p-3 text-sm">
           {result.added > 0 ? (
-            <p className="text-zinc-700 dark:text-zinc-300">
+            <p className="text-text-secondary">
               {t("addedItems", { count: result.added })}{" "}
               <Link
                 href={`/v/${result.vendorSlug}/cart`}
@@ -61,10 +61,10 @@ export function ReorderButton({ orderId }: { orderId: string }) {
               </Link>
             </p>
           ) : (
-            <p className="text-zinc-500">{t("noneAvailable")}</p>
+            <p className="text-text-tertiary">{t("noneAvailable")}</p>
           )}
           {result.skipped.length > 0 && (
-            <ul className="mt-2 space-y-0.5 text-xs text-zinc-500">
+            <ul className="mt-2 space-y-0.5 text-xs text-text-tertiary">
               {result.skipped.map((s, i) => (
                 <li key={i}>
                   {s.title} — {s.reason}

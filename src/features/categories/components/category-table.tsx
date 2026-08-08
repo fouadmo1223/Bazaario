@@ -47,7 +47,7 @@ export function CategoryTable({
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <p className="text-sm text-zinc-500">{t("shown", { count: categories.length })}</p>
+        <p className="text-sm text-text-tertiary">{t("shown", { count: categories.length })}</p>
         <button
           type="button"
           onClick={() => setAdding(true)}
@@ -67,8 +67,8 @@ export function CategoryTable({
       )}
 
       {categories.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">{t("noCategories")}</p>
+        <div className="rounded-2xl border border-dashed border-border-default p-12 text-center">
+          <p className="text-sm text-text-tertiary">{t("noCategories")}</p>
           <button
             type="button"
             onClick={() => setAdding(true)}
@@ -78,9 +78,9 @@ export function CategoryTable({
           </button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded-2xl border border-border-subtle">
           <table className="w-full min-w-[560px] text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 text-left dark:border-zinc-800 dark:bg-zinc-900">
+            <thead className="border-b border-border-subtle bg-surface-raised text-left">
               <tr>
                 <Th>{t("colName")}</Th>
                 <Th>{t("colNameAr")}</Th>
@@ -92,10 +92,10 @@ export function CategoryTable({
               {categories.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-b border-zinc-100 transition last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                  className="border-b border-border-subtle transition last:border-0 hover:bg-surface-raised"
                 >
-                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">{c.name}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400" dir="rtl">
+                  <td className="px-4 py-3 font-medium text-foreground">{c.name}</td>
+                  <td className="px-4 py-3 text-text-secondary" dir="rtl">
                     {c.nameAr || "—"}
                   </td>
                   <td className="px-4 py-3">
@@ -103,7 +103,7 @@ export function CategoryTable({
                       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         c.isActive
                           ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                          : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                          : "bg-surface-raised text-text-secondary"
                       }`}
                     >
                       {c.isActive ? t("active") : t("off")}
@@ -121,7 +121,7 @@ export function CategoryTable({
                       <button
                         type="button"
                         onClick={() => setDeleting(c)}
-                        className="text-xs text-zinc-500 hover:text-red-600 hover:underline"
+                        className="text-xs text-text-tertiary hover:text-red-600 hover:underline"
                       >
                         {t("delete")}
                       </button>
@@ -147,13 +147,13 @@ export function CategoryTable({
         description={deleting?.name}
         size="sm"
       >
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{t("deleteConfirm")}</p>
+        <p className="text-sm text-text-secondary">{t("deleteConfirm")}</p>
         <div className="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => setDeleting(null)}
             disabled={pending}
-            className="text-sm text-zinc-500 hover:underline disabled:opacity-50"
+            className="text-sm text-text-tertiary hover:underline disabled:opacity-50"
           >
             {t("cancel")}
           </button>
@@ -173,7 +173,7 @@ export function CategoryTable({
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <th scope="col" className={`px-4 py-2.5 font-medium text-zinc-500 ${className ?? ""}`}>
+    <th scope="col" className={`px-4 py-2.5 font-medium text-text-tertiary ${className ?? ""}`}>
       {children}
     </th>
   );

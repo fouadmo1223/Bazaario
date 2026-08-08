@@ -91,10 +91,10 @@ export default async function DashboardMessagesPage({
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             {t("title")}
           </h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-text-tertiary">
             {platformScope ? t("platformWide") : vendorName}
             {" · "}
             {t("count", { count: inbox.total })}
@@ -108,8 +108,8 @@ export default async function DashboardMessagesPage({
               aria-current={!platformScope ? "page" : undefined}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
                 !platformScope
-                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                  : "text-zinc-500"
+                  ? "bg-surface-raised text-foreground"
+                  : "text-text-tertiary"
               }`}
             >
               {t("thisStore")}
@@ -119,8 +119,8 @@ export default async function DashboardMessagesPage({
               aria-current={platformScope ? "page" : undefined}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
                 platformScope
-                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                  : "text-zinc-500"
+                  ? "bg-surface-raised text-foreground"
+                  : "text-text-tertiary"
               }`}
             >
               {t("platform")}
@@ -135,8 +135,8 @@ export default async function DashboardMessagesPage({
           aria-current={!activeStatus ? "page" : undefined}
           className={`rounded-full px-3 py-1 text-xs font-medium ${
             !activeStatus
-              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              ? "bg-surface text-white"
+              : "bg-surface-raised text-text-secondary"
           }`}
         >
           {t("all")}
@@ -148,8 +148,8 @@ export default async function DashboardMessagesPage({
             aria-current={activeStatus === s ? "page" : undefined}
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               activeStatus === s
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                ? "bg-surface text-white"
+                : "bg-surface-raised text-text-secondary"
             }`}
           >
             {tStatus(s)}
@@ -168,18 +168,18 @@ export default async function DashboardMessagesPage({
           {inbox.page > 1 ? (
             <Link
               href={href({ page: String(inbox.page - 1) })}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
+              className="rounded-lg border border-border-default px-3 py-1.5 text-sm"
             >
               {t("prev")}
             </Link>
           ) : null}
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-text-tertiary">
             {t("pageOf", { page: inbox.page, totalPages: inbox.totalPages })}
           </span>
           {inbox.page < inbox.totalPages ? (
             <Link
               href={href({ page: String(inbox.page + 1) })}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700"
+              className="rounded-lg border border-border-default px-3 py-1.5 text-sm"
             >
               {t("next")}
             </Link>

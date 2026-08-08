@@ -24,7 +24,7 @@ export function DriverAssignForm({
   const [error, setError] = useState<string | null>(null);
 
   if (drivers.length === 0) {
-    return <p className="text-sm text-zinc-500">{t("noDrivers")}</p>;
+    return <p className="text-sm text-text-tertiary">{t("noDrivers")}</p>;
   }
 
   function assign() {

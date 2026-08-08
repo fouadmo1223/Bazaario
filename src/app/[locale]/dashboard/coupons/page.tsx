@@ -40,10 +40,10 @@ export default async function DashboardCouponsPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           {t("title")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-text-tertiary">
           {t("count", { count: coupons.length, vendor: vendor.name })}
         </p>
       </header>
