@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { authService } from "@/server/services/auth.service";
+import { routing } from "@/i18n/routing";
 
 /**
  * Silent session refresh.
@@ -18,12 +19,25 @@ export async function GET(request: NextRequest) {
 
   try {
     await authService.refresh();
+    // `next` is locale-prefixed here (the proxy built it from the raw
+    // pathname), which is exactly right for a real redirect URL.
     return NextResponse.redirect(new URL(next, request.url));
   } catch {
+    // `/login` reads `next` client-side and hands it to next-intl's router,
+    // which prepends the current locale itself — forwarding the same
+    // locale-prefixed value here would double it up into `/en/en/...`.
     const url = new URL("/login", request.url);
-    url.searchParams.set("next", next);
+    url.searchParams.set("next", stripLocalePrefix(next));
     return NextResponse.redirect(url);
   }
+}
+
+function stripLocalePrefix(path: string): string {
+  const [, maybeLocale, ...rest] = path.split("/");
+  if ((routing.locales as readonly string[]).includes(maybeLocale)) {
+    return `/${rest.join("/")}`.replace(/\/$/, "") || "/";
+  }
+  return path;
 }
 
 /**

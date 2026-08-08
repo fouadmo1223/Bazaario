@@ -4,6 +4,7 @@ import { googleOAuth } from "@/server/services/google-oauth.service";
 import { absorbGuestData } from "@/features/auth/guest-merge";
 import { clientEnv } from "@/shared/config/env";
 import { logger } from "@/shared/lib/logger";
+import { postLoginDestination } from "@/shared/constants/rbac";
 
 /**
  * GET /auth/google/callback — Google redirects here with `code` + `state`.
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Same as password sign-in: don't lose a cart or wishlist built up while
     // signed out.
     await absorbGuestData(user.id);
-    return NextResponse.redirect(`${base}/`);
+    return NextResponse.redirect(`${base}${postLoginDestination(user.roles)}`);
   } catch (err) {
     logger.error({ err }, "Google callback failed");
     return NextResponse.redirect(`${base}/login?error=oauth_failed`);

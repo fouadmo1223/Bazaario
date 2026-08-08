@@ -47,7 +47,7 @@ export const googleOAuth = {
   },
 
   /** Exchange the auth code, fetch the profile, upsert the user, create a session. */
-  async handleCallback(code: string): Promise<{ id: string; email: string }> {
+  async handleCallback(code: string): Promise<{ id: string; email: string; roles: Role[] }> {
     const { clientId, clientSecret, redirectUri } = requireConfig();
 
     const tokenRes = await fetch(TOKEN_ENDPOINT, {
@@ -105,6 +105,6 @@ export const googleOAuth = {
     });
 
     logger.info({ userId: String(user._id) }, "Google sign-in");
-    return { id: String(user._id), email: user.email };
+    return { id: String(user._id), email: user.email, roles: user.roles as Role[] };
   },
 };

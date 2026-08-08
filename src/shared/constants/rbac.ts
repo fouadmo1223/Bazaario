@@ -16,6 +16,17 @@ export const ROLES = {
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
+/**
+ * Where a freshly-authenticated user lands when nothing more specific (an
+ * explicit `?next=`) was requested. Anyone with a role beyond plain
+ * `customer` — vendor staff of any kind, or a super admin — has work to do
+ * in the dashboard, not the storefront; only a shopper belongs on `/`.
+ */
+export function postLoginDestination(roles: Role[]): string {
+  const isStaff = roles.some((r) => r !== ROLES.CUSTOMER && r !== ROLES.GUEST);
+  return isStaff ? "/dashboard" : "/";
+}
+
 /** `resource:action` permission identifiers. */
 export const PERMISSIONS = {
   CATALOG_READ: "catalog:read",

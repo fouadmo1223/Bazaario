@@ -76,8 +76,12 @@ export function proxy(request: NextRequest) {
       url.searchParams.set("next", `/${locale}${rest}${search}`);
       return NextResponse.redirect(url);
     }
+    // Plain, locale-agnostic path — matches every other `?next=` producer in
+    // this app. `login-form.tsx` hands this straight to next-intl's `router`,
+    // which prepends the current locale itself; a `/${locale}` already baked
+    // in here doubles up into `/en/en/...` and 404s.
     const url = new URL(`/${locale}/login`, request.url);
-    url.searchParams.set("next", `/${locale}${rest}`);
+    url.searchParams.set("next", rest);
     return NextResponse.redirect(url);
   }
 
