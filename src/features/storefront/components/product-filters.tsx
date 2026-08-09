@@ -31,7 +31,10 @@ export function ProductFilters({
   const t = useTranslations("Filters");
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
+  // `useSearchParams()` is only ever null while a page is being statically
+  // prerendered with no query string to read — an empty fallback behaves
+  // identically to "no filters active" for every call site below.
+  const params = useSearchParams() ?? new URLSearchParams();
 
   const [minPrice, setMinPrice] = useState(params.get("minPrice") ?? "");
   const [maxPrice, setMaxPrice] = useState(params.get("maxPrice") ?? "");

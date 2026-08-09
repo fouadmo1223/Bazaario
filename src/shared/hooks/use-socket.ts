@@ -24,7 +24,13 @@ async function fetchSocketToken(): Promise<string | null> {
 }
 
 /**
- * Connect to the standalone realtime server.
+ * Connect to the realtime server.
+ *
+ * Two hosting shapes share this one client: `NEXT_PUBLIC_SOCKET_URL` set
+ * means a standalone always-on server (Railway/Fly/a VPS) at that origin,
+ * default Socket.IO path. Unset means same-origin — `src/pages/api/socket.ts`,
+ * the Vercel-compatible route — using its `/api/socket` path instead. Either
+ * way the client code below doesn't need to know which.
  *
  * The socket lives in state, not a ref: subscribers need a re-render when it is
  * created, otherwise their `socket`-dependent effects never re-run.
@@ -40,8 +46,7 @@ export function useSocket(): { socket: Socket | null; connected: boolean } {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const url = clientEnv.NEXT_PUBLIC_SOCKET_URL;
-    if (!url) return;
+    const standaloneUrl = clientEnv.NEXT_PUBLIC_SOCKET_URL;
 
     let cancelled = false;
 
@@ -49,12 +54,26 @@ export function useSocket(): { socket: Socket | null; connected: boolean } {
       const token = await fetchSocketToken();
       if (cancelled || !token) return;
 
-      const next = io(url, {
-        auth: { token },
-        transports: ["websocket"],
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-      });
+      const next = standaloneUrl
+        ? io(standaloneUrl, {
+            auth: { token },
+            transports: ["websocket"],
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+          })
+        : io({
+            path: "/api/socket",
+            auth: { token },
+            // Polling *must* come first: it's a plain HTTP request, so it's
+            // what actually invokes the API route and attaches Socket.IO to
+            // the server the first time. A client that tried "websocket"
+            // first would send a raw upgrade request before the route ever
+            // ran — nothing there yet to accept it. Once attached, this
+            // still upgrades to a real websocket per normal negotiation.
+            transports: ["polling", "websocket"],
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+          });
       socketRef.current = next;
 
       next.on("connect", () => setConnected(true));

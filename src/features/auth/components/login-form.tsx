@@ -18,7 +18,7 @@ export function LoginForm() {
   const params = useSearchParams();
   // `next` comes from the URL, so it cannot be trusted as a redirect target.
   // Absent, a signed-in shopper goes home but staff go straight to work.
-  const rawNext = params.get("next");
+  const rawNext = params?.get("next");
   const next = rawNext ? safeRedirectPath(rawNext) : null;
 
   const [state, action] = useActionState<ApiResult<PublicUser> | null, FormData>(
@@ -30,7 +30,7 @@ export function LoginForm() {
     if (state?.ok) router.replace(next ?? postLoginDestination(state.data.roles));
   }, [state, next, router]);
 
-  const oauthError = params.get("error");
+  const oauthError = params?.get("error");
 
   return (
     <form action={action} className="space-y-4">
