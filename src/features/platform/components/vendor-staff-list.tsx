@@ -3,7 +3,13 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { suspendVendorUserAction } from "../actions";
+import {
+  suspendVendorUserAction,
+  deleteVendorUserAction,
+  banVendorUserAction,
+  unbanVendorUserAction,
+  deleteVendorAction,
+} from "../actions";
 import type { VendorStaff } from "../queries";
 
 /**
@@ -30,13 +36,37 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
 
   function revoke(vendorId: string, userId: string, email: string) {
     if (!confirm(t("confirmRemove", { email }))) return;
+    run(`${vendorId}:${userId}:remove`, () => suspendVendorUserAction(vendorId, userId));
+  }
+
+  function remove(vendorId: string, userId: string, email: string) {
+    if (!confirm(t("confirmDelete", { email }))) return;
+    run(`${vendorId}:${userId}:delete`, () => deleteVendorUserAction(vendorId, userId));
+  }
+
+  function ban(vendorId: string, userId: string, email: string) {
+    if (!confirm(t("confirmBan", { email }))) return;
+    run(`${vendorId}:${userId}:ban`, () => banVendorUserAction(userId));
+  }
+
+  function unban(vendorId: string, userId: string, email: string) {
+    if (!confirm(t("confirmUnban", { email }))) return;
+    run(`${vendorId}:${userId}:unban`, () => unbanVendorUserAction(userId));
+  }
+
+  function deleteStore(vendorId: string, name: string) {
+    if (!confirm(t("confirmDeleteStore", { name }))) return;
+    run(`${vendorId}:store`, () => deleteVendorAction(vendorId));
+  }
+
+  function run(key: string, action: () => Promise<{ ok: boolean; error?: { message: string } }>) {
     setError(null);
-    setBusy(`${vendorId}:${userId}`);
+    setBusy(key);
     startTransition(async () => {
-      const result = await suspendVendorUserAction(vendorId, userId);
+      const result = await action();
       setBusy(null);
       if (!result.ok) {
-        setError(result.error.message);
+        setError(result.error!.message);
         return;
       }
       router.refresh();
@@ -67,11 +97,23 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
               </h3>
               <p className="text-xs text-text-tertiary">/v/{vendor.slug}</p>
             </div>
-            {vendor.status !== "active" ? (
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                {vendor.status}
-              </span>
-            ) : null}
+            <div className="flex items-center gap-3">
+              {vendor.status !== "active" ? (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  {vendor.status}
+                </span>
+              ) : null}
+              {vendor.status !== "deleted" ? (
+                <button
+                  type="button"
+                  disabled={pending && busy === `${vendor.id}:store`}
+                  onClick={() => deleteStore(vendor.id, vendor.name)}
+                  className="rounded-lg px-2 py-1 text-xs text-text-tertiary transition hover:text-red-600 disabled:opacity-50"
+                >
+                  {pending && busy === `${vendor.id}:store` ? t("deletingStore") : t("deleteStore")}
+                </button>
+              ) : null}
+            </div>
           </header>
 
           {staff.length === 0 ? (
@@ -91,6 +133,11 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
                           {t("owner")}
                         </span>
                       ) : null}
+                      {m.accountStatus === "suspended" ? (
+                        <span className="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-300">
+                          {t("banned")}
+                        </span>
+                      ) : null}
                     </p>
                     <p className="truncate text-xs text-text-tertiary">{m.email}</p>
                   </div>
@@ -106,13 +153,43 @@ export function VendorStaffList({ groups }: { groups: VendorStaff[] }) {
                     ) : m.isOwner ? null : (
                       <button
                         type="button"
-                        disabled={pending && busy === `${vendor.id}:${m.userId}`}
+                        disabled={pending && busy === `${vendor.id}:${m.userId}:remove`}
                         onClick={() => revoke(vendor.id, m.userId, m.email)}
                         className="rounded-lg px-2 py-1 text-xs text-text-tertiary transition hover:text-red-600 disabled:opacity-50"
                       >
-                        {pending && busy === `${vendor.id}:${m.userId}` ? t("removing") : t("remove")}
+                        {pending && busy === `${vendor.id}:${m.userId}:remove` ? t("removing") : t("remove")}
                       </button>
                     )}
+                    {!m.isOwner && (
+                      <button
+                        type="button"
+                        disabled={pending && busy === `${vendor.id}:${m.userId}:delete`}
+                        onClick={() => remove(vendor.id, m.userId, m.email)}
+                        className="rounded-lg px-2 py-1 text-xs text-text-tertiary transition hover:text-red-600 disabled:opacity-50"
+                      >
+                        {pending && busy === `${vendor.id}:${m.userId}:delete` ? t("deleting") : t("delete")}
+                      </button>
+                    )}
+                    {!m.isOwner &&
+                      (m.accountStatus === "suspended" ? (
+                        <button
+                          type="button"
+                          disabled={pending && busy === `${vendor.id}:${m.userId}:unban`}
+                          onClick={() => unban(vendor.id, m.userId, m.email)}
+                          className="rounded-lg px-2 py-1 text-xs text-text-tertiary transition hover:text-brand disabled:opacity-50"
+                        >
+                          {pending && busy === `${vendor.id}:${m.userId}:unban` ? t("unbanning") : t("unban")}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={pending && busy === `${vendor.id}:${m.userId}:ban`}
+                          onClick={() => ban(vendor.id, m.userId, m.email)}
+                          className="rounded-lg px-2 py-1 text-xs text-text-tertiary transition hover:text-red-600 disabled:opacity-50"
+                        >
+                          {pending && busy === `${vendor.id}:${m.userId}:ban` ? t("banning") : t("ban")}
+                        </button>
+                      ))}
                   </div>
                 </li>
               ))}

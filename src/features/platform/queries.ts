@@ -21,6 +21,9 @@ export type StaffMember = {
   email: string;
   role: Role;
   status: string;
+  /** The account's own status (active/suspended/pending) — distinct from
+   *  `status` above, which is this one vendor's membership. */
+  accountStatus: string;
   isOwner: boolean;
 };
 
@@ -31,7 +34,11 @@ export type VendorStaff = {
 
 export async function listVendorOptions(): Promise<VendorOption[]> {
   await connectToDatabase();
-  const vendors = await Vendor.find({}).select("name slug status").sort({ name: 1 }).lean();
+  // A deleted store has no business being offered as a staffing target.
+  const vendors = await Vendor.find({ status: { $ne: "deleted" } })
+    .select("name slug status")
+    .sort({ name: 1 })
+    .lean();
 
   return vendors.map((v) => ({
     id: String(v._id),
@@ -56,9 +63,9 @@ export async function listVendorsWithStaff(): Promise<VendorStaff[]> {
   const memberships = await Membership.find({
     vendor: { $in: vendors.map((v) => v._id) },
   })
-    .populate<{ user: { _id: unknown; name: string; email: string } | null }>(
+    .populate<{ user: { _id: unknown; name: string; email: string; status: string } | null }>(
       "user",
-      "name email",
+      "name email status",
     )
     .sort({ createdAt: -1 })
     .lean();
@@ -78,6 +85,7 @@ export async function listVendorsWithStaff(): Promise<VendorStaff[]> {
       email: m.user.email,
       role: m.role as Role,
       status: m.status,
+      accountStatus: m.user.status,
       isOwner: false,
     });
     byVendor.set(vendorId, list);

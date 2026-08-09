@@ -228,6 +228,43 @@ export const vendorStaffService = {
     });
     return membership;
   },
+
+  /**
+   * Remove a team member outright, unlike `suspend` above which keeps the
+   * membership row for its audit/`invitedBy` trail. This is for the "delete"
+   * control specifically — the membership itself is gone, and if that role
+   * was granted through no other vendor, it comes off the user's global
+   * role list too (see the comment on that list in `createOrAttach`).
+   */
+  async remove(vendorId: string, userId: string, actorId: string): Promise<void> {
+    await connectToDatabase();
+
+    const vendor = await Vendor.findById(vendorId).select("owner");
+    if (!vendor) throw Errors.notFound("Vendor not found");
+    if (String(vendor.owner) === userId) {
+      throw Errors.badRequest("Reassign the vendor's owner before removing their access");
+    }
+
+    const membership = await Membership.findOneAndDelete({ user: userId, vendor: vendorId });
+    if (!membership) throw Errors.notFound("This user is not a member of that vendor");
+
+    const stillHasRoleElsewhere = await Membership.exists({
+      user: userId,
+      role: membership.role,
+      status: "active",
+    });
+    if (!stillHasRoleElsewhere) {
+      await User.updateOne({ _id: userId }, { $pull: { roles: membership.role } });
+    }
+
+    await writeAudit({
+      actor: actorId,
+      vendor: vendorId,
+      action: "vendor.staff.delete",
+      entity: "User",
+      entityId: userId,
+    });
+  },
 };
 
 export type { Role };

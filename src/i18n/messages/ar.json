@@ -307,6 +307,10 @@
     "addTeamMember": "إضافة عضو فريق",
     "currentAccess": "الصلاحيات الحالية"
   },
+  "VendorSwitcher": {
+    "label": "العمل كـ",
+    "viewingOwn": "متجرك"
+  },
   "CreateVendorUserForm": {
     "roleVendorAdmin": "مدير المتجر",
     "roleVendorAdminHint": "تحكم كامل في المتجر",
@@ -331,11 +335,24 @@
   },
   "VendorStaffList": {
     "confirmRemove": "إزالة صلاحية {email} لهذا المتجر؟",
+    "confirmDelete": "حذف {email} نهائيًا من فريق هذا المتجر؟",
+    "confirmBan": "حظر حساب {email}؟ سيمنعه هذا من تسجيل الدخول في أي مكان بالمنصة.",
+    "confirmUnban": "إلغاء حظر حساب {email}؟",
+    "confirmDeleteStore": "حذف {name}؟ سيخفي هذا المتجر من كل مكان، ولا يمكن التراجع عن ذلك من هنا.",
     "noVendorsYet": "لا توجد متاجر بعد.",
     "noStaffYet": "لا يوجد موظفون بعد.",
     "owner": "المالك",
     "removing": "جارٍ الإزالة…",
     "remove": "إزالة",
+    "deleting": "جارٍ الحذف…",
+    "delete": "حذف",
+    "banning": "جارٍ الحظر…",
+    "ban": "حظر",
+    "unbanning": "جارٍ إلغاء الحظر…",
+    "unban": "إلغاء الحظر",
+    "banned": "محظور",
+    "deleteStore": "حذف المتجر",
+    "deletingStore": "جارٍ الحذف…",
     "roleVendorAdmin": "مدير المتجر",
     "roleMarketing": "التسويق",
     "roleSupport": "الدعم",

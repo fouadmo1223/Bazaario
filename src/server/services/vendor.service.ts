@@ -107,6 +107,29 @@ export const vendorService = {
     return vendor;
   },
 
+  /**
+   * Soft delete — sets status rather than removing the document. Orders and
+   * products still reference this vendor by id, and hard-deleting it would
+   * turn every one of those into a dangling reference; `deleted` just hides
+   * the store from the storefront and dashboard nav, same as `suspended`
+   * does, but irreversibly by convention (no "undelete" action exists).
+   */
+  async delete(vendorId: string, actorId: string): Promise<VendorDoc> {
+    await connectToDatabase();
+    const vendor = await vendorRepository.updateById(vendorId, {
+      $set: { status: "deleted", updatedBy: actorId },
+    });
+    if (!vendor) throw Errors.notFound("Vendor not found");
+    await writeAudit({
+      actor: actorId,
+      vendor: vendorId,
+      action: "vendor.delete",
+      entity: "Vendor",
+      entityId: vendorId,
+    });
+    return vendor;
+  },
+
   async reassignAdmin(vendorId: string, newOwnerEmail: string, actorId: string): Promise<VendorDoc> {
     await connectToDatabase();
     const vendor = await vendorRepository.findById(vendorId);

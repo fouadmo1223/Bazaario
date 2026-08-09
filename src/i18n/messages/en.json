@@ -307,6 +307,10 @@
     "addTeamMember": "Add a team member",
     "currentAccess": "Current access"
   },
+  "VendorSwitcher": {
+    "label": "Operating as",
+    "viewingOwn": "Your store"
+  },
   "CreateVendorUserForm": {
     "roleVendorAdmin": "Vendor admin",
     "roleVendorAdminHint": "Full control of the store",
@@ -331,11 +335,24 @@
   },
   "VendorStaffList": {
     "confirmRemove": "Remove {email}'s access to this vendor?",
+    "confirmDelete": "Permanently delete {email} from this vendor's team?",
+    "confirmBan": "Ban {email}'s account? This blocks them from signing in anywhere on the platform.",
+    "confirmUnban": "Unban {email}'s account?",
+    "confirmDeleteStore": "Delete {name}? This hides the store everywhere; it cannot be undone from here.",
     "noVendorsYet": "No vendors yet.",
     "noStaffYet": "No staff yet.",
     "owner": "owner",
     "removing": "Removing…",
     "remove": "Remove",
+    "deleting": "Deleting…",
+    "delete": "Delete",
+    "banning": "Banning…",
+    "ban": "Ban",
+    "unbanning": "Unbanning…",
+    "unban": "Unban",
+    "banned": "banned",
+    "deleteStore": "Delete store",
+    "deletingStore": "Deleting…",
     "roleVendorAdmin": "Vendor admin",
     "roleMarketing": "Marketing",
     "roleSupport": "Support",

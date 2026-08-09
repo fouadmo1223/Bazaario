@@ -7,6 +7,7 @@ import {
 } from "@/server/services/vendor-staff.service";
 import { requireSuperAdmin } from "@/server/security/current-user";
 import { writeAudit } from "@/server/services/audit.service";
+import { userAdminService } from "@/server/services/user-admin.service";
 import { toFailure, ok, type ApiResult } from "@/shared/lib/api-response";
 import { Errors } from "@/shared/lib/errors";
 import { revalidatePath } from "next/cache";
@@ -90,6 +91,53 @@ export async function suspendVendorUserAction(
     await vendorStaffService.suspend(vendorId, userId, admin.id);
     revalidatePath("/platform/vendors");
     return ok(null, { message: "Access removed." });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+export async function deleteVendorUserAction(
+  vendorId: string,
+  userId: string,
+): Promise<ApiResult<null>> {
+  try {
+    const admin = await requireSuperAdmin();
+    await vendorStaffService.remove(vendorId, userId, admin.id);
+    revalidatePath("/platform/vendors");
+    return ok(null, { message: "Team member removed." });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+export async function banVendorUserAction(userId: string): Promise<ApiResult<null>> {
+  try {
+    const admin = await requireSuperAdmin();
+    await userAdminService.ban(userId, admin.id);
+    revalidatePath("/platform/vendors");
+    return ok(null, { message: "Account banned." });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+export async function unbanVendorUserAction(userId: string): Promise<ApiResult<null>> {
+  try {
+    const admin = await requireSuperAdmin();
+    await userAdminService.unban(userId, admin.id);
+    revalidatePath("/platform/vendors");
+    return ok(null, { message: "Account unbanned." });
+  } catch (err) {
+    return toFailure(err);
+  }
+}
+
+export async function deleteVendorAction(vendorId: string): Promise<ApiResult<null>> {
+  try {
+    const admin = await requireSuperAdmin();
+    await vendorService.delete(vendorId, admin.id);
+    revalidatePath("/platform/vendors");
+    return ok(null, { message: "Store deleted." });
   } catch (err) {
     return toFailure(err);
   }

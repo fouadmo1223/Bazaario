@@ -59,7 +59,7 @@ const vendorSchema = new Schema({
 
   status: {
     type: String,
-    enum: ["active", "suspended", "pending"],
+    enum: ["active", "suspended", "pending", "deleted"],
     default: "pending",
     index: true,
   },

@@ -1,9 +1,13 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { DashboardSidebar, DashboardMobileNav } from "@/features/dashboard/components/dashboard-nav";
+import { VendorSwitcher } from "@/features/dashboard/components/vendor-switcher";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { getCurrentUser } from "@/server/security/current-user";
 import { notificationService } from "@/server/services/notification.service";
+import { listVendorOptions } from "@/features/platform/queries";
+import { resolveActiveVendor } from "@/features/dashboard/resolve-vendor";
+import { ROLES } from "@/shared/constants/rbac";
 
 /**
  * Dashboard shell. Deliberately does not resolve the vendor itself — each page
@@ -21,6 +25,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const t = await getTranslations("Dashboard");
   const user = await getCurrentUser();
   const unread = user ? await notificationService.unreadCount(user.id) : 0;
+  const isSuperAdmin = user?.roles.includes(ROLES.SUPER_ADMIN) ?? false;
+  const [vendors, activeVendorId] = isSuperAdmin
+    ? await Promise.all([
+        listVendorOptions(),
+        resolveActiveVendor()
+          .then((r) => String(r.vendor._id))
+          .catch(() => null),
+      ])
+    : [null, null];
 
   return (
     <div className="flex min-h-dvh bg-background">
@@ -35,7 +48,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 {t("title")}
               </Link>
             </div>
-            {user ? <NotificationBell initialUnread={unread} /> : null}
+            <div className="flex items-center gap-3">
+              {isSuperAdmin && vendors && vendors.length > 0 ? (
+                <VendorSwitcher vendors={vendors} activeId={activeVendorId ?? vendors[0].id} />
+              ) : null}
+              {user ? <NotificationBell initialUnread={unread} /> : null}
+            </div>
           </div>
         </header>
         <main className="flex-1">{children}</main>
