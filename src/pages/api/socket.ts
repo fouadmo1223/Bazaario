@@ -63,7 +63,11 @@ export default function handler(_req: NextApiRequest, res: NextApiResponseWithSo
 }
 
 // Socket.IO needs the raw request stream (its own polling/upgrade
-// handshake), not Next's parsed body.
+// handshake), not Next's parsed body. `maxDuration` widens the function's
+// execution ceiling from Vercel's 10s default so a long-poll cycle has room
+// to complete instead of getting cut off mid-request — capped at 60s here
+// since that's the ceiling on Vercel's Hobby/Pro plans alike.
 export const config = {
   api: { bodyParser: false },
+  maxDuration: 60,
 };

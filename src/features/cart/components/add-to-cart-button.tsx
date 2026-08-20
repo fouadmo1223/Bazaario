@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { addToCartAction } from "../actions";
 import { useLoginRedirect } from "@/shared/hooks/use-login-redirect";
+import { useStorefront } from "@/features/storefront/storefront-provider";
 
 /**
  * Adds a product to the cart from the storefront.
@@ -35,6 +36,7 @@ export function AddToCartButton({
   const t = useTranslations("ProductDetail");
   const router = useRouter();
   const redirectToLogin = useLoginRedirect();
+  const storefront = useStorefront();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -57,8 +59,10 @@ export function AddToCartButton({
       }
 
       setAdded(true);
-      // Refresh so the header count and cart page reflect the new line.
+      // Refresh so the cart page reflects the new line, and the header badge
+      // (a client-fetched count that a server-component refresh doesn't touch).
       router.refresh();
+      storefront?.refresh();
       setTimeout(() => setAdded(false), 2000);
     });
   }
