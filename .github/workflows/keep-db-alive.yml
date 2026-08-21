@@ -1,0 +1,30 @@
+name: Keep MongoDB Atlas awake
+
+# MongoDB Atlas's free tier pauses a cluster after a stretch of no activity.
+# Hitting /api/health weekly (it queries both MongoDB and Redis) is enough
+# traffic to keep the cluster active without needing DB credentials as a
+# GitHub secret.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 06:00 UTC
+  workflow_dispatch: {} # Lets you trigger a run manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping production health endpoint
+        run: |
+          url="https://bazaario-eight.vercel.app/api/health"
+          status=$(curl -s -o response.json -w "%{http_code}" "$url")
+          echo "HTTP $status"
+          cat response.json
+          if [ "$status" -ne 200 ]; then
+            echo "Health check failed with status $status"
+            exit 1
+          fi
+          if ! grep -q '"db":"up"' response.json; then
+            echo "Database is not reporting up"
+            exit 1
+          fi
